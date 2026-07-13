@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${productOrder.id == 0 ? 'Create Product Order' : 'Edit Product Order'}">Product Order Form</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0" th:text="${productOrder.id == 0 ? '➕ Create New Product Order' : '✏️ Edit Product Order'}">Product Order Form</h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Business Rules:</strong>
+                                <ul class="mb-0 mt-1">
+                                    <li>No duplicate product per order (same product cannot appear twice in one order)</li>
+                                    <li>Product must belong to the same restaurant as the order</li>
+                                </ul>
+                            </div>
+                            
+                            <form th:action="${productOrder.id == 0 ? '/backoffice/product-orders' : '/backoffice/product-orders/' + productOrder.id}" 
+                                th:object="${productOrder}" method="post">
+                                
+                                <h5 class="text-primary mb-3">📋 Product Order Information</h5>
+                                
+                                <!-- Product (ManyToOne, not null) -->
+                                <div class="mb-3">
+                                    <label for="product" class="form-label fw-bold">
+                                        Product <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="product" th:field="*{product}" required>
+                                        <option value="">-- Select Product --</option>
+                                        <option th:each="p : ${products}" th:value="${p.id}" th:text="${p.name + ' (' + p.restaurant.name + ') - $' + p.cost}">Product</option>
+                                    </select>
+                                    <div class="form-text text-muted">Product must belong to the same restaurant as the order.</div>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('product')}" th:errors="*{product}"></div>
+                                </div>
+                                
+                                <!-- Order (ManyToOne, not null) -->
+                                <div class="mb-3">
+                                    <label for="order" class="form-label fw-bold">
+                                        Order <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="order" th:field="*{order}" required>
+                                        <option value="">-- Select Order --</option>
+                                        <option th:each="o : ${orders}" th:value="${o.id}" th:text="'Order #' + ${o.id} + ' - ' + ${o.restaurant.name} + ' (' + ${o.customer.user.name} + ')'">Order</option>
+                                    </select>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('order')}" th:errors="*{order}"></div>
+                                </div>
+                                
+                                <!-- Product Quantity (min 1, not null) -->
+                                <div class="mb-3">
+                                    <label for="productQuantity" class="form-label fw-bold">
+                                        Quantity <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="productQuantity" th:field="*{productQuantity}" 
+                                        required min="1" placeholder="e.g., 2"/>
+                                    <div class="form-text text-muted">Must be at least 1.</div>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('productQuantity')}" th:errors="*{productQuantity}"></div>
+                                </div>
+                                
+                                <!-- Product Unit Cost (min 0, not null) -->
+                                <div class="mb-3">
+                                    <label for="productUnitCost" class="form-label fw-bold">
+                                        Unit Cost <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="productUnitCost" th:field="*{productUnitCost}" 
+                                        required min="0" placeholder="e.g., 1299 (in cents)"/>
+                                    <div class="form-text text-muted">Cost in cents (e.g., 1299 = $12.99). Must be 0 or greater.</div>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('productUnitCost')}" th:errors="*{productUnitCost}"></div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success" 
+                                        th:text="${productOrder.id == 0 ? '✓ Create Product Order' : '✓ Update Product Order'}">Submit</button>
+                                    <a href="/backoffice/product-orders" class="btn btn-secondary">✗ Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

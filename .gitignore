@@ -141,3 +141,46 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+
+
+.omi
+
+client/node_modules
+
+.claude
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.idea/
+.vscode/
+
+# Expo generated files
+.expo/
+.expo-shared/
+expo-env.d.ts
+web-build/
+
+# Expo prebuild output
+android/
+ios/
+
+# Mobile signing and service credentials
+credentials.json
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# Java build output
+**/target/
+
+# Local Spring configuration
+server/src/main/resources/application-local.properties
+server/src/main/resources/application-secrets.properties

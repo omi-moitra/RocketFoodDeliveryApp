@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Products List - Rocket Delivery</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">📦 Products Management</h1>
+                <a href="/backoffice/products/new" class="btn btn-primary">➕ Add New Product</a>
+            </div>
+            
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div th:if="${products != null and !products.isEmpty()}">
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body py-2">
+                        <div class="text-center">
+                            <strong>Total Products:</strong> 
+                            <span class="badge bg-primary" th:text="${products.size()}">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%;">ID</th>
+                                    <th style="width: 20%;">Name</th>
+                                    <th style="width: 20%;">Restaurant</th>
+                                    <th style="width: 20%;">Description</th>
+                                    <th style="width: 10%;">Cost</th>
+                                    <th style="width: 25%;" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="product : ${products}">
+                                    <td class="align-middle">
+                                        <span class="badge bg-light text-dark" th:text="${product.id}">1</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <strong th:text="${product.name}">Product Name</strong>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span th:text="${product.restaurant.name}">Restaurant</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span th:text="${product.description ?: 'N/A'}">Description</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-success" th:text="'$' + ${product.cost}">$0</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:href="@{/backoffice/products/{id}(id=${product.id})}" 
+                                            class="btn btn-outline-info" title="View Details">👁️ View</a>
+                                            <a th:href="@{/backoffice/products/{id}/edit(id=${product.id})}" 
+                                            class="btn btn-outline-warning" title="Edit Product">✏️ Edit</a>
+                                            <form th:action="@{/backoffice/products/{id}/delete(id=${product.id})}" 
+                                                method="post" style="display:inline;"
+                                                onsubmit="return confirm('⚠️ Are you sure you want to delete this product?\n\nThis action cannot be undone.');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Product">🗑️ Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:if="${products == null or products.isEmpty()}" class="text-center py-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-5">
+                        <h3 class="text-muted mb-3">📭 No Products Found</h3>
+                        <p class="text-muted mb-4">Get started by adding your first product!</p>
+                        <a href="/backoffice/products/new" class="btn btn-primary btn-lg">➕ Add New Product</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

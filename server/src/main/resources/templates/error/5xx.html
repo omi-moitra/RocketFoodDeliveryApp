@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Error ' + ${status ?: '5xx'} + ' - Server Error'">Server Error</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 100vh; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg">
+                    <div class="card-body text-center p-5">
+                        <div style="font-size: 100px;">💥</div>
+                        <h1 class="display-1 fw-bold text-danger" th:text="${status ?: '5xx'}">5xx</h1>
+                        <p class="text-muted text-uppercase small">Server Error</p>
+                        <h2 class="mb-4" th:text="${error ?: 'Server Error'}">Internal Server Error</h2>
+                        
+                        <div class="alert alert-warning text-start" th:if="${message}">
+                            <strong>What happened?</strong>
+                            <p class="mb-0" th:text="${message}">Something went wrong on our end.</p>
+                        </div>
+                        
+                        <div th:unless="${message}">
+                            <p>Something went wrong on our end. We're working to fix it!</p>
+                            <p class="text-muted"><small>Please try again in a few moments.</small></p>
+                        </div>
+                        
+                        <p class="text-muted small" th:if="${path}">
+                            <small>Requested: <span th:text="${path}"></span></small>
+                        </p>
+                        
+                        <div class="d-flex gap-2 justify-content-center mt-4">
+                            <a href="/backoffice/restaurants" class="btn btn-primary">🏠 Go to Home</a>
+                            <a href="javascript:location.reload()" class="btn btn-secondary">🔄 Refresh Page</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
