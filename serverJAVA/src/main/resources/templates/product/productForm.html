@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${product.id == 0 ? 'Create Product' : 'Edit Product'}">Product Form</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0" th:text="${product.id == 0 ? '➕ Create New Product' : '✏️ Edit Product'}">Product Form</h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <form th:action="${product.id == 0 ? '/backoffice/products' : '/backoffice/products/' + product.id}" 
+                                th:object="${product}" method="post">
+                                
+                                <h5 class="text-primary mb-3">📦 Product Information</h5>
+                                
+                                <!-- Restaurant (ManyToOne, not null) -->
+                                <div class="mb-3">
+                                    <label for="restaurant" class="form-label fw-bold">
+                                        Restaurant <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="restaurant" th:field="*{restaurant}" required>
+                                        <option value="">-- Select Restaurant --</option>
+                                        <option th:each="r : ${restaurants}" th:value="${r.id}" th:text="${r.name}">Restaurant</option>
+                                    </select>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('restaurant')}" th:errors="*{restaurant}"></div>
+                                </div>
+                                
+                                <!-- Name (not null) -->
+                                <div class="mb-3">
+                                    <label for="name" class="form-label fw-bold">
+                                        Product Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="name" th:field="*{name}" 
+                                        required placeholder="e.g., Margherita Pizza"/>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                                </div>
+                                
+                                <!-- Description (optional) -->
+                                <div class="mb-3">
+                                    <label for="description" class="form-label fw-bold">Description</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" 
+                                        rows="3" placeholder="e.g., Fresh tomato sauce, mozzarella, basil"></textarea>
+                                </div>
+                                
+                                <!-- Cost (min 0, not null) -->
+                                <div class="mb-3">
+                                    <label for="cost" class="form-label fw-bold">
+                                        Cost <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="cost" th:field="*{cost}" 
+                                        required min="0" placeholder="e.g., 1299 (in cents)"/>
+                                    <div class="form-text text-muted">Cost in cents (e.g., 1299 = $12.99). Must be 0 or greater.</div>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}"></div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success" 
+                                        th:text="${product.id == 0 ? '✓ Create Product' : '✓ Update Product'}">Submit</button>
+                                    <a href="/backoffice/products" class="btn btn-secondary">✗ Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

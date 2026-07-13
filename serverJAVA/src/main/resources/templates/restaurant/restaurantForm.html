@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${restaurant.id == 0 ? 'Create Restaurant' : 'Edit Restaurant'}">Restaurant Form</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <!-- Header -->
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0" th:text="${restaurant.id == 0 ? '➕ Create New Restaurant' : '✏️ Edit Restaurant'}">
+                                Restaurant Form
+                            </h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <form th:action="${restaurant.id == 0 ? '/backoffice/restaurants' : '/backoffice/restaurants/' + restaurant.id}" 
+                                th:object="${restaurant}" 
+                                method="post">
+                                
+                                <!-- Basic Information Section -->
+                                <h5 class="text-primary mb-3">📋 Basic Information</h5>
+                                
+                                <!-- Restaurant Name -->
+                                <div class="mb-3">
+                                    <label for="name" class="form-label fw-bold">
+                                        Restaurant Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                        class="form-control" 
+                                        id="name" 
+                                        th:field="*{name}" 
+                                        required 
+                                        placeholder="e.g., Mario's Pizzeria"/>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                                </div>
+                                
+                                <!-- Phone -->
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label fw-bold">
+                                        Phone Number <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="tel" 
+                                        class="form-control" 
+                                        id="phone" 
+                                        th:field="*{phone}" 
+                                        required 
+                                        placeholder="(514) 123-4567"/>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                                </div>
+                                
+                                <!-- Email -->
+                                <div class="mb-3">
+                                    <label for="email" class="form-label fw-bold">Email</label>
+                                    <input type="email" 
+                                        class="form-control" 
+                                        id="email" 
+                                        th:field="*{email}" 
+                                        placeholder="contact@restaurant.com"/>
+                                    <small class="text-muted">Optional contact email</small>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <!-- Owner & Location Section -->
+                                <h5 class="text-primary mb-3">👤 Owner & Location</h5>
+                                
+                                <!-- Owner (User) -->
+                                <div class="mb-3">
+                                    <label for="user" class="form-label fw-bold">
+                                        Restaurant Owner <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="user" class="form-select" th:field="*{user}" required>
+                                        <option value="">-- Select Owner --</option>
+                                        <option th:each="u : ${users}" 
+                                                th:value="${u.id}" 
+                                                th:text="${u.name + ' (' + u.email + ')'}">
+                                            Owner Name (email)
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">User account that owns this restaurant</small>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('user')}" th:errors="*{user}"></div>
+                                </div>
+                                
+                                <!-- Address -->
+                                <div class="mb-3">
+                                    <label for="address" class="form-label fw-bold">
+                                        Restaurant Address <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="address" class="form-select" th:field="*{address}" required>
+                                        <option value="">-- Select Address --</option>
+                                        <option th:each="addr : ${addresses}" 
+                                                th:value="${addr.id}" 
+                                                th:text="${addr.streetAddress + ', ' + addr.city + ' ' + addr.postalCode}">
+                                            Address
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">Physical location of the restaurant</small>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <!-- Restaurant Settings Section -->
+                                <h5 class="text-primary mb-3">⚙️ Restaurant Settings</h5>
+                                
+                                <!-- Price Range -->
+                                <div class="mb-3">
+                                    <label for="priceRange" class="form-label fw-bold">
+                                        Price Range <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="priceRange" class="form-select" th:field="*{priceRange}" required>
+                                        <option value="1">$ - Budget Friendly (Under $15/person)</option>
+                                        <option value="2">$$ - Moderate ($15-30/person)</option>
+                                        <option value="3">$$$ - Premium (Over $30/person)</option>
+                                    </select>
+                                    <small class="text-muted">Average cost per person</small>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('priceRange')}" th:errors="*{priceRange}"></div>
+                                </div>
+                                
+                                <!-- Active Status -->
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" 
+                                            class="form-check-input" 
+                                            id="active" 
+                                            th:field="*{active}"
+                                            role="switch"/>
+                                        <label class="form-check-label fw-bold" for="active">
+                                            Restaurant is Active
+                                        </label>
+                                    </div>
+                                    <small class="text-muted ms-4">Inactive restaurants are hidden from customers</small>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <!-- Form Actions -->
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success" th:text="${restaurant.id == 0 ? '✓ Create Restaurant' : '✓ Update Restaurant'}">
+                                        Submit
+                                    </button>
+                                    <a href="/backoffice/restaurants" class="btn btn-secondary">✗ Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

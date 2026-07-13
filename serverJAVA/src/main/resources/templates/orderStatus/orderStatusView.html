@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Status Details</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">📋 Order Status: <span th:text="${orderStatus.name}">Status</span></h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="text-primary mb-3">📋 Status Information</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Status Name</label>
+                                <div class="form-control-plaintext border rounded p-2 bg-light">
+                                    <span th:if="${orderStatus.name == 'pending'}" class="badge bg-warning text-dark" th:text="${orderStatus.name}">Status</span>
+                                    <span th:if="${orderStatus.name == 'in progress'}" class="badge bg-info" th:text="${orderStatus.name}">Status</span>
+                                    <span th:if="${orderStatus.name == 'delivered'}" class="badge bg-success" th:text="${orderStatus.name}">Status</span>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h5 class="text-primary mb-3">🕐 System Information</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Record ID</label>
+                                    <div class="form-control-plaintext border rounded p-2 bg-light">
+                                        <span class="badge bg-secondary" th:text="${orderStatus.id}">ID</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Created On</label>
+                                    <div class="form-control-plaintext border rounded p-2 bg-light">
+                                        <span th:text="${#temporals.format(orderStatus.createdOn, 'yyyy-MM-dd HH:mm')}">Date</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Last Updated</label>
+                                <div class="form-control-plaintext border rounded p-2 bg-light">
+                                    <span th:text="${#temporals.format(orderStatus.updateOn, 'yyyy-MM-dd HH:mm')}">Date</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2 mt-4">
+                                <a href="/backoffice/order-statuses" class="btn btn-secondary">← Back to List</a>
+                                <a th:href="@{/backoffice/order-statuses/{id}/edit(id=${orderStatus.id})}" class="btn btn-warning">✏️ Edit Status</a>
+                                <form th:action="@{/backoffice/order-statuses/{id}/delete(id=${orderStatus.id})}" 
+                                    method="post" style="display:inline;"
+                                    onsubmit="return confirm('⚠️ Are you sure you want to delete this order status?\n\nThis action cannot be undone.');">
+                                    <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

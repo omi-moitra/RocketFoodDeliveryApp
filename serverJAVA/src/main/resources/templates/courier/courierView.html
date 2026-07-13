@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="'Courier #' + ${courier.id} + ' - Rocket Delivery'">Courier View</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0">🏍️ Courier Details</h3>
+                            <span class="badge bg-light text-dark fs-6" th:text="'#' + ${courier.id}">ID</span>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Courier Information -->
+                            <h5 class="text-primary mb-3">🏍️ Courier Information</h5>
+                            
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-muted" style="width: 30%;">User</th>
+                                        <td>
+                                            <span th:text="${courier.user.name}">User Name</span>
+                                            <small class="text-muted" th:text="'(' + ${courier.user.email} + ')'"></small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Address</th>
+                                        <td>
+                                            <span th:text="${courier.address.streetAddress + ', ' + courier.address.city + ' ' + courier.address.postalCode}">Address</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Courier Status</th>
+                                        <td>
+                                            <span class="badge bg-success" th:if="${courier.courierStatus.name == 'free'}" th:text="${courier.courierStatus.name}">free</span>
+                                            <span class="badge bg-warning text-dark" th:if="${courier.courierStatus.name == 'busy'}" th:text="${courier.courierStatus.name}">busy</span>
+                                            <span class="badge bg-danger" th:if="${courier.courierStatus.name == 'full'}" th:text="${courier.courierStatus.name}">full</span>
+                                            <span class="badge bg-secondary" th:if="${courier.courierStatus.name == 'offline'}" th:text="${courier.courierStatus.name}">offline</span>
+                                            <span class="badge bg-info" th:if="${courier.courierStatus.name != 'free' and courier.courierStatus.name != 'busy' and courier.courierStatus.name != 'full' and courier.courierStatus.name != 'offline'}" th:text="${courier.courierStatus.name}">other</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Phone</th>
+                                        <td th:text="${courier.phone}">Phone</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Email</th>
+                                        <td>
+                                            <span th:if="${courier.email != null and !courier.email.isEmpty()}" th:text="${courier.email}">Email</span>
+                                            <span th:if="${courier.email == null or courier.email.isEmpty()}" class="text-muted fst-italic">Not provided</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Active</th>
+                                        <td>
+                                            <span class="badge bg-success" th:if="${courier.active}">Active</span>
+                                            <span class="badge bg-danger" th:unless="${courier.active}">Inactive</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- System Info -->
+                            <h5 class="text-primary mb-3">⚙️ System Info</h5>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-muted" style="width: 30%;">Courier ID</th>
+                                        <td th:text="${courier.id}">ID</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">User ID</th>
+                                        <td th:text="${courier.user.id}">User ID</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Address ID</th>
+                                        <td th:text="${courier.address.id}">Address ID</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Status ID</th>
+                                        <td th:text="${courier.courierStatus.id}">Status ID</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="d-flex gap-2">
+                                <a th:href="@{'/backoffice/couriers/' + ${courier.id} + '/edit'}" class="btn btn-warning">✏️ Edit</a>
+                                <a href="/backoffice/couriers" class="btn btn-secondary">⬅ Back to List</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
