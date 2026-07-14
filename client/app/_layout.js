@@ -6,6 +6,9 @@
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Oswald_400Regular } from '@expo-google-fonts/oswald/400Regular';
+import { Oswald_600SemiBold } from '@expo-google-fonts/oswald/600SemiBold';
+import { useFonts } from 'expo-font';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -14,8 +17,16 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
 function RootNavigator() {
   const { isSessionLoading, session } = useAuth();
+  const [areFontsLoaded, fontError] = useFonts({
+    Oswald_400Regular,
+    Oswald_600SemiBold,
+  });
 
-  if (isSessionLoading) {
+  if (fontError) {
+    throw fontError;
+  }
+
+  if (isSessionLoading || !areFontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator color={COLORS.orangeRed} size="large" />

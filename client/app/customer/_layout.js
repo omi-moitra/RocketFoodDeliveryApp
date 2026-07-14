@@ -4,16 +4,25 @@
  * Contents: imports, tab layout, navigation options.
  */
 
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Redirect, Tabs } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 
-import AuthenticatedHeader from '../../components/AuthenticatedHeader';
-import { COLORS } from '../../constants/theme';
+import AppHeader from '../../components/AppHeader';
+import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const unstable_settings = {
   initialRouteName: 'restaurant',
 };
+
+function TabIcon({ color, focused, name, size }) {
+  return (
+    <View style={[styles.tabIndicator, focused && styles.activeTabIndicator]}>
+      <FontAwesome6 color={color} iconStyle="solid" name={name} size={size} />
+    </View>
+  );
+}
 
 export default function CustomerTabsLayout() {
   const { session } = useAuth();
@@ -26,17 +35,23 @@ export default function CustomerTabsLayout() {
     <Tabs
       backBehavior="initialRoute"
       screenOptions={{
-        header: () => <AuthenticatedHeader />,
+        header: () => <AppHeader />,
         headerShown: true,
-        tabBarActiveTintColor: COLORS.orangeRed,
+        tabBarActiveTintColor: COLORS.charcoal,
+        tabBarHideOnKeyboard: false,
         tabBarInactiveTintColor: COLORS.charcoal,
+        tabBarItemStyle: styles.tabItem,
+        tabBarLabelPosition: 'below-icon',
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarStyle: styles.tabBar,
       }}
     >
       <Tabs.Screen
         name="restaurant"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome color={color} name="cutlery" size={size} />
+          tabBarAccessibilityLabel: 'Restaurants tab',
+          tabBarIcon: ({ color, focused, size }) => (
+            <TabIcon color={color} focused={focused} name="burger" size={size} />
           ),
           title: 'Restaurants',
         }}
@@ -44,8 +59,9 @@ export default function CustomerTabsLayout() {
       <Tabs.Screen
         name="order-history"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <FontAwesome color={color} name="history" size={size} />
+          tabBarAccessibilityLabel: 'Order History tab',
+          tabBarIcon: ({ color, focused, size }) => (
+            <TabIcon color={color} focused={focused} name="clock-rotate-left" size={size} />
           ),
           title: 'Order History',
         }}
@@ -53,3 +69,31 @@ export default function CustomerTabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: COLORS.white,
+    borderTopColor: COLORS.charcoal,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    minHeight: 78,
+    paddingTop: SPACING.sm,
+  },
+  tabItem: {
+    minHeight: 64,
+    paddingBottom: SPACING.xs,
+  },
+  tabLabel: {
+    fontFamily: FONT_FAMILIES.oswaldSemiBold,
+    fontSize: 16,
+  },
+  tabIndicator: {
+    alignItems: 'center',
+    borderRadius: LAYOUT.footerIndicatorHeight / 2,
+    height: LAYOUT.footerIndicatorHeight,
+    justifyContent: 'center',
+    width: LAYOUT.footerIndicatorWidth,
+  },
+  activeTabIndicator: {
+    backgroundColor: COLORS.warmYellow,
+  },
+});

@@ -296,16 +296,16 @@ This feature introduces no endpoint and makes no navigation-only API request. It
 
 ### Structure
 
-- [ ] `client/app/_layout.js` defines the root Stack.
-- [ ] `client/app/customer/_layout.js` defines the nested customer Tabs.
-- [ ] `client/app/customer/restaurant/_layout.js` defines the nested Restaurant Stack.
-- [ ] The final hierarchy is Root Stack → Customer Tabs → Restaurant Stack.
-- [ ] Login, Restaurant List, Restaurant Menu, and Order History resolve from the exact route files specified above.
-- [ ] No unintended route appears as an extra footer tab.
+- [x] `client/app/_layout.js` defines the root Stack.
+- [x] `client/app/customer/_layout.js` defines the nested customer Tabs.
+- [x] `client/app/customer/restaurant/_layout.js` defines the nested Restaurant Stack.
+- [x] The final hierarchy is Root Stack → Customer Tabs → Restaurant Stack.
+- [x] Login, Restaurant List, Restaurant Menu, and Order History resolve from the exact route files specified above.
+- [x] No unintended route appears as an extra footer tab.
 
 ### Root and Authentication Flow
 
-- [ ] A logged-out launch displays Login without briefly exposing authenticated content.
+- [x] A logged-out launch displays Login without briefly exposing authenticated content.
 - [ ] A usable persisted session enters the authenticated customer area without requiring a new login.
 - [ ] Successful login opens Restaurant List and normal back navigation cannot return to Login.
 - [ ] Logout clears all auth/customer storage and opens Login.
@@ -315,26 +315,26 @@ This feature introduces no endpoint and makes no navigation-only API request. It
 
 ### Customer Tabs and Shared Navigation
 
-- [ ] The left footer tab is labeled `Restaurants`.
-- [ ] The right footer tab is labeled `Order History`.
-- [ ] Restaurants is the initial authenticated tab.
+- [x] The left footer tab is labeled `Restaurants`.
+- [x] The right footer tab is labeled `Order History`.
+- [x] Restaurants is the initial authenticated tab.
 - [ ] Both tabs switch to the correct screen.
-- [ ] The footer remains present throughout the authenticated customer area, including Restaurant Menu.
-- [ ] The shared header and footer are absent only on Login.
+- [x] The footer remains present throughout the authenticated customer area, including Restaurant Menu.
+- [x] The shared header and footer are absent only on Login.
 
 ### Restaurant Stack and Route Data
 
 - [ ] Pressing a restaurant image opens that restaurant's menu inside the Restaurants tab.
-- [ ] The selected public ID is available as `restaurantId` on the dynamic menu route.
-- [ ] No token, password, or full data object is passed through route parameters.
+- [x] The selected public ID is available as `restaurantId` on the dynamic menu route.
+- [x] No token, password, or full data object is passed through route parameters.
 - [ ] Back gesture/button behavior returns Restaurant Menu to Restaurant List.
 - [ ] Returning to Restaurant List preserves valid authentication and filter state.
 - [ ] Opening a different restaurant resets all menu quantities to zero.
-- [ ] A missing or invalid `restaurantId` is handled safely without a crash or incorrect API request.
+- [x] A missing or invalid `restaurantId` is handled safely without a crash or incorrect API request.
 
 ### Platform and Quality Verification
 
-- [ ] The navigation skeleton starts without Expo Router warnings or route-name errors.
+- [x] The navigation skeleton starts without Expo Router warnings or route-name errors.
 - [ ] iOS back gestures and Android hardware-back behavior follow the defined stack boundaries.
 - [ ] Repeated tab switching does not create duplicate screens or lose authentication.
 - [ ] Rapid restaurant selection/back actions do not show the wrong restaurant's menu or quantities.
@@ -343,18 +343,18 @@ This feature introduces no endpoint and makes no navigation-only API request. It
 
 ## Feature Definition of Done
 
-- [ ] Every in-scope route and `_layout.js` file exists at the exact required path.
+- [x] Every in-scope route and `_layout.js` file exists at the exact required path.
 - [ ] All acceptance criteria pass with the real login/session integration or an explicitly temporary navigation test harness.
 - [ ] The complete path Login → Restaurants → Restaurant Menu → back → Order History → Restaurants → Logout works without navigation errors.
 - [ ] Cold-start session restoration, missing storage, logout, and HTTP 401 routing are verified.
-- [ ] Navigation parameters contain only approved public route data.
+- [x] Navigation parameters contain only approved public route data.
 - [ ] Tests or focused verification cover replacement navigation, nested back behavior, tab switching, and invalid `restaurantId` handling.
 - [ ] The flow is manually checked on both iOS and Android, including Android hardware back and iOS back gesture behavior.
 - [ ] The implementation matches `ai/ai-spec.md`, the grading sheet, the supplied wireframe hierarchy, and this feature specification.
-- [ ] No backend files, database schema, or unrelated feature behavior were changed.
-- [ ] Human-authored source files include the required purpose header and contents map.
+- [x] No backend files, database schema, or unrelated feature behavior were changed.
+- [x] Human-authored source files include the required purpose header and contents map.
 - [ ] Temporary logs, placeholder navigation shortcuts, unused routes, and stale comments are removed.
-- [ ] The feature diff is reviewed and contains no secret, access token, password, `.env`, or generated build output.
+- [x] The feature diff is reviewed and contains no secret, access token, password, `.env`, or generated build output.
 
 ## Notes for the AI
 
