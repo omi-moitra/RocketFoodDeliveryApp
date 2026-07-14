@@ -570,10 +570,13 @@ For an authored JSON file whose structure needs explanation, document its conten
 - Explain API-shape conversions, currency conversions, race-condition prevention, storage sequencing, and platform-specific behavior.
 - Explain why a dependency workaround is necessary.
 - Add a short comment above logic that enforces a surprising grading requirement.
+- Give every named function a concise contract that states what it does, where it is used, why it exists, and how to read its name aloud. A short JSDoc block is preferred so the explanation stays attached to the function.
+- Explain a variable or related group of variables when its role, lifetime, units, allowed values, or business meaning is not immediately clear. State and ref variables that coordinate asynchronous work require this context.
 
 ### 15.2 What not to comment
 
 - Do not narrate obvious syntax, such as `// increment quantity` above `quantity + 1`.
+- Do not annotate every import, style property, JSX prop, loop counter, or self-explanatory temporary merely to increase comment count.
 - Do not leave stale comments that disagree with code.
 - Do not use comments to hide unclear names or oversized functions; improve the code first.
 - Do not paste prompts, conversations, secrets, tokens, passwords, or personal URLs into comments.
@@ -586,6 +589,7 @@ For an authored JSON file whose structure needs explanation, document its conten
 - Keep comments accurate when behavior changes.
 - Use `TODO(owner/context): action` only for real tracked follow-up work; remove it before submission unless the limitation is intentionally documented.
 - Use JSDoc only where parameter/return contracts or reusable APIs benefit from it.
+- For the required function reading line, split camelCase and PascalCase into spoken words and keep technical terms natural. Example: `authenticateCustomer` is read aloud as “authenticate customer,” while `API` is spoken as “A-P-I.”
 
 ## 16. Error, loading, and state rules
 
@@ -702,6 +706,13 @@ Rules:
 - One commit should represent one cohesive purpose.
 - Use a body when the reason, risk, migration, or verification is not obvious.
 - Mention verification in the body for risky or substantial changes.
+- After every completed task that changes repository files, the AI's final handoff must include at least one copy-ready proposed commit based on the actual completed diff.
+- For each proposed commit, present the exact staging command first and the copy-ready commit message immediately after it.
+- Staging commands must use `git add -- <exact-paths>` or another narrowly scoped equivalent. Do not suggest `git add .`, `git add -A` without pathspecs, or any command that would stage unrelated user changes.
+- When an in-scope file also contains unrelated existing edits, use `git add -p -- <path>` and state which hunk(s) belong to the proposed commit instead of staging the entire file.
+- When the completed work contains multiple independent purposes, provide an ordered staging-command/commit-message pair for each cohesive commit and identify the files or change group that belongs with each pair.
+- The AI must not create the commit unless the user explicitly asks it to commit; providing a proposed message does not authorize staging or committing files.
+- When no repository file changed, the AI must state `No commit needed` instead of inventing a commit message.
 
 Examples:
 
@@ -962,6 +973,7 @@ AI tools must:
 - Add the required file purpose/contents header to new human-authored source files.
 - Add meaningful inline comments only where Section 15 permits them.
 - Test changes in proportion to risk and report exact results.
+- End every completed file-changing handoff with the ordered, narrowly scoped staging command followed by its copy-ready commit message, as required by Section 20.
 
 AI tools must not:
 
