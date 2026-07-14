@@ -50,8 +50,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function completeSignIn(authValues) {
-    const savedSession = await saveAuthSession(authValues);
-    setSession(savedSession);
+    try {
+      const savedSession = await saveAuthSession(authValues);
+      setSession(savedSession);
+    } catch (error) {
+      // A failed multi-key write must not leave a restorable partial session behind.
+      await clearAuthSession().catch(() => undefined);
+      setSession(null);
+      throw error;
+    }
   }
 
   async function signOut() {
