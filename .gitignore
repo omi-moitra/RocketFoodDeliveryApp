@@ -182,5 +182,6 @@ GoogleService-Info.plist
 **/target/
 
 # Local Spring configuration
+server/src/main/resources/application.properties
 server/src/main/resources/application-local.properties
 server/src/main/resources/application-secrets.properties

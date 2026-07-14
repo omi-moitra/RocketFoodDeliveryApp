@@ -13,9 +13,28 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Seeds the development database with the baseline delivery data and optional
+ * append-only customer accounts used for mobile application testing.
+ */
 @Component
 @RequiredArgsConstructor
 public class DataSeeder {
+
+   private static final List<AvatarCustomerSeed> AVATAR_CUSTOMER_SEEDS = List.of(
+           new AvatarCustomerSeed("Aang", "aang@gmail.com", "+1-555-3100", 0),
+           new AvatarCustomerSeed("Katara", "katara@gmail.com", "+1-555-3101", 1),
+           new AvatarCustomerSeed("Sokka", "sokka@gmail.com", "+1-555-3102", 2),
+           new AvatarCustomerSeed("Toph Beifong", "toph@gmail.com", "+1-555-3103", 3),
+           new AvatarCustomerSeed("Zuko", "zuko@gmail.com", "+1-555-3104", 4)
+   );
+
+   private record AvatarCustomerSeed(
+           String name,
+           String email,
+           String phone,
+           int addressIndex
+   ) {}
 
    private final UserRepository userRepository;
    private final RestaurantRepository restaurantRepository;
@@ -41,6 +60,7 @@ public class DataSeeder {
        seedRestaurants();
        seedEmployees();
        seedCustomers();
+       seedAvatarCustomers();
        seedCouriers();
        seedProducts();
        seedOrdersAndProductOrders();
@@ -229,6 +249,51 @@ public class DataSeeder {
        
        customerRepository.saveAll(customers);
        System.out.println("✓ Seeded " + customers.size() + " customers");
+   }
+
+   private void seedAvatarCustomers() {
+       List<Address> addresses = addressRepository.findAll();
+
+       if (addresses.isEmpty()) {
+           System.out.println("⚠ No addresses exist. Skipping Avatar customer seeding.");
+           return;
+       }
+
+       int seededUsers = 0;
+       int seededCustomers = 0;
+
+       for (AvatarCustomerSeed seed : AVATAR_CUSTOMER_SEEDS) {
+           User user = userRepository.findUserByEmail(seed.email()).orElse(null);
+
+           // Existing accounts are never rewritten; only a missing seed account is appended.
+           if (user == null) {
+               user = userRepository.save(User.builder()
+                       .name(seed.name())
+                       .email(seed.email())
+                       .password("password")
+                       .build());
+               seededUsers++;
+           }
+
+           if (customerRepository.findCustomerByUserId(user.getId()).isPresent()) {
+               continue;
+           }
+
+           Address address = addresses.get(seed.addressIndex() % addresses.size());
+           customerRepository.save(Customer.builder()
+                   .user(user)
+                   .address(address)
+                   .phone(seed.phone())
+                   .email(seed.email())
+                   .active(true)
+                   .build());
+           seededCustomers++;
+       }
+
+       System.out.println(
+               "✓ Seeded " + seededUsers + " Avatar users and "
+                       + seededCustomers + " Avatar customers"
+       );
    }
 
    private void seedCouriers() {

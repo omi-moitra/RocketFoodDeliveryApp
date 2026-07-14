@@ -18,11 +18,21 @@ function normalizeStoredValue(value) {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
+function normalizeStoredIdentifier(value) {
+  const normalizedValue = normalizeStoredValue(value);
+
+  if (!normalizedValue || !/^\d+$/.test(normalizedValue) || Number(normalizedValue) <= 0) {
+    return null;
+  }
+
+  return normalizedValue;
+}
+
 export async function getStoredSession() {
   const storedEntries = await AsyncStorage.multiGet(ALL_AUTH_STORAGE_KEYS);
   const storedValues = Object.fromEntries(storedEntries);
   const accessToken = normalizeStoredValue(storedValues[AUTH_STORAGE_KEYS.accessToken]);
-  const customerId = normalizeStoredValue(storedValues[AUTH_STORAGE_KEYS.customerId]);
+  const customerId = normalizeStoredIdentifier(storedValues[AUTH_STORAGE_KEYS.customerId]);
 
   // Both values are required because authenticated API calls and customer orders need them.
   if (!accessToken || !customerId) {
@@ -32,13 +42,13 @@ export async function getStoredSession() {
   return {
     accessToken,
     customerId,
-    userId: normalizeStoredValue(storedValues[AUTH_STORAGE_KEYS.userId]),
+    userId: normalizeStoredIdentifier(storedValues[AUTH_STORAGE_KEYS.userId]),
   };
 }
 
 export async function saveAuthSession({ accessToken, customerId, userId = null }) {
   const normalizedAccessToken = normalizeStoredValue(String(accessToken ?? ''));
-  const normalizedCustomerId = normalizeStoredValue(String(customerId ?? ''));
+  const normalizedCustomerId = normalizeStoredIdentifier(String(customerId ?? ''));
 
   if (!normalizedAccessToken || !normalizedCustomerId) {
     throw new Error('A valid access token and customer ID are required.');
@@ -48,7 +58,7 @@ export async function saveAuthSession({ accessToken, customerId, userId = null }
     [AUTH_STORAGE_KEYS.accessToken, normalizedAccessToken],
     [AUTH_STORAGE_KEYS.customerId, normalizedCustomerId],
   ];
-  const normalizedUserId = normalizeStoredValue(String(userId ?? ''));
+  const normalizedUserId = normalizeStoredIdentifier(String(userId ?? ''));
 
   if (normalizedUserId) {
     entries.push([AUTH_STORAGE_KEYS.userId, normalizedUserId]);
