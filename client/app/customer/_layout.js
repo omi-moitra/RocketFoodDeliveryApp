@@ -12,10 +12,16 @@ import AppHeader from '../../components/AppHeader';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 
+// Expo Router reads this reserved setting to choose Restaurants as the initial customer tab.
 export const unstable_settings = {
   initialRouteName: 'restaurant',
 };
 
+/**
+ * Renders one footer icon and its highlighted background when its tab is active.
+ * CustomerTabsLayout uses it for both required footer destinations.
+ * Read aloud: “tab icon.”
+ */
 function TabIcon({ color, focused, name, size }) {
   return (
     <View style={[styles.tabIndicator, focused && styles.activeTabIndicator]}>
@@ -24,6 +30,11 @@ function TabIcon({ color, focused, name, size }) {
   );
 }
 
+/**
+ * Defines the authenticated Restaurants and Order History tabs plus their shared header.
+ * Expo Router loads it for every route inside the customer folder.
+ * Read aloud: “customer tabs layout.”
+ */
 export default function CustomerTabsLayout() {
   const { session } = useAuth();
 

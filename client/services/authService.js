@@ -6,6 +6,7 @@
 
 import { ApiRequestError, requestJson } from './apiClient';
 
+// Screens receive stable, user-safe messages instead of backend or network implementation details.
 export const LOGIN_ERROR_MESSAGES = Object.freeze({
   accountAccess: 'This account cannot access the customer application.',
   credentials: 'The email or password is incorrect. Please try again.',
@@ -14,6 +15,11 @@ export const LOGIN_ERROR_MESSAGES = Object.freeze({
   service: 'The login service is unavailable right now. Please try again.',
 });
 
+/**
+ * Accepts only positive whole-number identifiers returned as numbers or numeric strings.
+ * authenticateCustomer uses it before trusting backend user/customer IDs.
+ * Read aloud: “is usable identifier.”
+ */
 function isUsableIdentifier(value) {
   if (typeof value === 'number') {
     return Number.isInteger(value) && value > 0;
@@ -22,6 +28,11 @@ function isUsableIdentifier(value) {
   return typeof value === 'string' && /^\d+$/.test(value.trim()) && Number(value) > 0;
 }
 
+/**
+ * Submits credentials and maps a successful backend payload into the client session shape.
+ * LoginScreen calls it before AuthProvider persists the authenticated customer.
+ * Read aloud: “authenticate customer.”
+ */
 export async function authenticateCustomer({ email, password, signal }) {
   const { data, response } = await requestJson('/api/auth', {
     body: JSON.stringify({ email, password }),

@@ -1,5 +1,19 @@
 # 🤖 AI_FEATURE_<Feature-Name>
 
+## Table of Contents
+
+1. [Feature Identity](#feature-identity)
+2. [Feature Goal](#feature-goal)
+3. [Feature Scope](#feature-scope)
+4. [Sub-Requirements](#sub-requirements-feature-breakdown)
+5. [User Flow](#user-flow--feature-logic)
+6. [Interfaces](#pages-components-services-storage-and-endpoints-involved)
+7. [Data and State](#data-fields-validation-state-transitions-and-expected-behavior)
+8. [Technical Constraints](#technical-constraints-feature-level)
+9. [Acceptance Criteria](#acceptance-criteria)
+10. [Definition of Done](#definition-of-done-feature-level)
+11. [Notes for the AI](#notes-for-the-ai)
+
 > 🚨 **Important: Delete all placeholder text marked with `>` (including this line) and replace it with your own project-specification content.**
 >
 > Add this file to the root directory of your project at **`/docs/ai/features/AI_FEATURE_<feature-Name>.md`**.

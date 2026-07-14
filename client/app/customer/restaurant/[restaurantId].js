@@ -11,6 +11,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ScreenPlaceholder from '../../../components/ScreenPlaceholder';
 import { COLORS } from '../../../constants/theme';
 
+/**
+ * Converts an Expo Router parameter into one validated restaurant ID or null.
+ * RestaurantMenuScreen uses the result to reject arrays, blanks, and nonnumeric routes.
+ * Read aloud: “normalize restaurant I-D.”
+ */
 function normalizeRestaurantId(routeValue) {
   if (Array.isArray(routeValue)) {
     return null;
@@ -20,10 +25,16 @@ function normalizeRestaurantId(routeValue) {
   return /^\d+$/.test(candidate) ? candidate : null;
 }
 
+/**
+ * Owns the selected restaurant's menu route and restaurant-scoped quantity state.
+ * Expo Router renders it for the dynamic restaurantId path.
+ * Read aloud: “restaurant menu screen.”
+ */
 export default function RestaurantMenuScreen() {
   const router = useRouter();
   const { restaurantId: routeRestaurantId } = useLocalSearchParams();
   const restaurantId = normalizeRestaurantId(routeRestaurantId);
+  // This map belongs to one restaurant route; product IDs will point to integer quantities.
   const [quantities, setQuantities] = useState({});
 
   useEffect(() => {

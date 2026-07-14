@@ -1,3 +1,6 @@
+# Purpose: Keeps local secrets, dependencies, caches, and generated output out of Git.
+# Contents: runtime artifacts, tool caches, environment files, dependencies, and editor files.
+
 # Logs
 logs
 *.log

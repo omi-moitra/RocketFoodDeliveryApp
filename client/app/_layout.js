@@ -15,6 +15,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/theme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
+/**
+ * Chooses the public or authenticated route tree after fonts and session storage resolve.
+ * Used by RootLayout so protected screens never flash before startup checks finish.
+ * Read aloud: “root navigator.”
+ */
 function RootNavigator() {
   const { isSessionLoading, session } = useAuth();
   const [areFontsLoaded, fontError] = useFonts({
@@ -50,6 +55,11 @@ function RootNavigator() {
   );
 }
 
+/**
+ * Installs the safe-area and authentication providers around the application's navigator.
+ * Expo Router calls this component as the root layout for every route.
+ * Read aloud: “root layout.”
+ */
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
