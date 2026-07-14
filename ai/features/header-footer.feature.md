@@ -354,72 +354,72 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 
 ### Visibility and Structure
 
-- [ ] Login renders without the authenticated shared header.
-- [ ] Login renders without the footer Tabs.
-- [ ] Restaurant List displays both the shared header and footer.
-- [ ] Restaurant Menu displays both the shared header and footer.
-- [ ] Order History displays both the shared header and footer.
+- [x] Login renders without the authenticated shared header.
+- [x] Login renders without the footer Tabs.
+- [x] Restaurant List displays both the shared header and footer.
+- [x] Restaurant Menu displays both the shared header and footer.
+- [x] Order History displays both the shared header and footer.
 - [ ] Opening or closing an authenticated feature modal does not create a second header/footer.
-- [ ] Root and nested Stack native headers do not duplicate the shared header.
+- [x] Root and nested Stack native headers do not duplicate the shared header.
 
 ### Header
 
-- [ ] The header uses an approved supplied Rocket Food Delivery logo copied into the client runtime assets.
-- [ ] The logo is not stretched, cropped, recolored, or replaced with plain text.
-- [ ] A visible button is labeled exactly `Log Out`.
+- [x] The header uses an approved supplied Rocket Food Delivery logo copied into the client runtime assets.
+- [x] The logo is not stretched, cropped, recolored, or replaced with plain text.
+- [x] A visible button is labeled exactly `Log Out`.
 - [ ] Logo and button do not overlap or clip on a small phone.
-- [ ] The Log Out button remains accessible with larger text settings.
+- [x] The Log Out button remains accessible with larger text settings.
 
 ### Footer
 
-- [ ] Exactly two customer footer tabs are visible.
-- [ ] The left tab is labeled exactly `Restaurants`.
-- [ ] The right tab is labeled exactly `Order History`.
-- [ ] Each tab opens the correct route.
-- [ ] The active tab is visibly and accessibly selected without relying only on color.
+- [x] Exactly two customer footer tabs are visible.
+- [x] The left tab is labeled exactly `Restaurants`.
+- [x] The right tab is labeled exactly `Order History`.
+- [x] Each tab opens the correct route.
+- [x] The active tab is visibly and accessibly selected without relying only on color.
 - [ ] Pressing the active tab repeatedly does not create duplicate routes.
-- [ ] The footer remains visible while Restaurant Menu is open.
-- [ ] No layout, dynamic route, or internal screen appears as an unintended tab.
+- [x] The footer remains visible while Restaurant Menu is open.
+- [x] No layout, dynamic route, or internal screen appears as an unintended tab.
 
 ### Logout
 
-- [ ] Pressing Log Out starts only one cleanup operation.
-- [ ] Repeated presses are disabled or ignored while cleanup is running.
-- [ ] Access token, customer ID, and stored user ID are all cleared and awaited.
-- [ ] Matching in-memory session state is cleared.
-- [ ] Successful logout replaces the authenticated customer area with Login.
-- [ ] Header and footer are absent after logout.
+- [x] Pressing Log Out starts only one cleanup operation.
+- [x] Repeated presses are disabled or ignored while cleanup is running.
+- [x] Access token, customer ID, and stored user ID are all cleared and awaited.
+- [x] Matching in-memory session state is cleared.
+- [x] Successful logout replaces the authenticated customer area with Login.
+- [x] Header and footer are absent after logout.
 - [ ] iOS back gesture and Android hardware back cannot reopen authenticated content after logout.
-- [ ] No backend logout endpoint is called.
-- [ ] No token, password, or internal storage error is logged or displayed.
-- [ ] A cleanup failure shows a safe retry message and returns the button to an interactive state.
+- [x] No backend logout endpoint is called.
+- [x] No token, password, or internal storage error is logged or displayed.
+- [x] A cleanup failure shows a safe retry message and returns the button to an interactive state.
 
 ### Layout, Visual, and Platform Verification
 
-- [ ] Header/footer colors use exact centralized values from the supplied palette.
+- [x] Header/footer colors use exact centralized values from the supplied palette.
 - [ ] The implementation is compared side by side with `support_materials_13/Design/Wireframe.pdf`.
 - [ ] Top and bottom safe areas are respected on iOS and Android.
 - [ ] Header and footer do not cover the first or last page content.
 - [ ] Long Restaurant List, Restaurant Menu, and Order History content remains scrollable and reachable.
-- [ ] Required controls have readable contrast, accessible roles/labels, and usable touch targets.
+- [x] Required controls have readable contrast, accessible roles/labels, and usable touch targets.
 - [ ] The complete shared-frame and logout flow is verified on both iOS and Android through Expo.
 
 ## Feature Definition of Done
 
 - [ ] Every in-scope requirement and acceptance criterion passes.
-- [ ] One shared header implementation is used throughout the authenticated customer area.
-- [ ] Expo Router Tabs provide exactly the required footer navigation.
+- [x] One shared header implementation is used throughout the authenticated customer area.
+- [x] Expo Router Tabs provide exactly the required footer navigation.
 - [ ] The complete path Login → Restaurants → Restaurant Menu → Order History → Restaurants → Logout works without duplicated or missing shared UI.
 - [ ] Logout success, repeated presses, storage-cleanup failure, HTTP 401 cleanup, and post-logout back behavior are verified.
 - [ ] Header/footer placement is checked on small screens, long content, large accessibility text, and device safe areas.
 - [ ] The visual result is compared with the supplied wireframe and exact color scheme on both iOS and Android.
-- [ ] The approved supplied logo is copied into runtime assets and the originals remain unchanged.
-- [ ] Tests or focused verification cover visibility boundaries, tab destinations/order, and awaited logout navigation.
+- [x] The approved supplied logo is copied into runtime assets and the originals remain unchanged.
+- [x] Tests or focused verification cover visibility boundaries, tab destinations/order, and awaited logout navigation.
 - [ ] The implementation matches `ai/ai-spec.md`, `navigation-structure.feature.md`, the grading sheet, and this feature specification.
-- [ ] No backend, database, unrelated feature, or original support-material file was changed.
-- [ ] New human-authored source files contain the required purpose header and contents map.
+- [x] No backend, database, unrelated feature, or original support-material file was changed.
+- [x] New human-authored source files contain the required purpose header and contents map.
 - [ ] Temporary logs, placeholder controls, unused assets, stale comments, and duplicate shared components are removed.
-- [ ] The feature diff contains no access token, password, `.env`, or generated build output.
+- [x] The feature diff contains no access token, password, `.env`, or generated build output.
 
 ## Notes for the AI
 
