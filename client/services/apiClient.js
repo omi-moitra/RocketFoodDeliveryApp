@@ -1,12 +1,25 @@
 /**
  * File: apiClient.js
  * Purpose: Builds environment-based API URLs and performs bounded JSON requests.
- * Contents: request errors, API URL configuration, JSON request helper.
+ * Contents:
+ * 1. Request error contract
+ * 2. API URL configuration
+ * 3. Bounded JSON request helper
  */
 
+// Every request gets a finite upper bound so the interface can recover from a hung connection.
 const REQUEST_TIMEOUT_MS = 15000;
 
+/**
+ * Carries a stable client error code plus an optional HTTP status across service boundaries.
+ * Feature services throw it so screens can display safe messages without inspecting raw failures.
+ * Read aloud: “A-P-I request error.”
+ */
 export class ApiRequestError extends Error {
+  /**
+   * Creates one classifiable request failure for transport and feature-service handling.
+   * Read aloud: “constructor,” the standard JavaScript class initializer.
+   */
   constructor(code, message, status = null) {
     super(message);
     this.name = 'ApiRequestError';
@@ -15,6 +28,11 @@ export class ApiRequestError extends Error {
   }
 }
 
+/**
+ * Validates and normalizes the public environment URL without exposing a hard-coded server.
+ * buildApiUrl calls it for every outgoing request.
+ * Read aloud: “get A-P-I base U-R-L.”
+ */
 function getApiBaseUrl() {
   const configuredUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
 
@@ -41,16 +59,28 @@ function getApiBaseUrl() {
   }
 }
 
+/**
+ * Joins one API path to the validated base URL with exactly one path separator.
+ * requestJson uses it immediately before fetch.
+ * Read aloud: “build A-P-I U-R-L.”
+ */
 export function buildApiUrl(path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${getApiBaseUrl()}${normalizedPath}`;
 }
 
+/**
+ * Performs a cancellable, time-bounded request and returns both parsed data and response metadata.
+ * Feature services use it to share transport behavior while classifying domain failures themselves.
+ * Read aloud: “request J-S-O-N.”
+ */
 export async function requestJson(path, options = {}) {
   const { signal, timeoutMs = REQUEST_TIMEOUT_MS, ...fetchOptions } = options;
   const requestController = new AbortController();
+  // didTimeout distinguishes the internal timer from a caller-requested cancellation.
   let didTimeout = false;
 
+  // A feature-owned controller can cancel this request without taking ownership of the timeout.
   const handleExternalAbort = () => requestController.abort();
 
   if (signal?.aborted) {
@@ -94,14 +124,14 @@ export async function requestJson(path, options = {}) {
     }
 
     if (signal?.aborted && !didTimeout) {
-      throw new ApiRequestError('aborted', 'The login request was cancelled.');
+      throw new ApiRequestError('aborted', 'The request was cancelled.');
     }
 
     throw new ApiRequestError(
       'connection',
       didTimeout
-        ? 'The login request timed out. Check your connection and try again.'
-        : 'Unable to reach the login service. Check your connection and try again.',
+        ? 'The request timed out. Check your connection and try again.'
+        : 'Unable to reach the service. Check your connection and try again.',
     );
   } finally {
     clearTimeout(timeoutId);

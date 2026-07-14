@@ -8,6 +8,11 @@ import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import { COLORS } from '../constants/theme';
 
+/**
+ * Renders unfinished routes in one accessible, scrollable visual shell.
+ * Placeholder feature screens reuse it until their complete UI replaces the temporary content.
+ * Read aloud: “screen placeholder.”
+ */
 export default function ScreenPlaceholder({ children, description, title }) {
   return (
     <ScrollView contentContainerStyle={styles.content}>

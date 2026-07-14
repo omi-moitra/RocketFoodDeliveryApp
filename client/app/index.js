@@ -24,6 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ApiRequestError } from '../services/apiClient';
 import { authenticateCustomer } from '../services/authService';
 
+// These module constants keep validation rules and user messages identical across submissions.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const FORM_MESSAGES = Object.freeze({
@@ -34,6 +35,11 @@ const FORM_MESSAGES = Object.freeze({
   unexpected: 'Login could not be completed. Please try again.',
 });
 
+/**
+ * Returns the first client-side credential problem, or null when submission may continue.
+ * LoginScreen calls it before touching the network so the user gets immediate field feedback.
+ * Read aloud: “validate credentials.”
+ */
 function validateCredentials(email, password) {
   if (!email) {
     return { field: 'email', message: FORM_MESSAGES.emailRequired };
@@ -50,12 +56,21 @@ function validateCredentials(email, password) {
   return null;
 }
 
+/**
+ * Renders the login form and coordinates validation, authentication, and session persistence.
+ * Expo Router uses it as the unauthenticated root route.
+ * Read aloud: “login screen.”
+ */
 export default function LoginScreen() {
   const { completeSignIn } = useAuth();
+
+  // These values are the visible form/request state that causes React to re-render the screen.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginState, setLoginState] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Refs retain controls and request locks without scheduling a render when they change.
   const emailInputRef = useRef(null);
   const passwordInputRef = useRef(null);
   const activeRequestRef = useRef(null);
@@ -70,11 +85,21 @@ export default function LoginScreen() {
     };
   }, []);
 
+  /**
+   * Moves keyboard focus to the field named by a validation result.
+   * handleLogin uses it after local validation fails.
+   * Read aloud: “focus invalid field.”
+   */
   function focusInvalidField(field) {
     const inputRef = field === 'email' ? emailInputRef : passwordInputRef;
     inputRef.current?.focus();
   }
 
+  /**
+   * Runs one complete login attempt while preventing duplicate or post-unmount updates.
+   * The form button and password submit action both call this handler.
+   * Read aloud: “handle login.”
+   */
   async function handleLogin() {
     // The ref closes the small gap before React applies the submitting state.
     if (submissionLockRef.current) {

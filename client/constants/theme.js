@@ -6,6 +6,7 @@
 
 import { Platform } from 'react-native';
 
+// COLORS is the single source for the exact palette required by the grading wireframe.
 export const COLORS = Object.freeze({
   charcoal: '#222126',
   darkRed: '#851919',
@@ -15,6 +16,7 @@ export const COLORS = Object.freeze({
   white: '#FFFFFF',
 });
 
+// FONT_FAMILIES names both supplied headings and the platform-safe body-font fallback.
 export const FONT_FAMILIES = Object.freeze({
   body: Platform.select({
     android: 'sans-serif',
@@ -25,6 +27,7 @@ export const FONT_FAMILIES = Object.freeze({
   oswaldSemiBold: 'Oswald_600SemiBold',
 });
 
+// SPACING gives layout code one shared scale instead of unrelated pixel guesses.
 export const SPACING = Object.freeze({
   xs: 4,
   sm: 8,
@@ -33,6 +36,7 @@ export const SPACING = Object.freeze({
   xl: 32,
 });
 
+// LAYOUT records cross-component dimensions that enforce touch and navigation consistency.
 export const LAYOUT = Object.freeze({
   footerIndicatorHeight: 36,
   footerIndicatorWidth: 72,

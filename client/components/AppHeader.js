@@ -12,18 +12,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 
+// Named states prevent unrelated booleans from describing impossible logout combinations.
 const LOGOUT_STATUS = Object.freeze({
   clearing: 'clearing',
   idle: 'idle',
 });
 
+/**
+ * Renders the authenticated brand header and a retry-safe logout action.
+ * CustomerTabsLayout installs it once as the shared header for all customer screens.
+ * Read aloud: “app header.”
+ */
 export default function AppHeader() {
   const router = useRouter();
   const { signOut } = useAuth();
+  // These values separately track user feedback and the logout state-machine position.
   const [logoutError, setLogoutError] = useState('');
   const [logoutStatus, setLogoutStatus] = useState(LOGOUT_STATUS.idle);
   const isLoggingOut = logoutStatus === LOGOUT_STATUS.clearing;
 
+  /**
+   * Clears the stored session once, then returns the customer to Login on success.
+   * The header's Log Out button calls it; a storage failure leaves a safe retry path.
+   * Read aloud: “handle logout.”
+   */
   async function handleLogout() {
     if (isLoggingOut) {
       return;
