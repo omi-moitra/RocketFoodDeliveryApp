@@ -229,7 +229,7 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 
 ### Services and Configuration
 
-- `client/services/orderService.js` — extended with `fetchCustomerOrders(customerId)` owning query construction, envelope/array validation, per-order normalization, and error classification; order creation already lives here.
+- `client/services/orderService.js` — extended with `fetchCustomerOrders({ signal })` owning query construction, envelope/array validation, per-order normalization, and error classification; order creation already lives here. Like `createOrder`, it reads `customerId` and the token from the shared session boundary at request time instead of taking them as parameters.
 - `client/services/apiClient.js` — existing shared transport: environment base URL, bounded JSON requests, bearer-token header, abort/timeout, and error classification.
 - `client/constants/theme.js` — exact palette, Oswald/body font families, spacing, and minimum touch targets.
 - `client/constants/currency.js` — shared formatter available to the detail modal; the table itself displays no prices.
