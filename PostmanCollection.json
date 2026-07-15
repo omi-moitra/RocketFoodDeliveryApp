@@ -112,6 +112,43 @@
         },
         "description": "Uses a product ID that does not exist so the backend rejects the body with HTTP 400 { error: 'Bad Request', details: 'Invalid or missing parameters' }."
       }
+    },
+    {
+      "name": "GET /api/orders — customer order history (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order history loads for the authenticated customer', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders?type=customer&id={{customerId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"],
+          "query": [
+            { "key": "type", "value": "customer" },
+            { "key": "id", "value": "{{customerId}}" }
+          ]
+        },
+        "description": "Lists every order belonging to the authenticated customer captured by the auth request. Expects HTTP 200 with { message: 'Success', data: [ ...order objects... ] }; an empty array is a valid no-orders result."
+      }
     }
   ],
   "variable": [
