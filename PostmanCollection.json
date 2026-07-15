@@ -1,0 +1,124 @@
+{
+  "info": {
+    "name": "Rocket Food Delivery — Module 13",
+    "description": "Preconfigured requests for the Module 13 Java API. Run 'POST /api/auth — valid credentials' first: its test script stores the bearer token and customer ID as collection variables so the protected order requests need no manual edits. The default baseUrl targets the local backend on port 8080; replace it with the active ngrok HTTPS URL when testing through a tunnel. Order requests started with this feature; the remaining Module 13 endpoints are added as their features complete.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST /api/auth — valid credentials",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('login succeeds', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.success).to.eql(true);",
+              "});",
+              "pm.collectionVariables.set('accessToken', body.accessToken);",
+              "pm.collectionVariables.set('customerId', String(body.customer_id));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"customer@gmail.com\",\n  \"password\": \"password\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth"]
+        },
+        "description": "Authenticates the seeded customer and captures accessToken plus customer_id for the protected order requests."
+      }
+    },
+    {
+      "name": "POST /api/orders — successful create (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order is created with the Success envelope', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"send_email\": false,\n  \"send_sms\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order for the authenticated customer using seeded restaurant 1 and its seeded product 1. Expects HTTP 201 with { message: 'Success', data: <created order DTO> }."
+      }
+    },
+    {
+      "name": "POST /api/orders — invalid product ID (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('invalid product is rejected as Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "    pm.expect(body.error).to.eql('Bad Request');",
+              "    pm.expect(body.details).to.eql('Invalid or missing parameters');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": 999999,\n      \"quantity\": 2\n    }\n  ],\n  \"send_email\": false,\n  \"send_sms\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Uses a product ID that does not exist so the backend rejects the body with HTTP 400 { error: 'Bad Request', details: 'Invalid or missing parameters' }."
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "customerId", "value": "2" },
+    { "key": "restaurantId", "value": "1" },
+    { "key": "productId", "value": "1" }
+  ]
+}

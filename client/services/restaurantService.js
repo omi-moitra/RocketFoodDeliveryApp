@@ -5,7 +5,8 @@
  * 1. Restaurant request messages and validation helpers
  * 2. Filter query construction
  * 3. Restaurant response normalization
- * 4. Protected restaurant fetch
+ * 4. Protected restaurant-list fetch
+ * 5. Protected restaurant-detail fetch
  */
 
 import { ApiRequestError, requestJson } from './apiClient';
@@ -14,6 +15,7 @@ export const RESTAURANT_ERROR_MESSAGES = Object.freeze({
   response: 'The restaurant service returned an unexpected response. Please try again.',
   service: 'Restaurants are unavailable right now. Please try again.',
   token: 'Your session has expired. Please log in again.',
+  unavailable: 'Restaurant unavailable.',
 });
 
 /**
@@ -158,4 +160,53 @@ export async function fetchRestaurants({ accessToken, priceRange, rating, signal
   }
 
   return normalizeRestaurants(data);
+}
+
+/**
+ * Loads and validates one restaurant whose response ID must match the selected route ID.
+ * RestaurantMenuScreen uses this detail request because its route intentionally carries only ID.
+ * @param {{accessToken: string, restaurantId: number, signal?: AbortSignal}} options
+ * @returns {Promise<{id: number, name: string, priceRange: number, rating: number}>}
+ * @throws {ApiRequestError} For authentication, unavailable, HTTP, or response failures.
+ */
+export async function fetchRestaurantById({ accessToken, restaurantId, signal }) {
+  if (typeof accessToken !== 'string' || !accessToken.trim()) {
+    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
+  }
+
+  if (!Number.isSafeInteger(restaurantId) || restaurantId <= 0) {
+    throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response);
+  }
+
+  const encodedRestaurantId = encodeURIComponent(restaurantId);
+  const { data, response } = await requestJson(`/api/restaurants/${encodedRestaurantId}`, {
+    headers: { Authorization: `Bearer ${accessToken.trim()}` },
+    method: 'GET',
+    signal,
+  });
+
+  if (response.status === 401) {
+    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
+  }
+
+  if (response.status === 404) {
+    throw new ApiRequestError('unavailable', RESTAURANT_ERROR_MESSAGES.unavailable, 404);
+  }
+
+  if (response.status >= 500) {
+    throw new ApiRequestError('service', RESTAURANT_ERROR_MESSAGES.service, response.status);
+  }
+
+  if (!response.ok || !data || data.message !== 'Success') {
+    throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response, response.status);
+  }
+
+  const restaurant = normalizeRestaurant(data.data);
+
+  // The route is the menu boundary; a mismatched response must never relabel another restaurant.
+  if (restaurant.id !== restaurantId) {
+    throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response, response.status);
+  }
+
+  return restaurant;
 }
