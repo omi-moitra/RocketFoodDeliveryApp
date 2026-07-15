@@ -299,8 +299,9 @@ Optional detail call if the final feature uses it:
 
 - Protected by bearer token.
 - The `restaurant` query parameter scopes products to the selected restaurant.
-- Product data includes `id`, `restaurantId`, `name`, `description`, and integer `cost`.
-- Confirm whether integer costs represent cents before formatting. Do not guess the currency conversion; verify with seeded data/Postman.
+- Product data includes `id`, `restaurant_id`, `name`, `description`, and integer `cost`; map `restaurant_id` to `restaurantId` at the client service boundary.
+- The current source-based rule treats seeded `cost` values as whole-dollar integers because `DataSeeder` creates values from `5` through `24`; the shared formatter therefore displays `9` as `$9.00` without division.
+- Live seeded-data/Postman confirmation was explicitly deferred during Restaurant Menu implementation. Keep that verification item open, reuse the shared formatter everywhere, and revise its single named rule if later live evidence proves minor units.
 
 ### 9.4 Create order
 
@@ -999,7 +1000,7 @@ The project is complete only when all applicable items below pass.
 
 ### 26.2 Specifications and code quality
 
-- [ ] `ai/ai-spec.md` is current and was used before feature work.
+- [x] `ai/ai-spec.md` is current and was used before feature work.
 - [ ] All eight exact feature specs exist and match final behavior.
 - [ ] Human-authored source/docs contain the required purpose/contents header or Markdown TOC where supported.
 - [ ] Naming and inline comments follow Sections 13–15.
@@ -1014,8 +1015,8 @@ The project is complete only when all applicable items below pass.
 - [ ] All restaurants load by default.
 - [ ] Rating, price, and combined filters work with placeholders when unset.
 - [ ] Restaurant-image navigation opens the correct menu.
-- [ ] Quantities start/reset at zero, use buttons only, and never become negative.
-- [ ] Create Order disables at zero and opens the correct modal when enabled.
+- [x] Quantities start/reset at zero, use buttons only, and never become negative.
+- [x] Create Order disables at zero and opens the correct modal when enabled.
 - [ ] Confirmation details and currency values are accurate.
 - [ ] Processing, success, failure, retry, and duplicate-submission behavior work.
 - [ ] Order History shows Order, Status, and View.

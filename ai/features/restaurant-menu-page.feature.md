@@ -162,14 +162,11 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 ### Requirement E — Currency-Unit Verification
 
 - Format every visible product price as standard currency with a symbol and two decimal places.
-- The existing backend exposes integer `cost` without unit metadata. Current evidence conflicts:
-  - API tests use values such as `1299` and `500`, which suggest minor currency units/cents.
-  - `DataSeeder` creates values `5` through `24`, which resemble whole-dollar menu prices.
-- Before implementing price conversion, run `GET /api/products?restaurant={restaurantId}` in Postman against the grading data and compare returned values with expected database/wireframe prices.
-- Record the confirmed rule in this feature spec, the shared currency formatter, and Postman notes before implementation is considered complete.
-- If cents are confirmed, divide by `100` exactly once at the display boundary; for example, `975` → `$9.75`.
-- If whole dollars are confirmed, do not divide; for example, `9` → `$9.00`.
-- Use the same confirmed conversion in Restaurant Menu, Order Confirmation, Order History, and Order History Detail.
+- The source-based implementation rule is **whole-dollar integers** because the current `DataSeeder` creates grading menu costs from `5` through `24`; therefore `9` displays as `$9.00` without division.
+- API controller tests also contain create/update fixtures such as `1299`, but those test arbitrary CRUD values rather than the seeded customer-menu dataset.
+- The user explicitly deferred MySQL verification during implementation. Live `GET /api/products?restaurant={restaurantId}` Postman verification therefore remains an open acceptance item and must not be claimed as complete.
+- `client/constants/currency.js` owns the named `whole-dollars` rule so a later verified contract change is made once rather than inferred per product.
+- Use this same source-based conversion in Restaurant Menu and its confirmation preview; later confirmation/history features must reuse the formatter and revisit it if live grading data contradicts the seeder.
 - Do not infer the conversion from the number's size on a product-by-product basis and do not mix units.
 
 ### Requirement F — Static Menu Image Asset
@@ -550,47 +547,47 @@ ready → confirmation-open → ready
 
 ### Route, API, and Data
 
-- [ ] Restaurant Menu is the dynamic nested route `client/app/customer/restaurant/[restaurantId].js`.
-- [ ] Invalid, missing, zero, negative, decimal, or array route values make no menu request and show a safe return action.
-- [ ] Valid menu requests use the exact route restaurant ID and bearer token.
-- [ ] Restaurant detail response is validated and matches the route ID.
-- [ ] Products request uses `?restaurant=<restaurantId>` and never loads the global unfiltered list.
-- [ ] Every product is validated, uniquely keyed, and belongs to the selected restaurant.
-- [ ] Empty product arrays are handled as a valid empty menu.
+- [x] Restaurant Menu is the dynamic nested route `client/app/customer/restaurant/[restaurantId].js`.
+- [x] Invalid, missing, zero, negative, decimal, or array route values make no menu request and show a safe return action.
+- [x] Valid menu requests use the exact route restaurant ID and bearer token.
+- [x] Restaurant detail response is validated and matches the route ID.
+- [x] Products request uses `?restaurant=<restaurantId>` and never loads the global unfiltered list.
+- [x] Every product is validated, uniquely keyed, and belongs to the selected restaurant.
+- [x] Empty product arrays are handled as a valid empty menu.
 - [ ] The integer-cost currency rule has been verified in Postman/grading data and documented before formatting.
 
 ### Menu Display and Asset
 
 - [ ] The screen closely matches the supplied Restaurant Menu wireframe.
-- [ ] `RESTAURANT MENU`, restaurant name, price range, and rating display accurately.
-- [ ] Every product displays name, safe description, correctly formatted price, image, and controls.
-- [ ] `client/assets/RestaurantMenu.jpg` or the approved runtime equivalent exists and renders for every product row.
-- [ ] The support original `support_materials_13/Images/RestaurantMenu.jpg` remains unchanged and present.
-- [ ] Long product lists and wrapped content remain scrollable between the persistent header/footer.
+- [x] `RESTAURANT MENU`, restaurant name, price range, and rating display accurately.
+- [x] Every product displays name, safe description, correctly formatted price, image, and controls.
+- [x] `client/assets/RestaurantMenu.jpg` or the approved runtime equivalent exists and renders for every product row.
+- [x] The support original `support_materials_13/Images/RestaurantMenu.jpg` remains unchanged and present.
+- [x] Long product lists and wrapped content remain scrollable between the persistent header/footer.
 
 ### Quantities and Create Order
 
-- [ ] Every product starts at quantity `0`.
-- [ ] Quantities change only through minus/plus buttons in integer steps of one.
-- [ ] No editable quantity input exists.
-- [ ] Minus is disabled/safe at zero and quantities never become negative.
-- [ ] Rapid taps update the correct product without lost or cross-product changes.
-- [ ] A different restaurant resets every new product quantity to zero.
-- [ ] A same-restaurant product reload reconciles quantities by product ID.
-- [ ] Create Order is disabled while all quantities are zero or menu data is not ready.
-- [ ] Create Order enables as soon as at least one quantity is positive and disables again when all return to zero.
-- [ ] One enabled press opens exactly one confirmation modal.
-- [ ] The modal receives only positive-quantity products and no order request occurs merely by opening it.
-- [ ] Closing before submission preserves current menu quantities.
+- [x] Every product starts at quantity `0`.
+- [x] Quantities change only through minus/plus buttons in integer steps of one.
+- [x] No editable quantity input exists.
+- [x] Minus is disabled/safe at zero and quantities never become negative.
+- [x] Rapid taps update the correct product without lost or cross-product changes.
+- [x] A different restaurant resets every new product quantity to zero.
+- [x] A same-restaurant product reload reconciles quantities by product ID.
+- [x] Create Order is disabled while all quantities are zero or menu data is not ready.
+- [x] Create Order enables as soon as at least one quantity is positive and disables again when all return to zero.
+- [x] One enabled press opens exactly one confirmation modal.
+- [x] The modal receives only positive-quantity products and no order request occurs merely by opening it.
+- [x] Closing before submission preserves current menu quantities.
 
 ### States, Accessibility, and Documentation
 
-- [ ] Loading, empty menu, invalid route, unavailable restaurant, connection error, service/response error, retry, and HTTP 401 behaviors are distinct and user-safe.
-- [ ] Late/aborted requests cannot replace a newer restaurant's state.
-- [ ] Shared header/footer remain visible and usable throughout the authenticated menu flow.
-- [ ] Plus, minus, quantity, Create Order, retry, and return controls have correct labels, roles, disabled state, and touch targets.
-- [ ] Exact palette and shared fonts are used on iOS and Android.
-- [ ] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
+- [x] Loading, empty menu, invalid route, unavailable restaurant, connection error, service/response error, retry, and HTTP 401 behaviors are distinct and user-safe.
+- [x] Late/aborted requests cannot replace a newer restaurant's state.
+- [x] Shared header/footer remain visible and usable throughout the authenticated menu flow.
+- [x] Plus, minus, quantity, Create Order, retry, and return controls have correct labels, roles, disabled state, and touch targets.
+- [x] Exact palette and shared fonts are used on iOS and Android.
+- [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
 - [ ] Postman contains preconfigured successful restaurant-detail and selected-restaurant-products requests plus relevant failure/empty evidence.
 
 ## Feature Definition of Done
