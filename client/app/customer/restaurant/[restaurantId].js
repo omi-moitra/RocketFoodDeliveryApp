@@ -50,7 +50,7 @@ function getRatingLabel(rating) {
 }
 
 /**
- * Loads the selected menu, protects quantity boundaries, and opens a confirmation-only preview.
+ * Loads the selected menu, protects quantity boundaries, and hosts the order confirmation modal.
  * Expo Router renders it for the nested dynamic restaurant route.
  * Read aloud: “restaurant menu screen.”
  */
@@ -213,8 +213,8 @@ export default function RestaurantMenuScreen() {
   }
 
   /**
-   * Opens one modal from current positive quantities without starting order submission.
-   * The confirmation feature will own POST behavior; this menu boundary only derives selection.
+   * Opens one modal from current positive quantities; the modal owns the actual submission.
+   * This menu boundary only derives the selection and never builds or sends the order request.
    */
   function handleCreateOrder() {
     if (!canCreateOrder || confirmationLockRef.current) {
@@ -228,6 +228,16 @@ export default function RestaurantMenuScreen() {
   function handleCloseConfirmation() {
     setIsConfirmationOpen(false);
     confirmationLockRef.current = false;
+  }
+
+  /**
+   * Resets every quantity to zero after the modal reports a successfully created order.
+   * The consumed selection must not stay orderable, so Create Order returns to disabled; closing
+   * from idle, error, or processing never calls this and keeps the quantities intact.
+   * Read aloud: “handle order created.”
+   */
+  function handleOrderCreated() {
+    setQuantities({});
   }
 
   const listHeader = (
@@ -355,6 +365,7 @@ export default function RestaurantMenuScreen() {
       />
       <OrderConfirmationModal
         onClose={handleCloseConfirmation}
+        onOrderCreated={handleOrderCreated}
         restaurant={restaurant}
         selectedProducts={selectedProducts}
         visible={isConfirmationOpen}
