@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${order.id == 0 ? 'Create Order' : 'Edit Order'}">Order Form</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0" th:text="${order.id == 0 ? '➕ Create New Order' : '✏️ Edit Order'}">Order Form</h3>
+                        </div>
+                        
+                        <div class="card-body">
+                            <form th:action="${order.id == 0 ? '/backoffice/orders' : '/backoffice/orders/' + order.id}" 
+                                th:object="${order}" method="post">
+                                
+                                <h5 class="text-primary mb-3">🧾 Order Information</h5>
+                                
+                                <!-- Restaurant (ManyToOne, not null) -->
+                                <div class="mb-3">
+                                    <label for="restaurant" class="form-label fw-bold">
+                                        Restaurant <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="restaurant" th:field="*{restaurant}" required>
+                                        <option value="">-- Select Restaurant --</option>
+                                        <option th:each="r : ${restaurants}" th:value="${r.id}" th:text="${r.name}">Restaurant</option>
+                                    </select>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('restaurant')}" th:errors="*{restaurant}"></div>
+                                </div>
+                                
+                                <!-- Customer (ManyToOne, not null) -->
+                                <div class="mb-3">
+                                    <label for="customer" class="form-label fw-bold">
+                                        Customer <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="customer" th:field="*{customer}" required>
+                                        <option value="">-- Select Customer --</option>
+                                        <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.user.name + ' (' + c.phone + ')'}">Customer</option>
+                                    </select>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('customer')}" th:errors="*{customer}"></div>
+                                </div>
+                                
+                                <!-- Order Status (ManyToOne, not null) -->
+                                <div class="mb-3">
+                                    <label for="orderStatus" class="form-label fw-bold">
+                                        Order Status <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="orderStatus" th:field="*{orderStatus}" required>
+                                        <option value="">-- Select Status --</option>
+                                        <option th:each="os : ${orderStatuses}" th:value="${os.id}" th:text="${os.name}">Status</option>
+                                    </select>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('orderStatus')}" th:errors="*{orderStatus}"></div>
+                                </div>
+                                
+                                <!-- Restaurant Rating (optional, 1-5) -->
+                                <div class="mb-3">
+                                    <label for="restaurantRating" class="form-label fw-bold">Restaurant Rating</label>
+                                    <select class="form-select" id="restaurantRating" th:field="*{restaurantRating}">
+                                        <option value="">-- No Rating --</option>
+                                        <option value="1">1 - Poor</option>
+                                        <option value="2">2 - Fair</option>
+                                        <option value="3">3 - Good</option>
+                                        <option value="4">4 - Very Good</option>
+                                        <option value="5">5 - Excellent</option>
+                                    </select>
+                                    <div class="form-text text-muted">Optional rating between 1 and 5.</div>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('restaurantRating')}" th:errors="*{restaurantRating}"></div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success" 
+                                        th:text="${order.id == 0 ? '✓ Create Order' : '✓ Update Order'}">Submit</button>
+                                    <a href="/backoffice/orders" class="btn btn-secondary">✗ Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

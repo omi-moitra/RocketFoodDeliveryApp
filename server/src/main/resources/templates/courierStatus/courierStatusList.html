@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Courier Statuses List - Rocket Delivery</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="container my-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">🚚 Courier Statuses Management</h1>
+                <a href="/backoffice/courier-statuses/new" class="btn btn-primary">➕ Add New Status</a>
+            </div>
+            
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div th:if="${courierStatuses != null and !courierStatuses.isEmpty()}">
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body py-2">
+                        <div class="text-center">
+                            <strong>Total Courier Statuses:</strong> 
+                            <span class="badge bg-primary" th:text="${courierStatuses.size()}">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 10%;">ID</th>
+                                    <th style="width: 50%;">Status Name</th>
+                                    <th style="width: 40%;" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="status : ${courierStatuses}">
+                                    <td class="align-middle">
+                                        <span class="badge bg-light text-dark" th:text="${status.id}">1</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span th:if="${status.name == 'free'}" class="badge bg-success" th:text="${status.name}">Status</span>
+                                        <span th:if="${status.name == 'busy'}" class="badge bg-warning text-dark" th:text="${status.name}">Status</span>
+                                        <span th:if="${status.name == 'full'}" class="badge bg-danger" th:text="${status.name}">Status</span>
+                                        <span th:if="${status.name == 'offline'}" class="badge bg-secondary" th:text="${status.name}">Status</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:href="@{/backoffice/courier-statuses/{id}(id=${status.id})}" 
+                                            class="btn btn-outline-info" title="View Details">👁️ View</a>
+                                            <a th:href="@{/backoffice/courier-statuses/{id}/edit(id=${status.id})}" 
+                                            class="btn btn-outline-warning" title="Edit Status">✏️ Edit</a>
+                                            <form th:action="@{/backoffice/courier-statuses/{id}/delete(id=${status.id})}" 
+                                                method="post" style="display:inline;"
+                                                onsubmit="return confirm('⚠️ Are you sure you want to delete this courier status?\n\nThis action cannot be undone.');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Status">🗑️ Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:if="${courierStatuses == null or courierStatuses.isEmpty()}" class="text-center py-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-5">
+                        <h3 class="text-muted mb-3">📭 No Courier Statuses Found</h3>
+                        <p class="text-muted mb-4">Get started by adding your first courier status!</p>
+                        <a href="/backoffice/courier-statuses/new" class="btn btn-primary btn-lg">➕ Add New Status</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

@@ -1,0 +1,47 @@
+{"properties": [
+  {
+    "name": "app.jwt.secret",
+    "type": "java.lang.String",
+    "description": "Secret key used for signing JWT tokens."
+  },
+  {
+    "name": "twilio.account-sid",
+    "type": "java.lang.String",
+    "description": "Twilio Account SID for SMS notifications."
+  },
+  {
+    "name": "twilio.auth-token",
+    "type": "java.lang.String",
+    "description": "Twilio Auth Token for SMS notifications."
+  },
+  {
+    "name": "twilio.from-number",
+    "type": "java.lang.String",
+    "description": "Twilio phone number used as the SMS sender."
+  },
+  {
+    "name": "notify.api-url",
+    "type": "java.lang.String",
+    "description": "Notify.eu REST API endpoint for sending notifications."
+  },
+  {
+    "name": "notify.client-id",
+    "type": "java.lang.String",
+    "description": "Notify.eu Client ID sent as X-ClientId request header."
+  },
+  {
+    "name": "notify.secret-key",
+    "type": "java.lang.String",
+    "description": "Notify.eu Secret Key sent as X-SecretKey request header."
+  },
+  {
+    "name": "notify.template-id",
+    "type": "java.lang.String",
+    "description": "Notify.eu template notification type name (notificationType field)."
+  },
+  {
+    "name": "notify.language",
+    "type": "java.lang.String",
+    "description": "Language code for Notify.eu notifications (e.g. en)."
+  }
+]}
