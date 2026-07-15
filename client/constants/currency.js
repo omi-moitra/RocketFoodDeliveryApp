@@ -6,9 +6,10 @@
  * 2. Currency validation and formatting
  */
 
-// Module 13's current DataSeeder stores product costs as whole-dollar integers from 5 through 24.
-// Live Postman confirmation remains outstanding, so this one named boundary is easy to revise if
-// grading data proves that the backend has changed to minor units in another environment.
+// Module 13's DataSeeder stores product costs as whole-dollar integers from 5 through 24.
+// Confirmed against the live API on 2026-07-15: untouched seeded products return whole-dollar
+// integer costs, so this one named boundary stays and remains the single place to revise if
+// grading data ever proves that another environment uses minor units.
 export const PRODUCT_COST_UNIT = 'whole-dollars';
 
 const USD_FORMATTER = new Intl.NumberFormat('en-US', {

@@ -54,7 +54,7 @@ The Restaurant Menu feature already opens the modal with only positive-quantity 
 - The failure state: Confirm Order restored, red X icon, safe retryable failure message.
 - Duplicate-request prevention across rapid taps, retries, and modal lifecycle.
 - Close (X) behavior in every state, including the quantity outcome on the menu after success versus after cancel/failure.
-- HTTP 401 handling through the shared unauthorized/sign-out transition.
+- HTTP 401/403 handling through the shared unauthorized/sign-out transition.
 - Unmount/abort protection so no state update or duplicate request survives closing the modal or leaving the screen.
 - Wireframe-exact layout, palette, typography, scrolling, and accessibility for all four modal states.
 - Postman coverage for successful and failed `POST /api/orders`.
@@ -121,7 +121,7 @@ The Restaurant Menu feature already opens the modal with only positive-quantity 
 ### Requirement D — Protected Submission Through the Shared API Client
 
 - Submit with `POST ${API_BASE_URL}/api/orders` through `client/services/apiClient.js` so the environment base URL, JSON handling, bearer `Authorization` header, timeout, and abort behavior stay centralized.
-- The endpoint is protected; a missing/expired token yields HTTP 401 and must never be retried blindly.
+- The endpoint is protected; a missing/expired token must never be retried blindly. Live evidence (2026-07-15): the backend configures no custom `AuthenticationEntryPoint` and no per-role rules on `/api/**`, so Spring Security's default reports a missing, invalid, or expired token as HTTP 403; the client treats both 401 and 403 as the unauthorized sign-out signal.
 - Expect the existing HTTP 201 success envelope:
 
 ```json
@@ -141,7 +141,7 @@ The Restaurant Menu feature already opens the modal with only positive-quantity 
 - Treat HTTP 201 with a `Success` message envelope as the only success signal; `data` is the created order DTO (`ApiOrderDTO`) and may be logged-free and unused beyond optional confirmation details.
 - Expect the existing failure shapes:
   - HTTP 400 `{ "error": "Bad Request", "details": "Invalid or missing parameters" }` from `ApiExceptionHandler` when the body is invalid.
-  - HTTP 401 for a missing/expired token.
+  - HTTP 401/403 for a missing/expired token (the current backend emits 403; see above).
   - Network/timeout/abort failures with no HTTP response.
   - HTTP 5xx or malformed envelopes as service/response failures.
 - Classify failures in `orderService.js` into user-safe categories; never surface raw server messages, stack traces, or the token.
@@ -188,7 +188,7 @@ idle → processing → success
   - A useful, user-safe failure message appears, matching the wireframe copy: `Your order was not processed successfully.` / `Please try again.`
 - Retry submits the same current selection again through the same validated path and re-enters `processing`.
 - A failure never corrupts the summary, quantities, or total, and never leaves a stale success indicator visible.
-- HTTP 401 is not a retryable modal failure: invoke the shared unauthorized/sign-out transition, clear stale session state, and return to Login.
+- HTTP 401/403 is not a retryable modal failure: invoke the shared unauthorized/sign-out transition, clear stale session state, and return to Login.
 
 ### Requirement I — Duplicate-Request Prevention
 
@@ -214,7 +214,7 @@ idle → processing → success
   - The idle/processing/success/error state model and why booleans are avoided.
   - Request-body construction and why `customer_id` comes from storage rather than props.
   - Duplicate-submission guards and abort/unmount protection.
-  - Failure classification and why HTTP 401 exits to Login instead of retrying.
+  - Failure classification and why HTTP 401/403 exits to Login instead of retrying.
   - The success-close quantity-reset contract with the host menu.
   - Reuse of the shared currency formatter and its `whole-dollars` rule.
 - Add JSDoc where the order service has non-obvious parameters, normalized return shapes, or thrown errors.
@@ -248,7 +248,7 @@ idle → processing → success
 
 ### Expired Session
 
-1. `POST /api/orders` returns HTTP 401.
+1. `POST /api/orders` returns HTTP 401/403.
 2. The shared unauthorized transition clears stored session data and replaces authenticated routes with Login.
 3. No retry, duplicate request, or stale modal state survives the transition.
 
@@ -314,7 +314,7 @@ idle → processing → success
 | `idle` | Confirm pressed, preconditions fail | `error` | No request; failure presentation with retry. |
 | `processing` | HTTP 201 valid envelope | `success` | Button hidden; green checkmark and success message. |
 | `processing` | 400 / network / timeout / 5xx / bad envelope | `error` | Confirm Order restored; red X and failure message. |
-| `processing` | HTTP 401 | (logged out) | Shared sign-out; modal state discarded. |
+| `processing` | HTTP 401/403 | (logged out) | Shared sign-out; modal state discarded. |
 | `processing` | Extra Confirm press | `processing` | Ignored; no second request. |
 | `error` | Confirm pressed | `processing` | Same selection resubmits once. |
 | `idle` / `error` | X or back close | (closed) | Menu quantities preserved. |
@@ -365,7 +365,7 @@ idle → processing → success
 | HTTP 400 / network / 5xx failure | Confirm Order restored; red X; `Your order was not processed successfully. Please try again.` |
 | Retry after failure | Same selection resubmits through the same guarded path. |
 | Close from idle/error/processing | No order created; menu quantities preserved; pending request aborted. |
-| HTTP 401 | Shared sign-out clears the session and returns to Login; no retry. |
+| HTTP 401/403 | Shared sign-out clears the session and returns to Login; no retry. |
 | Late response after close | No crash, no state update, no duplicate order. |
 | Long selection list | Summary scrolls inside the panel; total and action stay reachable. |
 
@@ -407,7 +407,7 @@ idle → processing → success
 - [ ] On failure the Confirm Order button reappears with the red X icon and `Your order was not processed successfully. Please try again.`
 - [ ] Retry after failure resubmits the same selection and can succeed.
 - [ ] No button is ever left permanently disabled after a failed request.
-- [ ] HTTP 401 triggers the shared sign-out to Login instead of a modal retry state.
+- [ ] HTTP 401/403 triggers the shared sign-out to Login instead of a modal retry state.
 
 ### Close Behavior and Menu Integration
 
@@ -448,6 +448,6 @@ This feature is complete only when:
 - Enforce the single-request guard inside the submit handler even though the button is disabled during processing.
 - The success-close quantity reset is a host-menu responsibility triggered by the modal's completion callback; the modal must not reach into menu state.
 - The success/failure message copy in this spec comes from the wireframe pages; keep it exact.
-- Reuse `formatProductCost` and its documented `whole-dollars` rule; if live Postman evidence during this feature proves minor units, update `client/constants/currency.js` and its spec references once, then continue.
+- Reuse `formatProductCost` and its documented `whole-dollars` rule. Live `GET /api/products` evidence gathered during this feature (2026-07-15) confirmed untouched seeded products carry whole-dollar integer costs (10–24); a few locally polluted rows (for example `Updated Burger`, cost `1499`) come from earlier backend test runs, not the seeded contract, so the rule stands.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes an endpoint, field, envelope, or lifecycle behavior, update this feature spec before continuing.

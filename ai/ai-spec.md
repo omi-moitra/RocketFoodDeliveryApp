@@ -301,7 +301,7 @@ Optional detail call if the final feature uses it:
 - The `restaurant` query parameter scopes products to the selected restaurant.
 - Product data includes `id`, `restaurant_id`, `name`, `description`, and integer `cost`; map `restaurant_id` to `restaurantId` at the client service boundary.
 - The current source-based rule treats seeded `cost` values as whole-dollar integers because `DataSeeder` creates values from `5` through `24`; the shared formatter therefore displays `9` as `$9.00` without division.
-- Live seeded-data/Postman confirmation was explicitly deferred during Restaurant Menu implementation. Keep that verification item open, reuse the shared formatter everywhere, and revise its single named rule if later live evidence proves minor units.
+- Live confirmation completed during the order-confirmation feature (2026-07-15): `GET /api/products` against the running backend showed untouched seeded products with whole-dollar integer costs (10–24). A few locally modified rows (for example `Updated Burger`, cost `1499`) were created by earlier backend test runs and are not seeded-contract evidence. The `whole-dollars` formatter rule stands.
 
 ### 9.4 Create order
 
@@ -378,7 +378,7 @@ Do not store the password. Do not log the access token.
 4. Enter the customer application.
 5. Read the token through one shared API helper for protected requests.
 6. On logout, clear all authentication/customer keys and replace the route with Login.
-7. On HTTP 401 from a protected endpoint, clear stale authentication and return to Login with an appropriate message.
+7. On HTTP 401 or 403 from a protected endpoint, clear stale authentication and return to Login with an appropriate message. Live evidence (2026-07-15, order-confirmation feature): the backend has no custom `AuthenticationEntryPoint` and no per-role rules on `/api/**`, so Spring Security's default reports missing/invalid/expired tokens as HTTP 403.
 
 ### 10.3 Storage rules
 
@@ -599,7 +599,7 @@ For an authored JSON file whose structure needs explanation, document its conten
 - Never leave a button permanently disabled after a failed request.
 - Display user-safe messages; do not expose stack traces or raw server internals.
 - Log only development-safe diagnostic context and remove temporary logs before submission.
-- Treat HTTP 401 as an authentication/session failure.
+- Treat HTTP 401 and 403 from protected endpoints as authentication/session failures.
 - Treat no filter results as an empty result, not an API error.
 - Keep quantity state local to the selected restaurant/menu flow.
 - Keep modal request states explicit, for example `idle`, `processing`, `success`, and `error`.
