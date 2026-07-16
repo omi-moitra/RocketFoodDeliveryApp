@@ -9,6 +9,7 @@
  */
 
 import { getStoredSession } from '../storage/authStorage';
+import { isNonNegativeSafeInteger, isPositiveSafeInteger } from '../utils/validation';
 import { ApiRequestError, requestJson } from './apiClient';
 
 // User-safe classification messages; raw server details and tokens never reach the interface.
@@ -18,14 +19,6 @@ export const ORDER_ERROR_MESSAGES = Object.freeze({
   service: 'The order service is unavailable right now. Please try again.',
   token: 'Your session has expired. Please log in again.',
 });
-
-function isPositiveSafeInteger(value) {
-  return Number.isSafeInteger(value) && value > 0;
-}
-
-function isNonNegativeSafeInteger(value) {
-  return Number.isSafeInteger(value) && value >= 0;
-}
 
 /**
  * Builds the exact documented create-order body from already-validated client values.
@@ -159,26 +152,26 @@ function normalizeOrderProduct(rawProduct) {
   const productName =
     typeof rawProduct.product_name === 'string' ? rawProduct.product_name.trim() : '';
   const quantity = Number(rawProduct.quantity);
-  const unitCost = Number(rawProduct.unit_cost);
   const totalCost = Number(rawProduct.total_cost);
 
   if (
     !isPositiveSafeInteger(productId) ||
     !productName ||
     !isPositiveSafeInteger(quantity) ||
-    !isNonNegativeSafeInteger(unitCost) ||
     !isNonNegativeSafeInteger(totalCost)
   ) {
     return null;
   }
 
-  return { productId, productName, quantity, totalCost, unitCost };
+  // Only the fields the history table and detail modal consume are mapped; the raw unit cost
+  // stays unmapped because the modal renders the backend's precomputed line totals.
+  return { productId, productName, quantity, totalCost };
 }
 
 /**
  * Validates one raw customer order and maps backend snake_case fields to the client shape.
- * The complete object is preserved because the detail modal renders from this list response
- * instead of calling a per-order endpoint that the backend does not provide.
+ * The detail modal renders from this list response instead of calling a per-order endpoint
+ * that the backend does not provide, so everything the modal shows must be mapped here.
  * Returns null for a malformed entry so the caller can skip it instead of rendering broken rows.
  * Read aloud: “normalize customer order.”
  */
@@ -223,24 +216,14 @@ function normalizeCustomerOrder(rawOrder) {
     return null;
   }
 
+  // Only the fields the history table and detail modal consume are mapped; addresses, customer
+  // identity, and the restaurant id stay unmapped until a screen actually needs them.
   return {
     courierId,
     courierName,
     createdOn,
-    customerAddress:
-      typeof rawOrder.customer_address === 'string' ? rawOrder.customer_address.trim() : null,
-    customerId: isPositiveSafeInteger(Number(rawOrder.customer_id))
-      ? Number(rawOrder.customer_id)
-      : null,
-    customerName:
-      typeof rawOrder.customer_name === 'string' ? rawOrder.customer_name.trim() : null,
     id,
     products,
-    restaurantAddress:
-      typeof rawOrder.restaurant_address === 'string' ? rawOrder.restaurant_address.trim() : null,
-    restaurantId: isPositiveSafeInteger(Number(rawOrder.restaurant_id))
-      ? Number(rawOrder.restaurant_id)
-      : null,
     restaurantName,
     status,
     totalCost,
