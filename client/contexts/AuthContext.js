@@ -7,7 +7,7 @@
  * 3. Authentication consumer hook
  */
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   clearAuthSession,
@@ -68,9 +68,10 @@ export function AuthProvider({ children }) {
   /**
    * Persists a verified login before exposing it to protected navigation.
    * LoginScreen calls it after authenticateCustomer succeeds.
+   * useCallback keeps its identity stable so screens can safely list it in effect dependencies.
    * Read aloud: “complete sign in.”
    */
-  async function completeSignIn(authValues) {
+  const completeSignIn = useCallback(async (authValues) => {
     try {
       const savedSession = await saveAuthSession(authValues);
       setSession(savedSession);
@@ -80,25 +81,25 @@ export function AuthProvider({ children }) {
       setSession(null);
       throw error;
     }
-  }
+  }, []);
 
   /**
    * Removes persisted credentials before clearing the in-memory route guard.
    * AppHeader and unauthorized-response handling use this shared transition.
    * Read aloud: “sign out.”
    */
-  async function signOut() {
+  const signOut = useCallback(async () => {
     // Storage is cleared before route guards remove the authenticated navigation tree.
     await clearAuthSession();
     setSession(null);
-  }
+  }, []);
 
   /**
    * Closes protected routes after the API proves that the stored session is no longer valid.
    * Protected feature services/screens call it when a request returns HTTP 401.
    * Read aloud: “handle unauthorized.”
    */
-  async function handleUnauthorized() {
+  const handleUnauthorized = useCallback(async () => {
     try {
       await clearAuthSession();
     } catch {
@@ -108,7 +109,7 @@ export function AuthProvider({ children }) {
       // guards must close authenticated screens even if device storage cleanup itself fails.
       setSession(null);
     }
-  }
+  }, []);
 
   const contextValue = useMemo(
     () => ({
@@ -118,7 +119,7 @@ export function AuthProvider({ children }) {
       session,
       signOut,
     }),
-    [isSessionLoading, session],
+    [completeSignIn, handleUnauthorized, isSessionLoading, session, signOut],
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
