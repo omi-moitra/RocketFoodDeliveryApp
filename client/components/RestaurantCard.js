@@ -11,24 +11,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { COLORS, FONT_FAMILIES, SPACING } from '../constants/theme';
 import { getRestaurantImage } from '../constants/restaurantImages';
-
-/**
- * Converts the backend price-range integer into the dollar-sign label used by the wireframe.
- * RestaurantCard calls it while preparing its visible restaurant name.
- * Read aloud: “get price label.”
- */
-function getPriceLabel(priceRange) {
-  return '$'.repeat(priceRange);
-}
-
-/**
- * Converts an integer rating into stars while preserving a clear zero-rating state.
- * RestaurantCard uses it for the visible rating text.
- * Read aloud: “get rating label.”
- */
-function getRatingLabel(rating) {
-  return rating === 0 ? 'Not yet rated' : '★'.repeat(rating);
-}
+import { getPriceRangeLabel, getRatingLabel } from '../utils/restaurantLabels';
 
 /**
  * Displays one normalized restaurant and makes only its supplied image the menu action.
@@ -36,7 +19,7 @@ function getRatingLabel(rating) {
  * Read aloud: “restaurant card.”
  */
 export default function RestaurantCard({ onImagePress, restaurant }) {
-  const priceLabel = getPriceLabel(restaurant.priceRange);
+  const priceLabel = getPriceRangeLabel(restaurant.priceRange);
   const ratingLabel = getRatingLabel(restaurant.rating);
 
   return (
