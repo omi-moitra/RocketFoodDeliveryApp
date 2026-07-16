@@ -6,9 +6,9 @@
  * 2. Product row styles
  */
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import AppIcon from './AppIcon';
 import { RESTAURANT_MENU_IMAGE } from '../constants/menuAssets';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 
@@ -58,7 +58,7 @@ export default function MenuProductRow({
             pressed && !isDecreaseDisabled && styles.stepButtonPressed,
           ]}
         >
-          <FontAwesome6 color={COLORS.white} name="minus" size={17} />
+          <AppIcon color={COLORS.white} name="minus" size={17} />
         </Pressable>
         <Text
           accessibilityLabel={`${product.name} quantity ${quantity}`}
@@ -73,7 +73,7 @@ export default function MenuProductRow({
           onPress={onIncrease}
           style={({ pressed }) => [styles.stepButton, pressed && styles.stepButtonPressed]}
         >
-          <FontAwesome6 color={COLORS.white} name="plus" size={17} />
+          <AppIcon color={COLORS.white} name="plus" size={17} />
         </Pressable>
       </View>
     </View>

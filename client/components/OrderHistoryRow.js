@@ -7,9 +7,9 @@
  * 3. Row styles
  */
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import AppIcon from './AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 
 // One shared flex grid keeps the charcoal heading band and every body row aligned even when a
@@ -51,7 +51,7 @@ export default function OrderHistoryRow({ onView, order }) {
           onPress={onView}
           style={({ pressed }) => [styles.viewButton, pressed && styles.viewButtonPressed]}
         >
-          <FontAwesome6 color={COLORS.charcoal} name="magnifying-glass" size={20} />
+          <AppIcon color={COLORS.charcoal} name="magnifying-glass" size={20} />
         </Pressable>
       </View>
     </View>
