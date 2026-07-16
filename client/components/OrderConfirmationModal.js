@@ -7,10 +7,10 @@
  * 3. Confirmation modal styles
  */
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AppIcon from './AppIcon';
 import { formatProductCost } from '../constants/currency';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
@@ -192,7 +192,7 @@ export default function OrderConfirmationModal({
               onPress={handleClose}
               style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
             >
-              <FontAwesome6 color={COLORS.white} name="xmark" size={26} />
+              <AppIcon color={COLORS.white} name="xmark" size={26} />
             </Pressable>
           </View>
 
@@ -230,7 +230,7 @@ export default function OrderConfirmationModal({
                 accessibilityRole="alert"
                 style={styles.resultArea}
               >
-                <FontAwesome6 color={COLORS.mutedGreen} name="circle-check" size={44} />
+                <AppIcon color={COLORS.mutedGreen} name="circle-check" size={44} />
                 <Text style={styles.resultTitle}>{RESULT_MESSAGES.successTitle}</Text>
                 <Text style={styles.resultText}>{RESULT_MESSAGES.successBody}</Text>
               </View>
@@ -258,7 +258,7 @@ export default function OrderConfirmationModal({
                     accessibilityRole="alert"
                     style={styles.resultArea}
                   >
-                    <FontAwesome6 color={COLORS.darkRed} name="circle-xmark" size={44} />
+                    <AppIcon color={COLORS.darkRed} name="circle-xmark" size={44} />
                     <Text style={styles.resultText}>{RESULT_MESSAGES.failureTitle}</Text>
                     <Text style={styles.resultText}>{RESULT_MESSAGES.failureBody}</Text>
                   </View>

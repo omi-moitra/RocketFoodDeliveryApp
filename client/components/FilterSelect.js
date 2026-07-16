@@ -8,9 +8,9 @@
  */
 
 import { useState } from 'react';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import AppIcon from './AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 
 /**
@@ -48,13 +48,7 @@ export default function FilterSelect({ label, onChange, options, value }) {
         <Text numberOfLines={1} style={styles.selectorText}>
           {selectedOption.label}
         </Text>
-        <FontAwesome6
-          accessibilityElementsHidden
-          color={COLORS.white}
-          importantForAccessibility="no-hide-descendants"
-          name="caret-down"
-          size={15}
-        />
+        <AppIcon color={COLORS.white} name="caret-down" size={15} />
       </Pressable>
 
       <Modal
@@ -90,13 +84,7 @@ export default function FilterSelect({ label, onChange, options, value }) {
                 >
                   <Text style={styles.optionText}>{option.label}</Text>
                   {isSelected ? (
-                    <FontAwesome6
-                      accessibilityElementsHidden
-                      color={COLORS.white}
-                      importantForAccessibility="no-hide-descendants"
-                      name="check"
-                      size={16}
-                    />
+                    <AppIcon color={COLORS.white} name="check" size={16} />
                   ) : null}
                 </Pressable>
               );

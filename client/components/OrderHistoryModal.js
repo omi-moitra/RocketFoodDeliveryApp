@@ -7,9 +7,9 @@
  * 3. Modal styles
  */
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import AppIcon from './AppIcon';
 import { formatProductCost } from '../constants/currency';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 
@@ -89,7 +89,7 @@ export default function OrderHistoryModal({ onClose, order, visible }) {
                       pressed && styles.closeButtonPressed,
                     ]}
                   >
-                    <FontAwesome6 color={COLORS.white} name="xmark" size={26} />
+                    <AppIcon color={COLORS.white} name="xmark" size={26} />
                   </Pressable>
                 </View>
                 <Text
