@@ -15,6 +15,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 
 import OrderHistoryModal from '../../components/OrderHistoryModal';
 import OrderHistoryRow, { ORDER_TABLE_COLUMNS } from '../../components/OrderHistoryRow';
+import ResultState from '../../components/ResultState';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { ApiRequestError } from '../../services/apiClient';
@@ -159,35 +160,25 @@ export default function OrderHistoryScreen() {
 
   function renderResultState() {
     if (requestStatus === 'resolving' || requestStatus === 'loading') {
-      return (
-        <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
-          <ActivityIndicator color={COLORS.orangeRed} size="large" />
-          <Text style={styles.stateText}>Loading your orders…</Text>
-        </View>
-      );
+      return <ResultState kind="loading" message="Loading your orders…" />;
     }
 
     // A valid empty array is a deliberate no-orders state, never an error, and a refresh that
     // finds no rows keeps showing this same message instead of flashing a spinner.
     if (requestStatus === 'empty' || (isRefreshing && orders.length === 0)) {
       return (
-        <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
-          <Text style={styles.stateTitle}>No orders yet</Text>
-          <Text style={styles.stateText}>{ORDER_HISTORY_MESSAGES.empty}</Text>
-        </View>
+        <ResultState kind="info" message={ORDER_HISTORY_MESSAGES.empty} title="No orders yet" />
       );
     }
 
     if (requestStatus === 'error') {
       return (
-        <View accessibilityLiveRegion="assertive" style={styles.stateContainer}>
-          <Text accessibilityRole="alert" style={styles.errorText}>
-            {errorMessage || ORDER_HISTORY_MESSAGES.response}
-          </Text>
-          <Pressable accessibilityRole="button" onPress={handleRetry} style={styles.stateButton}>
-            <Text style={styles.stateButtonText}>Retry</Text>
-          </Pressable>
-        </View>
+        <ResultState
+          actionLabel="Retry"
+          kind="error"
+          message={errorMessage || ORDER_HISTORY_MESSAGES.response}
+          onAction={handleRetry}
+        />
       );
     }
 
@@ -308,46 +299,5 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
-  },
-  stateContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 300,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xl,
-  },
-  stateTitle: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 23,
-    textAlign: 'center',
-  },
-  stateText: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 16,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: COLORS.darkRed,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  stateButton: {
-    alignItems: 'center',
-    backgroundColor: COLORS.orangeRed,
-    borderRadius: 8,
-    justifyContent: 'center',
-    marginTop: SPACING.md,
-    minHeight: LAYOUT.minimumTouchTarget,
-    paddingHorizontal: SPACING.md,
-  },
-  stateButtonText: {
-    color: COLORS.white,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 17,
   },
 });

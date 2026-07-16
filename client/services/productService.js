@@ -7,6 +7,8 @@
  * 3. Protected restaurant-product request
  */
 
+import { getStoredSession } from '../storage/authStorage';
+import { isPositiveSafeInteger } from '../utils/validation';
 import { ApiRequestError, requestJson } from './apiClient';
 
 export const PRODUCT_ERROR_MESSAGES = Object.freeze({
@@ -14,10 +16,6 @@ export const PRODUCT_ERROR_MESSAGES = Object.freeze({
   service: 'The menu service is unavailable right now. Please try again.',
   token: 'Your session has expired. Please log in again.',
 });
-
-function isPositiveSafeInteger(value) {
-  return Number.isSafeInteger(value) && value > 0;
-}
 
 /**
  * Validates one raw product and maps backend snake_case fields to the client domain shape.
@@ -79,12 +77,15 @@ function normalizeProducts(responseData, expectedRestaurantId) {
 
 /**
  * Loads only the products for one selected restaurant using its bearer-token session.
- * @param {{accessToken: string, restaurantId: number, signal?: AbortSignal}} options
+ * The token is read from the shared session boundary at request time, never from arguments.
+ * @param {{restaurantId: number, signal?: AbortSignal}} options
  * @returns {Promise<Array<{cost: number, description: string|null, id: number, name: string, restaurantId: number}>>}
  * @throws {ApiRequestError} For invalid input, authentication, HTTP, or response failures.
  */
-export async function fetchProductsForRestaurant({ accessToken, restaurantId, signal }) {
-  if (typeof accessToken !== 'string' || !accessToken.trim()) {
+export async function fetchProductsForRestaurant({ restaurantId, signal }) {
+  const session = await getStoredSession();
+
+  if (!session) {
     throw new ApiRequestError('unauthorized', PRODUCT_ERROR_MESSAGES.token, 401);
   }
 
@@ -96,7 +97,7 @@ export async function fetchProductsForRestaurant({ accessToken, restaurantId, si
   const { data, response } = await requestJson(
     `/api/products?restaurant=${encodedRestaurantId}`,
     {
-      headers: { Authorization: `Bearer ${accessToken.trim()}` },
+      headers: { Authorization: `Bearer ${session.accessToken}` },
       method: 'GET',
       signal,
     },

@@ -11,17 +11,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import MenuProductRow from '../../../components/MenuProductRow';
 import OrderConfirmationModal from '../../../components/OrderConfirmationModal';
+import ResultState from '../../../components/ResultState';
 import { formatProductCost } from '../../../constants/currency';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../../constants/theme';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -33,6 +27,7 @@ import {
   normalizeRestaurantId,
   reconcileQuantities,
 } from '../../../utils/menuState';
+import { getPriceRangeLabel, getRatingLabel } from '../../../utils/restaurantLabels';
 
 const MENU_MESSAGES = Object.freeze({
   connection: 'Unable to load this menu. Check your connection and try again.',
@@ -40,14 +35,6 @@ const MENU_MESSAGES = Object.freeze({
   response: 'Menu information could not be loaded. Please try again.',
   unavailable: 'This restaurant could not be found.',
 });
-
-function getPriceRangeLabel(priceRange) {
-  return '$'.repeat(priceRange);
-}
-
-function getRatingLabel(rating) {
-  return rating === 0 ? 'Not yet rated' : '★'.repeat(rating);
-}
 
 /**
  * Loads the selected menu, protects quantity boundaries, and hosts the order confirmation modal.
@@ -115,12 +102,10 @@ export default function RestaurantMenuScreen() {
       try {
         const [loadedRestaurant, loadedProducts] = await Promise.all([
           fetchRestaurantById({
-            accessToken: session.accessToken,
             restaurantId,
             signal: requestController.signal,
           }),
           fetchProductsForRestaurant({
-            accessToken: session.accessToken,
             restaurantId,
             signal: requestController.signal,
           }),
@@ -181,7 +166,6 @@ export default function RestaurantMenuScreen() {
         .filter((product) => (quantities[product.id] ?? 0) > 0)
         .map((product) => ({
           ...product,
-          formattedUnitPrice: formatProductCost(product.cost),
           quantity: quantities[product.id],
         })),
     [products, quantities],
@@ -299,53 +283,42 @@ export default function RestaurantMenuScreen() {
 
   function renderResultState() {
     if (requestStatus === 'loading' || requestStatus === 'resolving') {
-      return (
-        <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
-          <ActivityIndicator color={COLORS.orangeRed} size="large" />
-          <Text style={styles.stateText}>Loading restaurant menu…</Text>
-        </View>
-      );
+      return <ResultState kind="loading" message="Loading restaurant menu…" minHeight={340} />;
     }
 
     if (requestStatus === 'empty') {
       return (
-        <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
-          <Text style={styles.stateTitle}>Menu currently empty</Text>
-          <Text style={styles.stateText}>{MENU_MESSAGES.empty}</Text>
-        </View>
+        <ResultState
+          kind="info"
+          message={MENU_MESSAGES.empty}
+          minHeight={340}
+          title="Menu currently empty"
+        />
       );
     }
 
     if (requestStatus === 'unavailable') {
       return (
-        <View accessibilityLiveRegion="assertive" style={styles.stateContainer}>
-          <Text accessibilityRole="alert" style={styles.stateTitle}>
-            Restaurant unavailable
-          </Text>
-          <Text style={styles.stateText}>
-            {errorMessage || 'This restaurant link is missing a valid ID.'}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={handleReturnToRestaurants}
-            style={styles.stateButton}
-          >
-            <Text style={styles.stateButtonText}>Return to Restaurants</Text>
-          </Pressable>
-        </View>
+        <ResultState
+          actionLabel="Return to Restaurants"
+          kind="alert"
+          message={errorMessage || 'This restaurant link is missing a valid ID.'}
+          minHeight={340}
+          onAction={handleReturnToRestaurants}
+          title="Restaurant unavailable"
+        />
       );
     }
 
     if (requestStatus === 'error') {
       return (
-        <View accessibilityLiveRegion="assertive" style={styles.stateContainer}>
-          <Text accessibilityRole="alert" style={styles.errorText}>
-            {errorMessage || MENU_MESSAGES.response}
-          </Text>
-          <Pressable accessibilityRole="button" onPress={handleRetry} style={styles.stateButton}>
-            <Text style={styles.stateButtonText}>Retry</Text>
-          </Pressable>
-        </View>
+        <ResultState
+          actionLabel="Retry"
+          kind="error"
+          message={errorMessage || MENU_MESSAGES.response}
+          minHeight={340}
+          onAction={handleRetry}
+        />
       );
     }
 
@@ -428,46 +401,5 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontFamily: FONT_FAMILIES.oswaldSemiBold,
     fontSize: 19,
-  },
-  stateContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 340,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xl,
-  },
-  stateTitle: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 23,
-    textAlign: 'center',
-  },
-  stateText: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 16,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: COLORS.darkRed,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  stateButton: {
-    alignItems: 'center',
-    backgroundColor: COLORS.orangeRed,
-    borderRadius: 8,
-    justifyContent: 'center',
-    marginTop: SPACING.md,
-    minHeight: LAYOUT.minimumTouchTarget,
-    paddingHorizontal: SPACING.md,
-  },
-  stateButtonText: {
-    color: COLORS.white,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 17,
   },
 });

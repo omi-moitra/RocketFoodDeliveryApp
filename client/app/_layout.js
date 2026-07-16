@@ -12,6 +12,7 @@ import { useFonts } from 'expo-font';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import ErrorBoundary from '../components/ErrorBoundary';
 import { COLORS } from '../constants/theme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
@@ -27,11 +28,13 @@ function RootNavigator() {
     Oswald_600SemiBold,
   });
 
-  if (fontError) {
-    throw fontError;
+  // A font-load failure falls back to system fonts instead of taking down the app; every
+  // text style routes through FONT_FAMILIES, which degrades safely when Oswald is missing.
+  if (fontError && __DEV__) {
+    console.warn('RootNavigator: fonts failed to load; continuing with system fonts.');
   }
 
-  if (isSessionLoading || !areFontsLoaded) {
+  if (isSessionLoading || (!areFontsLoaded && !fontError)) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator color={COLORS.orangeRed} size="large" />
@@ -63,9 +66,11 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </ErrorBoundary>
     </SafeAreaProvider>
   );
 }

@@ -76,7 +76,9 @@ export default function LoginScreen() {
   const activeRequestRef = useRef(null);
   const isMountedRef = useRef(true);
   const submissionLockRef = useRef(false);
-  const isSubmitting = loginState === 'submitting';
+  // Success keeps the button in its busy presentation because the root navigator is about to
+  // swap trees; reverting to the idle label would flash “LOG IN” for one frame after login.
+  const isSubmitting = loginState === 'submitting' || loginState === 'success';
 
   useEffect(() => {
     return () => {

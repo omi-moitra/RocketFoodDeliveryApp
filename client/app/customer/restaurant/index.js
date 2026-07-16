@@ -11,17 +11,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import FilterSelect from '../../../components/FilterSelect';
 import RestaurantCard from '../../../components/RestaurantCard';
+import ResultState from '../../../components/ResultState';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../../constants/theme';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ApiRequestError } from '../../../services/apiClient';
@@ -110,7 +104,6 @@ export default function RestaurantListScreen() {
     async function loadRestaurants() {
       try {
         const loadedRestaurants = await fetchRestaurants({
-          accessToken: session.accessToken,
           priceRange,
           rating,
           signal: requestController.signal,
@@ -267,48 +260,35 @@ export default function RestaurantListScreen() {
    */
   function renderResultState() {
     if (requestStatus === 'loading' || requestStatus === 'idle') {
-      return (
-        <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
-          <ActivityIndicator color={COLORS.orangeRed} size="large" />
-          <Text style={styles.stateText}>Loading restaurants…</Text>
-        </View>
-      );
+      return <ResultState kind="loading" message="Loading restaurants…" minHeight={260} />;
     }
 
     if (requestStatus === 'empty') {
       return (
-        <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
-          <Text style={styles.stateTitle}>
-            {hasSelectedFilters ? LIST_MESSAGES.filteredEmpty : LIST_MESSAGES.empty}
-          </Text>
-          <Text style={styles.stateText}>
-            {hasSelectedFilters
+        <ResultState
+          actionLabel={hasSelectedFilters ? 'Clear Filters' : 'Retry'}
+          kind="info"
+          message={
+            hasSelectedFilters
               ? 'Choose different values or clear both filters.'
-              : 'Try again to check for newly available restaurants.'}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={hasSelectedFilters ? handleClearFilters : handleRetry}
-            style={styles.stateButton}
-          >
-            <Text style={styles.stateButtonText}>
-              {hasSelectedFilters ? 'Clear Filters' : 'Retry'}
-            </Text>
-          </Pressable>
-        </View>
+              : 'Try again to check for newly available restaurants.'
+          }
+          minHeight={260}
+          onAction={hasSelectedFilters ? handleClearFilters : handleRetry}
+          title={hasSelectedFilters ? LIST_MESSAGES.filteredEmpty : LIST_MESSAGES.empty}
+        />
       );
     }
 
     if (requestStatus === 'error') {
       return (
-        <View accessibilityLiveRegion="assertive" style={styles.stateContainer}>
-          <Text accessibilityRole="alert" style={styles.errorText}>
-            {errorMessage || LIST_MESSAGES.response}
-          </Text>
-          <Pressable accessibilityRole="button" onPress={handleRetry} style={styles.stateButton}>
-            <Text style={styles.stateButtonText}>Retry</Text>
-          </Pressable>
-        </View>
+        <ResultState
+          actionLabel="Retry"
+          kind="error"
+          message={errorMessage || LIST_MESSAGES.response}
+          minHeight={260}
+          onAction={handleRetry}
+        />
       );
     }
 
@@ -380,47 +360,5 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: SPACING.md,
     maxWidth: '50%',
-  },
-  stateContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 260,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
-  },
-  stateTitle: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 21,
-    textAlign: 'center',
-  },
-  stateText: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 16,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: COLORS.darkRed,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  stateButton: {
-    alignItems: 'center',
-    backgroundColor: COLORS.orangeRed,
-    borderRadius: 8,
-    justifyContent: 'center',
-    marginTop: SPACING.md,
-    minHeight: LAYOUT.minimumTouchTarget,
-    minWidth: 128,
-    paddingHorizontal: SPACING.md,
-  },
-  stateButtonText: {
-    color: COLORS.white,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 17,
   },
 });
