@@ -28,12 +28,21 @@ export class ApiRequestError extends Error {
   }
 }
 
+// The env URL cannot change while the app runs, so the validated result is cached after the
+// first successful parse instead of re-running URL construction on every request.
+let cachedApiBaseUrl = null;
+
 /**
  * Validates and normalizes the public environment URL without exposing a hard-coded server.
- * buildApiUrl calls it for every outgoing request.
+ * buildApiUrl calls it for every outgoing request; only a valid result is cached so a
+ * misconfigured environment keeps producing the clear configuration error.
  * Read aloud: “get A-P-I base U-R-L.”
  */
 function getApiBaseUrl() {
+  if (cachedApiBaseUrl) {
+    return cachedApiBaseUrl;
+  }
+
   const configuredUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
 
   if (!configuredUrl) {
@@ -50,7 +59,8 @@ function getApiBaseUrl() {
       throw new Error('Unsupported API URL.');
     }
 
-    return configuredUrl.replace(/\/+$/, '');
+    cachedApiBaseUrl = configuredUrl.replace(/\/+$/, '');
+    return cachedApiBaseUrl;
   } catch {
     throw new ApiRequestError(
       'configuration',
