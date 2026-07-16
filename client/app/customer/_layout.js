@@ -4,11 +4,11 @@
  * Contents: imports, tab layout, navigation options.
  */
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Redirect, Tabs } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import AppHeader from '../../components/AppHeader';
+import AppIcon from '../../components/AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -25,7 +25,7 @@ export const unstable_settings = {
 function TabIcon({ color, focused, name, size }) {
   return (
     <View style={[styles.tabIndicator, focused && styles.activeTabIndicator]}>
-      <FontAwesome6 color={color} iconStyle="solid" name={name} size={size} />
+      <AppIcon color={color} name={name} size={size} />
     </View>
   );
 }
