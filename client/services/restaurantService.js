@@ -9,6 +9,7 @@
  * 5. Protected restaurant-detail fetch
  */
 
+import { getStoredSession } from '../storage/authStorage';
 import { ApiRequestError, requestJson } from './apiClient';
 
 export const RESTAURANT_ERROR_MESSAGES = Object.freeze({
@@ -128,20 +129,24 @@ function normalizeRestaurants(responseData) {
 /**
  * Loads restaurants for the exact active filters using the existing bearer-token API.
  * The Restaurant List screen calls it whenever its initial load or filters change.
+ * The token is read from the shared session boundary at request time, matching the
+ * project-wide convention that credentials never travel through props or arguments.
  * Read aloud: “fetch restaurants.”
- * @param {{accessToken: string, priceRange: number|null, rating: number|null, signal?: AbortSignal}} options
+ * @param {{priceRange: number|null, rating: number|null, signal?: AbortSignal}} options
  * @returns {Promise<Array<{id: number, name: string, priceRange: number, rating: number}>>}
  * @throws {ApiRequestError} When authentication, transport, HTTP, or response validation fails.
  */
-export async function fetchRestaurants({ accessToken, priceRange, rating, signal }) {
-  if (typeof accessToken !== 'string' || !accessToken.trim()) {
+export async function fetchRestaurants({ priceRange, rating, signal }) {
+  const session = await getStoredSession();
+
+  if (!session) {
     throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
   }
 
   const path = buildRestaurantPath({ priceRange, rating });
   const { data, response } = await requestJson(path, {
     headers: {
-      Authorization: `Bearer ${accessToken.trim()}`,
+      Authorization: `Bearer ${session.accessToken}`,
     },
     method: 'GET',
     signal,
@@ -165,12 +170,15 @@ export async function fetchRestaurants({ accessToken, priceRange, rating, signal
 /**
  * Loads and validates one restaurant whose response ID must match the selected route ID.
  * RestaurantMenuScreen uses this detail request because its route intentionally carries only ID.
- * @param {{accessToken: string, restaurantId: number, signal?: AbortSignal}} options
+ * The token is read from the shared session boundary at request time, never from arguments.
+ * @param {{restaurantId: number, signal?: AbortSignal}} options
  * @returns {Promise<{id: number, name: string, priceRange: number, rating: number}>}
  * @throws {ApiRequestError} For authentication, unavailable, HTTP, or response failures.
  */
-export async function fetchRestaurantById({ accessToken, restaurantId, signal }) {
-  if (typeof accessToken !== 'string' || !accessToken.trim()) {
+export async function fetchRestaurantById({ restaurantId, signal }) {
+  const session = await getStoredSession();
+
+  if (!session) {
     throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
   }
 
@@ -180,7 +188,7 @@ export async function fetchRestaurantById({ accessToken, restaurantId, signal })
 
   const encodedRestaurantId = encodeURIComponent(restaurantId);
   const { data, response } = await requestJson(`/api/restaurants/${encodedRestaurantId}`, {
-    headers: { Authorization: `Bearer ${accessToken.trim()}` },
+    headers: { Authorization: `Bearer ${session.accessToken}` },
     method: 'GET',
     signal,
   });

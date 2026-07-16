@@ -21,13 +21,20 @@ const USD_FORMATTER = new Intl.NumberFormat('en-US', {
 /**
  * Formats one validated non-negative backend cost as US dollars with two decimal places.
  * Menu, confirmation, and later order-history features share this display boundary.
+ * A value outside the whole-dollar contract returns a visible placeholder instead of
+ * throwing, because this function runs inside render paths where an exception would
+ * take down the whole screen rather than one price cell.
  * Read aloud: “format product cost.”
  * @param {number} cost Whole-dollar integer from the current seeded API contract.
- * @returns {string} A value such as `$9.00`.
+ * @returns {string} A value such as `$9.00`, or `—` for an out-of-contract value.
  */
 export function formatProductCost(cost) {
   if (!Number.isSafeInteger(cost) || cost < 0) {
-    throw new TypeError('Product cost must be a non-negative safe integer.');
+    if (__DEV__) {
+      console.warn('formatProductCost: received a cost outside the whole-dollar contract.');
+    }
+
+    return '—';
   }
 
   return USD_FORMATTER.format(cost);
