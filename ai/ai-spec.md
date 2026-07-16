@@ -43,11 +43,11 @@ When sources conflict, follow this order:
 
 If a conflict cannot be resolved from those sources, stop that decision, record the question, and ask a coach. Do not invent a requirement.
 
-Known unresolved version conflict:
+Resolved Expo version decision:
 
-- The business document says Expo SDK `~55`.
-- The current generated client uses Expo SDK 54 (`expo ~54.0.34`) and points agents to SDK 54 documentation.
-- Do not upgrade or downgrade Expo until the required version is confirmed. Until then, SDK 54 is the current executable baseline, not a final grading decision.
+- The business document says Expo SDK `~55`, while the generated client uses Expo SDK 54.
+- A coach confirmed on July 16, 2026 that Expo SDK 54 is acceptable for this submission.
+- Keep the current `expo ~54.0.34` baseline and use SDK 54-compatible packages and documentation.
 
 ## 2. Project identity
 
@@ -134,7 +134,7 @@ The generic `ai/features/feature-name.feature.md` is a drafting template only. I
 
 ### 6.1 Current frontend baseline
 
-- Expo SDK 54 pending version clarification.
+- Expo SDK 54 (`expo ~54.0.34`), confirmed as acceptable by a coach on July 16, 2026.
 - React Native 0.81.5.
 - React 19.1.0.
 - JavaScript blank template; do not introduce TypeScript halfway through without an explicit project decision.
@@ -1040,5 +1040,6 @@ The project is complete only when all applicable items below pass.
 - [ ] All five LeetCode screenshots exist.
 - [ ] Concepts, LeetCode, and technical-demo videos are 5–10 minutes, Unlisted, and accessible.
 - [ ] The separate submission summary contains all required links and information but is not in Git.
-- [ ] Coach review and two progress updates are complete.
+- [ ] Both required progress updates are complete.
+- [x] Coach review is complete.
 - [ ] The platform submission is completed before Friday at 11:59 PM.
