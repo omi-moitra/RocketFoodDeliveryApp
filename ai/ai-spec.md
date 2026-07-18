@@ -167,7 +167,8 @@ The generic `ai/features/feature-name.feature.md` is a drafting template only. I
 
 ## 7. Repository architecture
 
-Target structure:
+Current repository structure (submission-facing paths; ignored private planning files and the
+separate untracked submission summary are intentionally excluded):
 
 ```text
 M13-rocketFoodDelivery/
@@ -195,14 +196,20 @@ M13-rocketFoodDelivery/
 │   │           └── [restaurantId].js
 │   ├── components/
 │   ├── constants/
+│   ├── contexts/
 │   ├── services/
 │   ├── storage/
+│   ├── utils/
 │   ├── images/
 │   │   └── restaurants/
 │   ├── assets/
+│   ├── .env.example
 │   ├── app.json
-│   └── package.json
+│   ├── package.json
+│   └── package-lock.json
 ├── server/                     # Existing Java application; do not modify for Module 13
+├── scripts/
+│   └── ngrok-phone.sh
 ├── support_materials_13/       # Original design/reference resources
 ├── LeetCode-Challenges/
 ├── README.md
@@ -211,7 +218,8 @@ M13-rocketFoodDelivery/
 └── PostmanCollection.json
 ```
 
-This is the intended shape. Update this section if an approved implementation decision changes a real path. Do not let the specification drift away from the repository.
+This is the implemented shape. Update this section whenever a real path changes. Do not let the
+specification drift away from the repository.
 
 ### 7.1 Client responsibilities
 
@@ -993,53 +1001,53 @@ The project is complete only when all applicable items below pass.
 ### 26.1 Repository and workflow
 
 - [ ] The repository is private and all coaches are collaborators.
-- [ ] Feature work visibly followed `feature/*` → `dev` → `main`.
-- [ ] No direct implementation commits were made to `main`.
+- [x] Feature work visibly followed `feature/*` → `dev` → `main`.
+- [x] No direct implementation commits were made to `main`.
 - [ ] `main` contains the final stable version and is pushed.
-- [ ] Git contains no secrets, local environment files, generated output, or submission summary.
+- [x] Git contains no secrets, local environment files, generated output, or submission summary.
 
 ### 26.2 Specifications and code quality
 
 - [x] `ai/ai-spec.md` is current and was used before feature work.
-- [ ] All eight exact feature specs exist and match final behavior.
-- [ ] Human-authored source/docs contain the required purpose/contents header or Markdown TOC where supported.
-- [ ] Naming and inline comments follow Sections 13–15.
-- [ ] No debug code, stale comments, unexplained TODOs, or dead code remains.
+- [x] All eight exact feature specs exist and match final behavior.
+- [x] Human-authored source/docs contain the required purpose/contents header or Markdown TOC where supported.
+- [x] Naming and inline comments follow Sections 13–15.
+- [x] No debug code, stale comments, unexplained TODOs, or dead code remains.
 
 ### 26.3 Functionality
 
-- [ ] Email/password login succeeds with valid credentials.
-- [ ] Invalid credentials show an inline error above Login.
-- [ ] JWT and customer identity persist and protected requests use the bearer token.
-- [ ] Header/footer visibility, logo, logout, and three-level navigation work.
-- [ ] All restaurants load by default.
-- [ ] Rating, price, and combined filters work with placeholders when unset.
-- [ ] Restaurant-image navigation opens the correct menu.
+- [x] Email/password login succeeds with valid credentials.
+- [x] Invalid credentials show an inline error above Login.
+- [x] JWT and customer identity persist and protected requests use the bearer token.
+- [x] Header/footer visibility, logo, logout, and three-level navigation work.
+- [x] All restaurants load by default.
+- [x] Rating, price, and combined filters work with placeholders when unset.
+- [x] Restaurant-image navigation opens the correct menu.
 - [x] Quantities start/reset at zero, use buttons only, and never become negative.
 - [x] Create Order disables at zero and opens the correct modal when enabled.
-- [ ] Confirmation details and currency values are accurate.
-- [ ] Processing, success, failure, retry, and duplicate-submission behavior work.
-- [ ] Order History shows Order, Status, and View.
-- [ ] The detail modal shows correct date, status, courier, products, prices, and totals.
-- [ ] Missing courier data displays safely.
+- [x] Confirmation details and currency values are accurate.
+- [x] Processing, success, failure, retry, and duplicate-submission behavior work.
+- [x] Order History shows Order, Status, and View.
+- [x] The detail modal shows correct date, status, courier, products, prices, and totals.
+- [x] Missing courier data displays safely.
 
 ### 26.4 Design and platforms
 
 - [ ] Every graded page/modal matches the wireframe.
-- [ ] Every color uses the exact graded palette.
-- [ ] Supplied assets and `/images/restaurants` are present.
-- [ ] Header/footer and scrolling rules are satisfied.
-- [ ] The full journey works on iOS and Android.
-- [ ] The full journey works on a physical phone through Expo and ngrok when phone testing is used.
+- [x] Every color uses the exact graded palette.
+- [x] Supplied assets and `/images/restaurants` are present.
+- [x] Header/footer and scrolling rules are satisfied.
+- [x] The full journey works on iOS and Android.
+- [x] The full journey works on a physical phone through Expo and ngrok when phone testing is used.
 
 ### 26.5 Testing and deliverables
 
-- [ ] Postman covers every Module 13 endpoint with preconfigured parameters and no query edits.
+- [x] Postman covers every Module 13 endpoint used by the mobile app with preconfigured parameters and no query edits.
 - [ ] Expo configuration, dependency, bundle/export, and applicable automated/manual checks pass.
-- [ ] `README.md`, `RESEARCH.md`, `CONCEPTS.md`, and `PostmanCollection.json` are complete.
-- [ ] All five LeetCode screenshots exist.
+- [x] `README.md`, `RESEARCH.md`, `CONCEPTS.md`, and `PostmanCollection.json` are complete.
+- [x] All five LeetCode screenshots exist.
 - [ ] Concepts, LeetCode, and technical-demo videos are 5–10 minutes, Unlisted, and accessible.
-- [ ] The separate submission summary contains all required links and information but is not in Git.
+- [x] The separate submission summary contains all required links and information but is not in Git.
 - [ ] Both required progress updates are complete.
 - [x] Coach review is complete.
 - [ ] The platform submission is completed before Friday at 11:59 PM.

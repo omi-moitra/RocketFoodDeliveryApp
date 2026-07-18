@@ -1,5 +1,23 @@
 # Rocket Food Delivery Mobile App
 
+## Table of Contents
+
+- [Project Description](#project-description)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation / Setup](#installation--setup)
+- [Environment Variables](#environment-variables)
+- [API Documentation](#api-documentation)
+- [Examples from This Project](#examples-from-this-project)
+- [Seeded Development Data](#seeded-development-data)
+- [Verification](#verification)
+- [Related Documentation](#related-documentation)
+- [Author / Contributors](#author--contributors)
+
+## Project Description
+
 Rocket Food Delivery is a cross-platform customer app for browsing restaurants, filtering by rating and price, choosing menu quantities, placing an order, and reviewing order history. It gives customers one mobile workflow while the existing Java API manages authentication, restaurant data, products, and orders.
 
 This repository is the Module 13 mobile-development project. It contains the Expo/React Native client, the existing Spring Boot backend used by the client, project specifications, research, concept documentation, and an importable Postman collection.
@@ -15,7 +33,7 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 - Shared loading, empty, error, and session-expiry handling
 - iOS, Android, simulator, and physical-device development through Expo and ngrok
 
-## Tech stack
+## Tech Stack
 
 | Area | Technology |
 |---|---|
@@ -31,18 +49,24 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 
 Expo SDK 54 is intentional. A coach confirmed that the repository's current `expo ~54.0.34` baseline is acceptable for this submission.
 
-## Project structure
+## Project Structure
 
 ```text
 .
 ├── client/
 │   ├── app/                    # Expo Router screens and nested layouts
+│   ├── assets/                 # App icons, logos, and menu image
 │   ├── components/             # Reusable interface components and modals
+│   ├── constants/              # Theme, assets, labels, and currency rules
 │   ├── contexts/               # Authentication/session context
+│   ├── images/restaurants/     # Six bundled restaurant images
 │   ├── services/               # API requests and response validation
 │   ├── storage/                # AsyncStorage session boundary
-│   ├── constants/ and utils/   # Theme, assets, labels, and validation
-│   └── .env.example            # Safe client environment template
+│   ├── utils/                  # Menu, label, and validation helpers
+│   ├── .env.example            # Safe client environment template
+│   ├── app.json                # Expo application configuration
+│   ├── package.json            # Client scripts and dependencies
+│   └── package-lock.json       # Locked dependency versions
 ├── server/
 │   ├── src/main/java/          # Controllers, services, repositories, DTOs, security
 │   ├── src/main/resources/     # Thymeleaf backoffice templates
@@ -51,6 +75,7 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 ├── scripts/ngrok-phone.sh           # Physical-phone API tunnel helper
 ├── ai/                              # Project rules and feature specifications
 ├── support_materials_13/            # Supplied wireframes, palette, and images
+├── LeetCode-Challenges/              # Required SQL challenge solution screenshots
 ├── PostmanCollection.json           # Importable mobile API request collection
 ├── CONCEPTS.md                      # Three project concepts and code references
 └── RESEARCH.md                      # Required mobile-development research
@@ -78,7 +103,7 @@ Root Stack
 - Expo Go for physical-device testing, or an iOS/Android simulator
 - ngrok and a free ngrok account only when testing the API from a physical phone
 
-## Installation and local setup
+## Installation / Setup
 
 ### 1. Clone the repository
 
@@ -165,7 +190,7 @@ From the repository root, run:
 
 The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL to `client/.env`, and restores the previous file when stopped with `Ctrl+C`. Follow its prompt to start Expo. If the phone and computer cannot connect directly for Expo's development traffic, use `npx expo start -c --tunnel` from `client/`.
 
-## Configuration and secrets
+## Environment Variables
 
 | Setting | Location | Required | Purpose |
 |---|---|---:|---|
@@ -178,7 +203,7 @@ The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL
 
 `EXPO_PUBLIC_*` values are embedded in the client bundle and must never contain secrets. Backend notification settings for Twilio and Notify.EU are optional and are not needed for the Module 13 customer flow because order requests send both notification flags as `false`. Those optional provider settings are therefore not part of the required local setup above.
 
-## Mobile API overview
+## API Documentation
 
 The client reads the configured base URL, adds the path below, and expects JSON. Except for login, `/api/**` routes require `Authorization: Bearer <accessToken>`.
 
@@ -190,6 +215,87 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
 | `POST` | `/api/orders` | Create an order with restaurant, customer, and product quantities |
 | `GET` | `/api/orders?type=customer&id={id}` | Load the authenticated customer's order history |
+
+## Examples from This Project
+
+### Seeded customer login
+
+The Postman collection and mobile demo use this development-only customer account:
+
+```text
+Email: customer@gmail.com
+Password: password
+```
+
+The Login screen sends those credentials to `POST /api/auth`. A successful response supplies the customer identity and bearer token used by the protected customer routes. These are local seed credentials, not production credentials.
+
+### Browse and filter restaurants
+
+The Restaurants screen loads the complete list with:
+
+```http
+GET /api/restaurants
+Authorization: Bearer <accessToken>
+```
+
+Selecting both filters produces a request such as:
+
+```http
+GET /api/restaurants?rating=4&price_range=2
+Authorization: Bearer <accessToken>
+```
+
+The screen keeps the selected filter values in component state, shows a deliberate empty state when nothing matches, and navigates with the selected restaurant's API ID rather than its position in the filtered array.
+
+### Create an order
+
+After the customer chooses menu quantities and confirms the modal, the client sends the backend's snake-case request contract:
+
+```json
+{
+  "restaurant_id": 1,
+  "customer_id": 2,
+  "products": [
+    {
+      "id": 1,
+      "quantity": 2
+    }
+  ],
+  "send_email": false,
+  "send_sms": false
+}
+```
+
+The actual IDs come from the authenticated customer and loaded restaurant/menu data. The order modal accepts only a valid HTTP `201` Success response before displaying its success state. Returning to Order History refreshes the list and lets the customer open the persisted order details.
+
+## Seeded Development Data
+
+`server/src/main/java/com/rocketFoodDelivery/rocketFood/DataSeeder.java` runs when the Spring application starts. On a fresh database it creates the following development data:
+
+| Data | Fresh-database seed |
+|---|---|
+| Users | 30 baseline users, including `both@gmail.com`, `customer@gmail.com`, and `courier@gmail.com` |
+| Addresses | 30 generated addresses |
+| Order statuses | `pending`, `in progress`, and `delivered` |
+| Courier statuses | `free`, `busy`, `full`, and `offline` |
+| Restaurants | 8 active restaurants with generated names and price ranges from 1–3 |
+| Employees | 5 generated employee records |
+| Customers | 8 baseline customers, followed by 5 append-only Avatar demo customers |
+| Couriers | 8 active couriers with randomly assigned courier statuses |
+| Products | 5–7 generated menu products per restaurant, normally 40–56 total |
+| Orders | 10 generated orders with 2–4 product rows each, varied statuses, optional ratings, and no courier while pending |
+
+The five stable Avatar customer accounts are:
+
+| Name | Email | Password |
+|---|---|---|
+| Aang | `aang@gmail.com` | `password` |
+| Katara | `katara@gmail.com` | `password` |
+| Sokka | `sokka@gmail.com` | `password` |
+| Toph Beifong | `toph@gmail.com` | `password` |
+| Zuko | `zuko@gmail.com` | `password` |
+
+Most seed methods skip a table when it already contains data. The Avatar accounts are different: any missing Avatar user/customer is appended without rewriting an existing account. Restaurant names, addresses, product details, prices, assignments, statuses, and ratings use Faker or random values, so they can differ between fresh databases. Existing or partially seeded databases can also have totals different from the fresh-database table above.
 
 The request flow is: screen/component → client service → shared API client → Spring Security JWT filter → controller → service → repository/MySQL → JSON response → client validation → interface state.
 
@@ -221,10 +327,11 @@ The completed manual QA covers the customer journey on iOS and Android: login an
 - [ai/ai-spec.md](ai/ai-spec.md) records repository-wide implementation rules and decisions.
 - [`ai/features/`](ai/features/) contains the feature-level behavior contracts.
 
-## Author
+## Author / Contributors
 
 Created by **Omoitra** for CodeBoxx Full-Stack Development Module 13.
 
 - [GitHub profile](https://github.com/omoitra-droid)
 - [Project repository](https://github.com/omoitra-droid/M13-rocketFoodDelivery)
 
+No additional contributors are listed for this student project.

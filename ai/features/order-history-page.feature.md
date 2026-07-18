@@ -39,7 +39,7 @@ Orders load for the stored authenticated `customer_id` (never `user_id`) with th
 
 ### In Scope (Included)
 
-- Replacing the Order History placeholder at `client/app/customer/order-history.js` with the real screen inside the existing customer tab layout.
+- The implemented Order History screen at `client/app/customer/order-history.js` inside the existing customer tab layout.
 - Protected loading of the current customer's orders via `GET /api/orders?type=customer&id={customerId}` through the shared `apiClient`.
 - Reading `customerId` and the access token only through the shared session boundary (`client/storage/authStorage.js`).
 - Validation and normalization of the API's `{ message, data }` envelope and each returned order object at the service boundary.
@@ -171,7 +171,7 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 ### Requirement G — Detailed Comments and Per-File Contents
 
 - Every human-authored JavaScript file created or materially changed for this feature begins with a block comment containing the exact file name, one-sentence purpose, and numbered `Contents` list in source order, kept synchronized with the final implementation.
-- Replace the placeholder header comment in `order-history.js` with the real screen's header.
+- Keep the implemented purpose/Contents header in `order-history.js` accurate as the screen evolves.
 - Add detailed inline comments immediately above non-obvious logic, including:
   - Why `type=customer` and the stored `customer_id` (not `user_id`) scope the request.
   - Envelope/array validation and the nullable-courier rule.
@@ -222,10 +222,9 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 
 ### Components
 
-- `client/components/OrderHistoryRow.js` — recommended reusable table row for restaurant name, uppercase status, and the View action (name may vary if a clearer table component emerges).
+- `client/components/OrderHistoryRow.js` — renders the restaurant name, uppercase status, and View action for one table row.
 - `client/components/OrderHistoryModal.js` — detail modal component governed by `order-history-modal.feature.md`; this page only controls its visibility and selected order.
 - Reuse shared loading/error primitives only if they preserve the page-specific empty, error, and retry distinctions.
-- Do not retain `ScreenPlaceholder` as the final Order History implementation.
 
 ### Services and Configuration
 
@@ -364,7 +363,7 @@ ready → modal-open → ready
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript for only this feature.
-- Replace the placeholder inside the existing tab route `client/app/customer/order-history.js`; do not move or rename the route.
+- Keep the implemented screen inside the existing tab route `client/app/customer/order-history.js`; do not move or rename the route.
 - Use the existing Spring Boot API as-is; do not modify `server/`.
 - Route the request through the shared `apiClient`; do not call `fetch` directly or duplicate token/timeout handling.
 - Extend the existing `client/services/orderService.js` rather than creating a second overlapping order service.
@@ -380,47 +379,47 @@ ready → modal-open → ready
 
 ### Request and Data
 
-- [ ] The request is exactly `GET /api/orders?type=customer&id={customerId}` with the stored customer ID and bearer token via the shared `apiClient`.
-- [ ] `customer_id` from storage — never `user_id` — scopes the request.
-- [ ] The `{ message, data }` envelope and each order object are validated at the service boundary.
-- [ ] A valid empty array renders the empty state, not an error.
-- [ ] Orders with `null` courier fields load and render safely.
-- [ ] The complete validated order object is preserved in state for the detail modal; no per-order detail endpoint is called.
+- [x] The request is exactly `GET /api/orders?type=customer&id={customerId}` with the stored customer ID and bearer token via the shared `apiClient`.
+- [x] `customer_id` from storage — never `user_id` — scopes the request.
+- [x] The `{ message, data }` envelope and each order object are validated at the service boundary.
+- [x] A valid empty array renders the empty state, not an error.
+- [x] Orders with `null` courier fields load and render safely.
+- [x] The complete validated order object is preserved in state for the detail modal; no per-order detail endpoint is called.
 
 ### Table and View Action
 
-- [ ] The page heading is exactly `MY ORDERS`.
-- [ ] The table header row contains exactly `ORDER`, `STATUS`, and `VIEW` on the charcoal band.
-- [ ] Each row shows the restaurant name, the uppercase status, and the magnifier View icon, aligned with the headings.
-- [ ] Pressing View opens the Order History Detail modal with exactly that row's order object.
-- [ ] Rapid or repeated View taps never stack modals or open the wrong order.
-- [ ] Closing the modal returns to the unchanged list without refetching.
+- [x] The page heading is exactly `MY ORDERS`.
+- [x] The table header row contains exactly `ORDER`, `STATUS`, and `VIEW` on the charcoal band.
+- [x] Each row shows the restaurant name, the uppercase status, and the magnifier View icon, aligned with the headings.
+- [x] Pressing View opens the Order History Detail modal with exactly that row's order object.
+- [x] Rapid or repeated View taps never stack modals or open the wrong order.
+- [x] Closing the modal returns to the unchanged list without refetching.
 
 ### Refresh and States
 
-- [ ] Orders load on first mount and reload when the tab regains focus.
-- [ ] An order created moments earlier through the confirmation modal appears after switching to the tab.
-- [ ] A focus refresh keeps existing rows visible and replaces them only with newer validated data.
-- [ ] Initial loading, refreshing, empty, error, and rendered data are distinct states with no impossible combinations.
-- [ ] Retry repeats the same request and no control is left permanently disabled after a failure.
-- [ ] HTTP 401/403 triggers the shared sign-out to Login.
-- [ ] Late/stale responses never overwrite newer data or update an unmounted screen.
+- [x] Orders load on first mount and reload when the tab regains focus.
+- [x] An order created moments earlier through the confirmation modal appears after switching to the tab.
+- [x] A focus refresh keeps existing rows visible and replaces them only with newer validated data.
+- [x] Initial loading, refreshing, empty, error, and rendered data are distinct states with no impossible combinations.
+- [x] Retry repeats the same request and no control is left permanently disabled after a failure.
+- [x] HTTP 401/403 triggers the shared sign-out to Login.
+- [x] Late/stale responses never overwrite newer data or update an unmounted screen.
 
 ### Visual, Accessibility, and Documentation
 
 - [ ] The page closely matches the supplied Order History wireframe, including the charcoal header band and magnifier icons.
-- [ ] Only the exact graded palette and shared Oswald/body typography are used.
-- [ ] Long histories scroll between the persistent shared header and footer on iOS and Android.
-- [ ] Rows and View buttons have correct roles, labels, reading order, and touch targets; status never relies on color alone.
-- [ ] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc, with the placeholder comment removed.
-- [ ] Postman contains the preconfigured customer order-history request needing no manual query edits.
+- [x] Only the exact graded palette and shared Oswald/body typography are used.
+- [x] Long histories scroll between the persistent shared header and footer on iOS and Android.
+- [x] Rows and View buttons have correct roles, labels, reading order, and touch targets; status never relies on color alone.
+- [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
+- [x] Postman contains the preconfigured customer order-history request needing no manual query edits.
 
 ## Feature Definition of Done
 
 This feature is complete only when:
 
 - Every in-scope sub-requirement and acceptance criterion passes against the existing Java API.
-- The Order History placeholder has been replaced by the real `MY ORDERS` table with accurate customer-scoped data.
+- The Order History screen is the real `MY ORDERS` table with accurate customer-scoped data.
 - A live end-to-end check confirms an order created through the confirmation modal appears in the table after switching tabs.
 - Loading, empty, error, retry, focus-refresh, stale-request, nullable-courier, and expired-session paths are each exercised deliberately.
 - View opens the detail modal with the correct complete order object, verified for at least two different orders.

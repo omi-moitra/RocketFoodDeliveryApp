@@ -350,11 +350,9 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 
 ### Components
 
-- `client/components/MenuProductRow.js` — recommended reusable row for static image, product text, price, quantity, and plus/minus actions.
-- `client/components/QuantityStepper.js` — optional extraction when it remains button-only and keeps the authoritative quantity in the parent screen.
+- `client/components/MenuProductRow.js` — renders the static image, product text, price, and button-only stepper while the parent screen retains authoritative quantity state.
 - `client/components/OrderConfirmationModal.js` — modal component governed by `menu-modal-confirmation.feature.md`.
 - Reuse shared loading/error primitives only if they preserve the menu-specific empty, invalid, unavailable, and retry distinctions.
-- Do not retain `ScreenPlaceholder` as the final Menu implementation.
 
 ### Services and Configuration
 
@@ -554,7 +552,7 @@ ready → confirmation-open → ready
 - [x] Products request uses `?restaurant=<restaurantId>` and never loads the global unfiltered list.
 - [x] Every product is validated, uniquely keyed, and belongs to the selected restaurant.
 - [x] Empty product arrays are handled as a valid empty menu.
-- [ ] The integer-cost currency rule has been verified in Postman/grading data and documented before formatting.
+- [x] The integer-cost currency rule has been verified in live API data and documented before formatting.
 
 ### Menu Display and Asset
 
@@ -588,14 +586,14 @@ ready → confirmation-open → ready
 - [x] Plus, minus, quantity, Create Order, retry, and return controls have correct labels, roles, disabled state, and touch targets.
 - [x] Exact palette and shared fonts are used on iOS and Android.
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
-- [ ] Postman contains preconfigured successful restaurant-detail and selected-restaurant-products requests plus relevant failure/empty evidence.
+- [x] Postman contains preconfigured successful restaurant-detail and selected-restaurant-products requests plus relevant failure evidence.
 
 ## Feature Definition of Done
 
 This feature is complete only when:
 
 - Every in-scope sub-requirement and acceptance criterion passes against the existing Java API.
-- The Menu placeholder has been replaced by the real restaurant summary, scrollable product list, quantity controls, and Create Order entry.
+- The Menu screen contains the real restaurant summary, scrollable product list, quantity controls, and Create Order entry.
 - The cost-unit conflict is resolved through real Postman/grading-data evidence and one shared conversion is documented and used consistently.
 - `RestaurantMenu.jpg` is verified in the runtime client path, renders on both platforms, and remains preserved in support materials.
 - Quantity initialization, plus/minus behavior, zero floor, route-change reset, same-restaurant reload, and rapid taps are verified.

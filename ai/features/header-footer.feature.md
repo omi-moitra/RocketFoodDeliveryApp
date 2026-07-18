@@ -359,7 +359,7 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - [x] Restaurant List displays both the shared header and footer.
 - [x] Restaurant Menu displays both the shared header and footer.
 - [x] Order History displays both the shared header and footer.
-- [ ] Opening or closing an authenticated feature modal does not create a second header/footer.
+- [x] Opening or closing an authenticated feature modal does not create a second header/footer.
 - [x] Root and nested Stack native headers do not duplicate the shared header.
 
 ### Header
@@ -367,7 +367,7 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - [x] The header uses an approved supplied Rocket Food Delivery logo copied into the client runtime assets.
 - [x] The logo is not stretched, cropped, recolored, or replaced with plain text.
 - [x] A visible button is labeled exactly `Log Out`.
-- [ ] Logo and button do not overlap or clip on a small phone.
+- [x] Logo and button do not overlap or clip on a small phone.
 - [x] The Log Out button remains accessible with larger text settings.
 
 ### Footer
@@ -377,7 +377,7 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - [x] The right tab is labeled exactly `Order History`.
 - [x] Each tab opens the correct route.
 - [x] The active tab is visibly and accessibly selected without relying only on color.
-- [ ] Pressing the active tab repeatedly does not create duplicate routes.
+- [x] Pressing the active tab repeatedly does not create duplicate routes.
 - [x] The footer remains visible while Restaurant Menu is open.
 - [x] No layout, dynamic route, or internal screen appears as an unintended tab.
 
@@ -389,7 +389,7 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - [x] Matching in-memory session state is cleared.
 - [x] Successful logout replaces the authenticated customer area with Login.
 - [x] Header and footer are absent after logout.
-- [ ] iOS back gesture and Android hardware back cannot reopen authenticated content after logout.
+- [x] iOS back gesture and Android hardware back cannot reopen authenticated content after logout.
 - [x] No backend logout endpoint is called.
 - [x] No token, password, or internal storage error is logged or displayed.
 - [x] A cleanup failure shows a safe retry message and returns the button to an interactive state.
@@ -398,27 +398,27 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 
 - [x] Header/footer colors use exact centralized values from the supplied palette.
 - [ ] The implementation is compared side by side with `support_materials_13/Design/Wireframe.pdf`.
-- [ ] Top and bottom safe areas are respected on iOS and Android.
-- [ ] Header and footer do not cover the first or last page content.
-- [ ] Long Restaurant List, Restaurant Menu, and Order History content remains scrollable and reachable.
+- [x] Top and bottom safe areas are respected on iOS and Android.
+- [x] Header and footer do not cover the first or last page content.
+- [x] Long Restaurant List, Restaurant Menu, and Order History content remains scrollable and reachable.
 - [x] Required controls have readable contrast, accessible roles/labels, and usable touch targets.
-- [ ] The complete shared-frame and logout flow is verified on both iOS and Android through Expo.
+- [x] The complete shared-frame and logout flow is verified on both iOS and Android through Expo.
 
 ## Feature Definition of Done
 
 - [ ] Every in-scope requirement and acceptance criterion passes.
 - [x] One shared header implementation is used throughout the authenticated customer area.
 - [x] Expo Router Tabs provide exactly the required footer navigation.
-- [ ] The complete path Login → Restaurants → Restaurant Menu → Order History → Restaurants → Logout works without duplicated or missing shared UI.
-- [ ] Logout success, repeated presses, storage-cleanup failure, HTTP 401 cleanup, and post-logout back behavior are verified.
-- [ ] Header/footer placement is checked on small screens, long content, large accessibility text, and device safe areas.
+- [x] The complete path Login → Restaurants → Restaurant Menu → Order History → Restaurants → Logout works without duplicated or missing shared UI.
+- [x] Logout success, repeated presses, storage-cleanup failure, HTTP 401 cleanup, and post-logout back behavior are verified.
+- [x] Header/footer placement is checked on small screens, long content, large accessibility text, and device safe areas.
 - [ ] The visual result is compared with the supplied wireframe and exact color scheme on both iOS and Android.
 - [x] The approved supplied logo is copied into runtime assets and the originals remain unchanged.
 - [x] Tests or focused verification cover visibility boundaries, tab destinations/order, and awaited logout navigation.
-- [ ] The implementation matches `ai/ai-spec.md`, `navigation-structure.feature.md`, the grading sheet, and this feature specification.
+- [x] The implementation matches `ai/ai-spec.md`, `navigation-structure.feature.md`, the grading sheet, and this feature specification.
 - [x] No backend, database, unrelated feature, or original support-material file was changed.
 - [x] New human-authored source files contain the required purpose header and contents map.
-- [ ] Temporary logs, placeholder controls, unused assets, stale comments, and duplicate shared components are removed.
+- [x] Temporary logs, placeholder controls, unused assets, stale comments, and duplicate shared components are removed.
 - [x] The feature diff contains no access token, password, `.env`, or generated build output.
 
 ## Notes for the AI

@@ -387,49 +387,49 @@ idle → processing → success
 
 ### Summary Accuracy and Currency
 
-- [ ] The modal shows exactly the positive-quantity products passed by Restaurant Menu with accurate names and quantities.
-- [ ] Each row shows the correct formatted line total and the `TOTAL:` row equals the sum of raw line totals.
-- [ ] Every price uses the shared formatter with a currency symbol and two decimals (for example `$20.95`).
-- [ ] No zero-quantity product, `undefined`, `NaN`, or unformatted value ever renders.
+- [x] The modal shows exactly the positive-quantity products passed by Restaurant Menu with accurate names and quantities.
+- [x] Each row shows the correct formatted line total and the `TOTAL:` row equals the sum of raw line totals.
+- [x] Every price uses the shared formatter with a currency symbol and two decimals (for example `$20.95`).
+- [x] No zero-quantity product, `undefined`, `NaN`, or unformatted value ever renders.
 
 ### Submission and Request Contract
 
-- [ ] Confirm Order sends `POST /api/orders` with the exact documented body: `restaurant_id`, stored `customer_id`, positive-quantity `products`, `send_email: false`, `send_sms: false`.
-- [ ] The request goes through the shared `apiClient` with the bearer token and bounded timeout.
-- [ ] Only HTTP 201 with the validated `{ message, data }` envelope counts as success.
-- [ ] At most one request is ever in flight; rapid taps and stale presses cannot duplicate it.
-- [ ] Closing or unmounting aborts a pending request and no late response updates state or creates a duplicate order.
+- [x] Confirm Order sends `POST /api/orders` with the exact documented body: `restaurant_id`, stored `customer_id`, positive-quantity `products`, `send_email: false`, `send_sms: false`.
+- [x] The request goes through the shared `apiClient` with the bearer token and bounded timeout.
+- [x] Only HTTP 201 with the validated `{ message, data }` envelope counts as success.
+- [x] At most one request is ever in flight; rapid taps and stale presses cannot duplicate it.
+- [x] Closing or unmounting aborts a pending request and no late response updates state or creates a duplicate order.
 
 ### State Presentation
 
-- [ ] While pending, the action button is disabled and reads `Processing Order…`.
-- [ ] On success the button disappears and the green checkmark with `Thank you! Your order has been received.` appears.
-- [ ] On failure the Confirm Order button reappears with the red X icon and `Your order was not processed successfully. Please try again.`
-- [ ] Retry after failure resubmits the same selection and can succeed.
-- [ ] No button is ever left permanently disabled after a failed request.
-- [ ] HTTP 401/403 triggers the shared sign-out to Login instead of a modal retry state.
+- [x] While pending, the action button is disabled and reads `Processing Order…`.
+- [x] On success the button disappears and the green checkmark with `Thank you! Your order has been received.` appears.
+- [x] On failure the Confirm Order button reappears with the red X icon and `Your order was not processed successfully. Please try again.`
+- [x] Retry after failure resubmits the same selection and can succeed.
+- [x] No button is ever left permanently disabled after a failed request.
+- [x] HTTP 401/403 triggers the shared sign-out to Login instead of a modal retry state.
 
 ### Close Behavior and Menu Integration
 
-- [ ] The X control (and Android back) works in every state.
-- [ ] Closing from idle, error, or processing preserves current menu quantities.
-- [ ] Closing after success resets every menu quantity to zero and disables Create Order.
-- [ ] Reopening the modal always starts fresh in `idle` from the menu's current selection.
+- [x] The X control (and Android back) works in every state.
+- [x] Closing from idle, error, or processing preserves current menu quantities.
+- [x] Closing after success resets every menu quantity to zero and disables Create Order.
+- [x] Reopening the modal always starts fresh in `idle` from the menu's current selection.
 
 ### Visual, Accessibility, and Documentation
 
 - [ ] All four modal states closely match the supplied Order Confirmation wireframe pages.
-- [ ] Only the exact graded palette is used: orange-red action, charcoal header/text, muted-green checkmark, dark-red failure X, white surfaces.
-- [ ] The modal, rows, buttons, and result messages have correct roles, labels, disabled/busy semantics, and touch targets; outcomes are announced, not color-only.
-- [ ] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc, with the stale no-submission note removed.
-- [ ] Postman contains preconfigured successful and failed `POST /api/orders` requests demonstrating the documented success and 400 shapes.
+- [x] Only the exact graded palette is used: orange-red action, charcoal header/text, muted-green checkmark, dark-red failure X, white surfaces.
+- [x] The modal, rows, buttons, and result messages have correct roles, labels, disabled/busy semantics, and touch targets; outcomes are announced, not color-only.
+- [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc, with stale pre-submission notes removed.
+- [x] Postman contains preconfigured successful and failed `POST /api/orders` requests demonstrating the documented success and 400 shapes.
 
 ## Feature Definition of Done
 
 This feature is complete only when:
 
 - Every in-scope sub-requirement and acceptance criterion passes against the existing Java API.
-- The existing preview-only modal has been extended with the Confirm Order action, order service submission, and all four wireframe states.
+- The Order Confirmation modal contains the Confirm Order action, order service submission, and all four wireframe states.
 - A real order created through the modal is verified as HTTP 201 in Postman/logs and subsequently appears in the customer's `GET /api/orders?type=customer&id={customerId}` history.
 - Processing, success, failure, retry, duplicate-prevention, abort-on-close, and 401 paths are each exercised deliberately (using a failing request such as an invalid body to prove the failure state).
 - Success-close resets the menu quantities to zero and cancel-close preserves them, verified in the running app.
@@ -442,7 +442,7 @@ This feature is complete only when:
 
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
 - The grading sheet is authoritative: accurate details, standard currency format, disabled `Processing Order…` while awaiting the API, success hides the button with a green checkmark and message, failure restores Confirm Order with a red X and message.
-- `client/components/OrderConfirmationModal.js` already renders the summary preview; extend it rather than rewriting it, and update its header comment because it will now submit orders.
+- `client/components/OrderConfirmationModal.js` owns the selected-product summary and the complete order-submission state machine.
 - The API responds with the `{ "message": "Success", "data": ... }` envelope and HTTP 201 on create; failures use `{ "error", "details" }`. Do not assume a bare object or a `success` boolean.
 - `customer_id` comes from stored session data (`authStorage`), never from `user_id`, props, or route parameters.
 - Enforce the single-request guard inside the submit handler even though the button is disabled during processing.

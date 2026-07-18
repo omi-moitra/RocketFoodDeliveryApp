@@ -409,63 +409,63 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 
 ### Screen and Form
 
-- [ ] `client/app/index.js` is a functional email/password Login page rather than a placeholder.
+- [x] `client/app/index.js` is a functional email/password Login page rather than a placeholder.
 - [ ] The Login page closely matches the supplied wireframe and exact centralized palette on iOS and Android.
-- [ ] The Login screen contains no authenticated shared header, Log Out button, or footer tabs.
-- [ ] Email input uses appropriate keyboard, capitalization, and autofill settings.
-- [ ] Password input masks its value and uses appropriate autofill settings.
-- [ ] The form remains usable with the keyboard open and on a small phone screen.
+- [x] The Login screen contains no authenticated shared header, Log Out button, or footer tabs.
+- [x] Email input uses appropriate keyboard, capitalization, and autofill settings.
+- [x] Password input masks its value and uses appropriate autofill settings.
+- [x] The form remains usable with the keyboard open and on a small phone screen.
 
 ### Validation and Error Placement
 
-- [ ] Missing email, missing password, and malformed email are rejected before fetch.
-- [ ] Every user-visible login error appears inline directly above the Login button.
-- [ ] Incorrect credentials produce a clear inline error and do not navigate.
-- [ ] Connection, server, malformed-response, non-customer, and storage failures show safe retryable messages.
-- [ ] No UI message exposes raw server internals, a token, password, or stack trace.
+- [x] Missing email, missing password, and malformed email are rejected before fetch.
+- [x] Every user-visible login error appears inline directly above the Login button.
+- [x] Incorrect credentials produce a clear inline error and do not navigate.
+- [x] Connection, server, malformed-response, non-customer, and storage failures show safe retryable messages.
+- [x] No UI message exposes raw server internals, a token, password, or stack trace.
 
 ### API and ngrok
 
-- [ ] Login sends public `POST ${API_BASE_URL}/api/auth` with JSON `email` and `password`.
-- [ ] Request URLs are built from `EXPO_PUBLIC_API_URL`; source code contains no hard-coded localhost or personal ngrok origin.
-- [ ] A physical phone can authenticate through an HTTPS ngrok tunnel forwarding to the local Java server on port `8080`.
-- [ ] The app never connects directly to MySQL; the Java server owns database access.
-- [ ] A timeout/abort strategy prevents an indefinitely pending Login state.
+- [x] Login sends public `POST ${API_BASE_URL}/api/auth` with JSON `email` and `password`.
+- [x] Request URLs are built from `EXPO_PUBLIC_API_URL`; source code contains no hard-coded localhost or personal ngrok origin.
+- [x] A physical phone can authenticate through an HTTPS ngrok tunnel forwarding to the local Java server on port `8080`.
+- [x] The app never connects directly to MySQL; the Java server owns database access.
+- [x] A timeout/abort strategy prevents an indefinitely pending Login state.
 
 ### Session and Navigation
 
-- [ ] A successful response requires `success: true`, a non-empty `accessToken`, and usable `customer_id`.
-- [ ] API `user_id`/`customer_id` are mapped to client `userId`/`customerId` at the boundary.
-- [ ] `accessToken`, `customerId`, and returned `userId` are saved through the shared session/storage layer.
-- [ ] Password is never persisted, logged, or passed through navigation.
-- [ ] AsyncStorage completion is awaited before protected navigation is unlocked.
-- [ ] Successful customer login enters Restaurants and normal back navigation cannot reopen Login.
-- [ ] Missing `customer_id` prevents a courier-only/non-customer account from entering the customer app.
-- [ ] Complete stored sessions restore the authenticated route; missing/corrupt sessions resolve to Login.
+- [x] A successful response requires `success: true`, a non-empty `accessToken`, and usable `customer_id`.
+- [x] API `user_id`/`customer_id` are mapped to client `userId`/`customerId` at the boundary.
+- [x] `accessToken`, `customerId`, and returned `userId` are saved through the shared session/storage layer.
+- [x] Password is never persisted, logged, or passed through navigation.
+- [x] AsyncStorage completion is awaited before protected navigation is unlocked.
+- [x] Successful customer login enters Restaurants and normal back navigation cannot reopen Login.
+- [x] Missing `customer_id` prevents a courier-only/non-customer account from entering the customer app.
+- [x] Complete stored sessions restore the authenticated route; missing/corrupt sessions resolve to Login.
 
 ### State and Verification
 
-- [ ] The Login button is disabled/busy during authentication and duplicate submissions are prevented.
-- [ ] Every failure returns the form to an enabled retry state.
-- [ ] Late/unmounted request results do not update abandoned Login state.
+- [x] The Login button is disabled/busy during authentication and duplicate submissions are prevented.
+- [x] Every failure returns the form to an enabled retry state.
+- [x] Late/unmounted request results do not update abandoned Login state.
 - [ ] Postman verifies successful login, incorrect credentials, and invalid request data against the existing Java API.
 - [ ] Automated client tests cover local validation, 200 success mapping, 401 handling, missing customer ID, network/server failure, storage failure, and duplicate-submit prevention where the project test setup supports them.
-- [ ] `git diff --check` reports no whitespace errors.
+- [x] `git diff --check` reports no whitespace errors.
 
 ## Feature Definition of Done
 
 This feature is done only when:
 
 - [ ] Every acceptance criterion above passes.
-- [ ] The implementation follows `ai/ai-spec.md`, this feature specification, and the repository's applicable `AGENTS.md` instructions.
+- [x] The implementation follows `ai/ai-spec.md`, this feature specification, and the repository's applicable `AGENTS.md` instructions.
 - [ ] Login behavior and styling have been compared directly with the grading rows, Module 13 brief, wireframe, color scheme, and physical-device guidance.
-- [ ] Authentication works from both an emulator/simulator setup and a physical phone through the configured Java-server tunnel.
-- [ ] Valid customer credentials persist a complete session and open Restaurants.
-- [ ] Invalid credentials always remain on Login with the required error above the Login button.
-- [ ] Secrets, passwords, tokens, and personal tunnel URLs are absent from code, logs, screenshots, and committed configuration.
-- [ ] No Java backend or database change was made for the mobile login feature.
+- [x] Authentication works from both an emulator/simulator setup and a physical phone through the configured Java-server tunnel.
+- [x] Valid customer credentials persist a complete session and open Restaurants.
+- [x] Invalid credentials always remain on Login with the required error above the Login button.
+- [x] Secrets, passwords, tokens, and personal tunnel URLs are absent from code, logs, screenshots, and committed configuration.
+- [x] No Java backend or database change was made for the mobile login feature.
 - [ ] Relevant client tests and manual verification pass, and any environment-only limitation is documented accurately.
-- [ ] The feature file remains self-contained enough that an implementer does not need to infer decision-critical behavior from external assignment files.
+- [x] The feature file remains self-contained enough that an implementer does not need to infer decision-critical behavior from external assignment files.
 
 ## Notes for the AI
 
