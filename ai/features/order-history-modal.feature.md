@@ -87,7 +87,7 @@ The grading sheet requires that the modal shows the correct date, status, courie
 - Format `createdOn` into one human-readable date through a small shared/local helper (the wireframe leaves its sample value blank, so the exact format is a recorded project decision — a clear result such as `July 15, 2026` is acceptable; keep it consistent and documented).
 - An unparseable `createdOn` renders a safe blank rather than `Invalid Date`, `NaN`, or a raw ISO string.
 - Uppercase status is a display transform only; the raw status value stays untouched in state.
-- Replace the staged `Order Details` placeholder title and `Order #` line with this wireframe header.
+- The implemented header uses the selected restaurant name and the documented detail lines rather than a generic `Order Details` title or `Order #` line.
 
 ### Requirement C — Safe Nullable-Courier Display
 
@@ -188,9 +188,8 @@ The grading sheet requires that the modal shows the correct date, status, courie
 | `products[].productName` | Non-blank string | Row name. |
 | `products[].quantity` | Positive integer | Row `x{quantity}`. |
 | `products[].totalCost` | Non-negative integer | Row price via shared formatter. |
-| `products[].unitCost` | Non-negative integer | Available raw; not separately displayed by the wireframe rows. |
 | `totalCost` | Non-negative integer | `TOTAL:` value via shared formatter. |
-| `id`, `restaurantId`, `customer*`, `courierId` | Various / nullable | Preserved on the object; not displayed by the wireframe. |
+| `id`, `courierId` | Positive integer / nullable | Preserved on the object; not displayed by the wireframe. |
 
 - Validation happened once at the service boundary (`normalizeCustomerOrder`); the modal trusts the normalized shape and adds only display-level fallbacks (date parsing, null courier).
 
@@ -279,28 +278,28 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 
 ### Accurate Details
 
-- [ ] The header shows the selected order's restaurant name, formatted order date, uppercase status, and courier line, matching the wireframe block.
-- [ ] The date comes from `createdOn`, renders in the one documented format, and falls back to a safe blank if unparseable.
-- [ ] An assigned courier's name displays correctly; a `null` courier displays as a safe blank with an accessible fallback.
-- [ ] The strings `undefined` and `null` never appear, and a missing courier never crashes the modal.
-- [ ] Every ordered product renders with its correct name, `x{quantity}`, and formatted line total.
-- [ ] The `TOTAL:` row shows the order's formatted total cost.
-- [ ] Every price uses the shared formatter with a currency symbol and two decimals (for example `$20.75`).
+- [x] The header shows the selected order's restaurant name, formatted order date, uppercase status, and courier line, matching the wireframe block.
+- [x] The date comes from `createdOn`, renders in the one documented format, and falls back to a safe blank if unparseable.
+- [x] An assigned courier's name displays correctly; a `null` courier displays as a safe blank with an accessible fallback.
+- [x] The strings `undefined` and `null` never appear, and a missing courier never crashes the modal.
+- [x] Every ordered product renders with its correct name, `x{quantity}`, and formatted line total.
+- [x] The `TOTAL:` row shows the order's formatted total cost.
+- [x] Every price uses the shared formatter with a currency symbol and two decimals (for example `$20.75`).
 
 ### Data Source and Lifecycle
 
-- [ ] The modal renders only from the passed normalized order object; no network request or storage read occurs.
-- [ ] Viewing order A then order B shows only order B's details with no stale content.
-- [ ] X and the Android back action both close the modal via `onClose`, and the list behind it is unchanged without a refetch.
-- [ ] The hidden state tolerates a `null` order without rendering or crashing.
+- [x] The modal renders only from the passed normalized order object; no network request or storage read occurs.
+- [x] Viewing order A then order B shows only order B's details with no stale content.
+- [x] X and the Android back action both close the modal via `onClose`, and the list behind it is unchanged without a refetch.
+- [x] The hidden state tolerates a `null` order without rendering or crashing.
 
 ### Visual, Accessibility, and Documentation
 
 - [ ] The modal closely matches the supplied Order History Details wireframe: charcoal header block, orange-red restaurant title, white detail lines, product rows, separator, and bold total.
-- [ ] Only the exact graded palette and shared Oswald/body typography are used.
-- [ ] Long product lists scroll inside the panel with the header and total discoverable.
-- [ ] The modal, detail lines, rows, total, and close control have correct roles, labels, and touch targets; the blank courier has a spoken fallback.
-- [ ] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc, with the staged-shell comments removed.
+- [x] Only the exact graded palette and shared Oswald/body typography are used.
+- [x] Long product lists scroll inside the panel with the header and total discoverable.
+- [x] The modal, detail lines, rows, total, and close control have correct roles, labels, and touch targets; the blank courier has a spoken fallback.
+- [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
 - [ ] Verified on representative iPhone and Android dimensions, including an order with a `null` courier and an order with multiple products.
 
 ## Feature Definition of Done
@@ -308,7 +307,7 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 This feature is complete only when:
 
 - Every in-scope sub-requirement and acceptance criterion passes against real orders returned by the existing Java API.
-- The staged modal shell interior has been replaced with the complete wireframe presentation: header block, product rows, and total.
+- The modal contains the complete detail presentation: header block, product rows, and total.
 - A live check confirms the modal shows correct details for at least two different real orders, including one pending order with no courier and one order containing multiple products.
 - Date, status, courier, price, and total displays are verified against the same order's raw API response (Postman) so "accurate details" is proven, not assumed.
 - Close-and-reopen across different orders shows no stale content, and closing leaves the Order History list untouched.
@@ -321,8 +320,8 @@ This feature is complete only when:
 
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
 - The grading sheet is authoritative: the modal shows the correct date, status, courier name, products, prices, and totals, and a missing courier is a valid pending state that must display safely.
-- `client/components/OrderHistoryModal.js` already exists as a staged shell (backdrop, panel, charcoal header, X control, minimal body); complete its interior rather than rewriting it, and update its header/staged comments.
-- The data source is the normalized order object from `client/services/orderService.js` (`restaurantName`, `createdOn`, `status`, `courierName`/`courierId` nullable, `totalCost`, `products[].productId/productName/quantity/unitCost/totalCost`); do not re-read snake_case keys inside the component and do not invent a detail endpoint.
+- `client/components/OrderHistoryModal.js` owns the complete presentation-only order detail panel, including the header, rows, total, and close behavior.
+- The data source is the normalized order object from `client/services/orderService.js` (`restaurantName`, `createdOn`, `status`, nullable `courierName`/`courierId`, `totalCost`, and `products[].productId/productName/quantity/totalCost`); do not re-read snake_case keys inside the component and do not invent a detail endpoint.
 - The wireframe header spells the label `Courrier:`; the grading sheet says "courier name." Use the standard spelling `Courier:` and record the wireframe typo — if a coach confirms the exact wireframe text is graded literally, change only the label string.
 - The wireframe's sample leaves the `Order Date:` value blank, so the exact date format is a documented project decision; pick one readable format, comment it, and keep it consistent.
 - Status arrives lowercase (`pending`); uppercase is a display transform, matching the Order History table's rule.

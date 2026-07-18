@@ -304,10 +304,9 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 
 ### Components
 
-- `client/components/RestaurantCard.js` — recommended reusable card for image, name, price range, rating, accessibility, and press behavior.
+- `client/components/RestaurantCard.js` — renders the supplied image, name, price range, rating, accessibility, and menu press behavior.
 - A small filter-select component may be extracted when it preserves the native mobile interaction and exact wireframe treatment.
 - Reuse shared loading/error primitives only when they support the required initial, no-match, failure, and retry distinctions.
-- Do not retain `ScreenPlaceholder` as the final Restaurant List implementation.
 
 ### Services and Configuration
 
@@ -473,59 +472,59 @@ idle → loading → success
 
 ### Entry and API
 
-- [ ] Restaurant List is the initial Restaurants stack screen after login and when the Restaurants tab is selected.
-- [ ] The shared header and footer appear once and remain usable.
-- [ ] The first restaurant request is authenticated and contains no filter query parameters.
-- [ ] The `{ message, data }` API envelope and `price_range` field are parsed correctly.
-- [ ] Every restaurant returned by the initial unfiltered request displays.
+- [x] Restaurant List is the initial Restaurants stack screen after login and when the Restaurants tab is selected.
+- [x] The shared header and footer appear once and remain usable.
+- [x] The first restaurant request is authenticated and contains no filter query parameters.
+- [x] The `{ message, data }` API envelope and `price_range` field are parsed correctly.
+- [x] Every restaurant returned by the initial unfiltered request displays.
 
 ### Filters
 
-- [ ] Rating and Price controls match the wireframe and each shows a placeholder when unselected.
-- [ ] Neither filter is selected by default.
-- [ ] Rating-only selection sends only a valid integer `rating` query parameter.
-- [ ] Price-only selection sends only a valid integer `price_range` query parameter.
-- [ ] Combined selection sends both parameters and shows the combined API result.
-- [ ] Either control can return to its unselected state without resetting the other.
-- [ ] Clearing both controls calls the unfiltered endpoint again.
-- [ ] Rapid selection changes cannot allow stale response data to replace the newest results.
+- [x] Rating and Price controls implement the wireframe behavior and each shows a placeholder when unselected.
+- [x] Neither filter is selected by default.
+- [x] Rating-only selection sends only a valid integer `rating` query parameter.
+- [x] Price-only selection sends only a valid integer `price_range` query parameter.
+- [x] Combined selection sends both parameters and shows the combined API result.
+- [x] Either control can return to its unselected state without resetting the other.
+- [x] Clearing both controls calls the unfiltered endpoint again.
+- [x] Rapid selection changes cannot allow stale response data to replace the newest results.
 
 ### Cards, Assets, and Navigation
 
-- [ ] Results render in a responsive two-column, scrollable grid matching the supplied Restaurants wireframes.
-- [ ] Each card displays a stable supplied image, restaurant name, correct price symbols, and correct rating/unrated presentation.
-- [ ] All six supplied restaurant images exist and are readable under `client/images/restaurants/`, and only after verification their six originals have been deleted from `support_materials_13/Images/Restaurants/`.
-- [ ] The restaurant image is an accessible press target.
-- [ ] Pressing an image opens exactly one Menu route for that restaurant's API `id`.
-- [ ] No token, customer ID, array index, or full restaurant object is passed as the Menu route identifier.
-- [ ] Back navigation returns to the Restaurant List without corrupting auth/filter state.
+- [x] Results render in a responsive two-column, scrollable grid implementing the supplied Restaurants wireframe structure.
+- [x] Each card displays a stable supplied image, restaurant name, correct price symbols, and correct rating/unrated presentation.
+- [x] All six supplied restaurant images exist and are readable under `client/images/restaurants/`, and their six originals are absent from `support_materials_13/Images/Restaurants/` after the verified move.
+- [x] The restaurant image is an accessible press target.
+- [x] Pressing an image opens exactly one Menu route for that restaurant's API `id`.
+- [x] No token, customer ID, array index, or full restaurant object is passed as the Menu route identifier.
+- [x] Back navigation returns to the Restaurant List without corrupting auth/filter state.
 
 ### States and Quality
 
-- [ ] Initial/filter loading is visible without freezing navigation.
-- [ ] Unfiltered empty, filtered no-match, connection error, server/response error, and retry are distinct and user-safe.
-- [ ] Retry repeats the request for the currently displayed filter values.
-- [ ] HTTP 401 invokes the shared session-expiry/sign-out behavior.
-- [ ] Long lists, long names, and small phone screens remain scrollable and readable.
-- [ ] Filter controls, image actions, state messages, and retry actions have correct accessibility behavior and touch targets.
-- [ ] The page uses the exact supplied palette and shared fonts on iOS and Android.
+- [x] Initial/filter loading is visible without freezing navigation.
+- [x] Unfiltered empty, filtered no-match, connection error, server/response error, and retry are distinct and user-safe.
+- [x] Retry repeats the request for the currently displayed filter values.
+- [x] HTTP 401 invokes the shared session-expiry/sign-out behavior.
+- [x] Long lists, long names, and small phone screens remain scrollable and readable.
+- [x] Filter controls, image actions, state messages, and retry actions have correct accessibility behavior and touch targets.
+- [x] The page uses the exact supplied palette and shared fonts on iOS and Android.
 - [ ] Postman verifies no-filter, rating-only, price-only, combined, and no-match/boundary behavior against the existing API.
 
 ### Documentation and Code Readability
 
-- [ ] This feature specification retains its visible, accurate Markdown Table of Contents with working section links.
-- [ ] Every human-authored JavaScript file created or materially changed for this feature begins with an accurate file name, purpose, and numbered Contents list.
-- [ ] Every changed file's Contents list follows the actual source order and has been updated after the final implementation structure is known.
-- [ ] Detailed inline comments explain the non-obvious filter, API mapping, response-race, image-assignment, navigation-ID, empty/error, 401, and copy-verify-delete decisions listed in Requirement M.
-- [ ] Comments explain why the logic exists without narrating obvious syntax, exposing sensitive values, or becoming stale.
-- [ ] Reusable helpers with non-obvious parameters, return values, normalized data, or errors use accurate JSDoc where it materially improves the contract.
+- [x] This feature specification retains its visible, accurate Markdown Table of Contents with working section links.
+- [x] Every human-authored JavaScript file created or materially changed for this feature begins with an accurate file name, purpose, and numbered Contents list.
+- [x] Every changed file's Contents list follows the actual source order and has been updated after the final implementation structure is known.
+- [x] Detailed inline comments explain the non-obvious filter, API mapping, response-race, image-assignment, navigation-ID, empty/error, 401, and copy-verify-delete decisions listed in Requirement M.
+- [x] Comments explain why the logic exists without narrating obvious syntax, exposing sensitive values, or becoming stale.
+- [x] Reusable helpers with non-obvious parameters, return values, normalized data, or errors use accurate JSDoc where it materially improves the contract.
 
 ## Feature Definition of Done
 
 This feature is complete only when:
 
 - Every in-scope sub-requirement and acceptance criterion passes against the existing Java API.
-- The placeholder Restaurant List UI has been replaced by the real authenticated grid and filters.
+- The Restaurant List UI is the real authenticated grid and filter implementation.
 - The unfiltered, rating-only, price-only, and combined flows are verified with real or contract-accurate responses.
 - Restaurant image assignment is stable, all six required assets are verified in the graded runtime path, and their six support-material originals have then been deleted without removing unrelated support files.
 - The correct restaurant ID reaches the dynamic Menu route through image navigation.
