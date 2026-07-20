@@ -2,7 +2,7 @@
 
 > Defines the graded Courier Order Delivery list, eligibility rules, status progression, persistence, delivered lock, and Delivery Details modal. Use this document together with `ai/M14/ai-spec.md` and the completed navigation specifications.
 
-> **Implementation owner:** Claude will run and implement this specification. Claude must verify the existing Java API in Postman before writing any courier mutation code, then adapt the frontend service layer to that verified contract. The Java backend is immutable for Module 14.
+> **Implementation owner:** Claude will run and implement this specification. Claude must verify the existing Java API in Postman before writing any courier mutation code and prefer a frontend service adapter. If the verified broad update cannot preserve unrelated order data, Claude may implement only the minimum status-specific backend adjustment authorized by the global spec and documented in `README.md`.
 
 ## Table of Contents
 
@@ -41,7 +41,7 @@ Replace the current Courier Order Delivery placeholder with a reliable delivery 
 - Never advance or mutate a delivered order.
 - Open the selected order's complete, scrollable Delivery Details modal.
 
-Claude must preserve the completed M13 Customer journey and the role-isolated navigation already in place. Correctness is defined by persisted backend state, not an optimistic label. No requirement in this feature authorizes Java backend changes.
+Claude must preserve the completed M13 Customer journey and the role-isolated navigation already in place. Correctness is defined by persisted backend state, not an optimistic label. Backend work is limited to the smallest verified status-contract correction needed to make this frontend feature safe.
 
 ## 3. Feature scope
 
@@ -68,7 +68,7 @@ Claude must preserve the completed M13 Customer journey and the role-isolated na
 - Reuse the current API client, session storage, shared header/tab chrome, theme, icons, validation helpers, and applicable order normalization.
 - Update this specification, the global spec, Postman collection, and private implementation log only where verified implementation changes their truth.
 
-Expected implementation files:
+Expected frontend and documentation files:
 
 - `client/app/courier/index.js`
 - `client/services/orderService.js`
@@ -79,8 +79,9 @@ Expected implementation files:
 - `PostmanCollection.json` for verified courier requests
 - `ai/M14/features/courier-delivery.feature.md`
 - `ai/M14/ai-spec.md` only when verified repository truth changes
+- `README.md` for the discrepancy, final API contract, minimum backend change, compatibility impact, and verification
 
-Claude must inspect but must not modify:
+Claude must inspect these backend files before deciding whether the minimum-change gate is met:
 
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/controller/api/OrderApiController.java`
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/service/OrderService.java`
@@ -89,6 +90,17 @@ Claude must inspect but must not modify:
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/dtos/order/ApiAssignCourierDTO.java`
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/dtos/product/ApiProductForOrderApiDTO.java`
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/repository/OrderRepository.java`
+
+If live/source evidence confirms the rating round-trip blocker, backend edits are limited by default to:
+
+- `server/src/main/java/com/rocketFoodDelivery/rocketFood/controller/api/OrderApiController.java`
+- One narrowly named status-update request DTO, if a request body cannot be represented safely without it
+- `server/src/main/java/com/rocketFoodDelivery/rocketFood/service/OrderService.java` only when the existing status-update behavior cannot provide required validation or a reliable response
+- Focused server tests for the new/adjusted status contract
+
+Expanding beyond those files requires new evidence, an updated minimum-change justification in the global spec and `README.md`, and explicit disclosure in the handoff. Existing broad update, creation, retrieval, assignment, and rating contracts must remain backward compatible.
+
+Claude must inspect but should not modify unless a demonstrated feature defect requires it:
 - `client/app/courier/_layout.js` unless a demonstrated feature defect requires a narrowly scoped correction
 - `client/storage/authStorage.js`, `client/contexts/AuthContext.js`, and `client/services/apiClient.js` unless a demonstrated shared-boundary defect blocks this feature
 - `client/app/customer/order-history.js` and its components as retained M13 regression references
@@ -96,8 +108,8 @@ Claude must inspect but must not modify:
 
 ### 3.2 Out of scope
 
-- Any Java backend, database schema, migration, entity, controller, DTO, repository, service, security, or seeder modification.
-- Inventing a purpose-built status endpoint or changing the existing broad update DTO.
+- Backend cleanup, broad refactoring, schema/migration/entity/security/seeder changes, or API changes beyond the documented minimum status-contract correction.
+- Adding an undocumented status endpoint, changing the existing broad update contract, or expanding beyond the authorized minimum status operation.
 - Automatically repairing arbitrary dirty database rows from the mobile interface.
 - Displaying another courier's assigned in-progress or delivered orders.
 - Allowing a customer session to use courier delivery requests or routes.
@@ -149,7 +161,7 @@ Claude must inspect but must not modify:
 ### 4.4 Requirement D — Pending acceptance and assignment
 
 - The confirmed business sequence is status update first, courier assignment second.
-- Step 1 calls the verified existing `PUT /api/orders/{orderId}` contract with status ID 2 and every additional field the immutable backend actually requires.
+- Step 1 calls the final verified status contract with status ID 2. Use the existing broad `PUT /api/orders/{orderId}` only if it can preserve every unrelated field safely; otherwise use the authorized minimum status-only backend adjustment.
 - Step 2 calls `PUT /api/order/{orderId}/courier` with `{ "courier_id": activeCourierId }`.
 - Do not derive broad-update fields from UI labels. Use only normalized, backend-originated identifiers whose round-trip safety is proven in Postman.
 - Do not send guessed zeros, stale IDs, invented keys, or an assumed restaurant-rating value.
@@ -191,7 +203,8 @@ Claude must inspect but must not modify:
 - Verify the two list calls, both status transitions, assignment, delivered lock, refresh, and relevant failures in Postman/native runtime.
 - Confirm status and courier assignment persistence in DBeaver when available.
 - Update `PostmanCollection.json` with actual current-backend calls and safe sample variables.
-- Append the required private implementation-log entry describing the broad-update discrepancy, immutable-backend decision, exact frontend adapter, partial-failure handling, changed files, evidence, manual gaps, and technical-demo cue.
+- Document the broad-update discrepancy, frontend-only analysis, exact minimum backend change (if used), final frontend adapter, compatibility impact, and verification in the global spec and `README.md`.
+- Append the same decision plus partial-failure handling, changed files, evidence, manual gaps, and technical-demo cue to the private implementation log.
 - Do not mark runtime/database criteria complete from code inspection or export alone.
 
 ## 5. User flow and delivery logic
@@ -272,7 +285,7 @@ Claude must inspect but must not modify:
 
 ### 6.3 Existing backend/API contract and mandatory gate
 
-The immutable repository currently exposes these candidate calls:
+The current repository exposes these baseline calls:
 
 ```http
 GET /api/orders/pending
@@ -314,7 +327,7 @@ This inspection is not sufficient to authorize mutation code. Before implementat
 - The chosen, demonstrated recovery for that partial failure.
 - Whether a post-mutation refresh reliably returns the changed order from the intended endpoint.
 
-If any value cannot be verified, stop mutation implementation and report the exact missing evidence. Never modify the backend, invent an endpoint, or guess a broad-update field.
+If the broad update can preserve unrelated fields safely, keep it and adapt the frontend service. If verified evidence confirms that it cannot—such as the identified `restaurant_rating` response/update mismatch—use the global spec's minimum-change gate. Prefer a narrow status-only operation that changes only `order_status_id` and reuses existing service/repository behavior; preserve the broad endpoint for compatibility. Do not invent the final contract silently: record its method, path, body, response, validation, errors, files, tests, compatibility impact, and client mapping in this spec, `ai/M14/ai-spec.md`, `README.md`, Postman, and the implementation log.
 
 ### 6.4 Frontend adapter contract
 
@@ -432,7 +445,7 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 - Because `client/AGENTS.md` requires exact current Expo guidance before client code, consult the official versioned Expo SDK 54/Expo Router documentation relevant to focus, modal, list, and refresh behavior before implementation.
 - Use existing Expo SDK 54, Expo Router 6, React Native, JavaScript, Context, AsyncStorage, and API client patterns.
 - Add no dependency unless an existing required behavior is impossible and the user explicitly approves it.
-- The Java backend is immutable. Read it only to establish the current contract; do not edit it for any discrepancy.
+- Prefer a frontend adapter. Change the backend only when the documented gate proves it necessary, and then touch only the minimum status-contract surface with focused tests and backward compatibility.
 - Keep backend snake_case and broad-update compatibility inside `orderService.js`; UI code consumes normalized camelCase data.
 - Reuse existing order normalization carefully or extract shared pure helpers; do not regress Customer Order History.
 - Keep token and courier identity in session/service boundaries, never props, route parameters, logs, or local UI input.
@@ -448,13 +461,14 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 
 - [ ] Both list endpoints are verified **live** with a Courier bearer token and their exact success/error envelopes are recorded. (Source-verified from `OrderApiController` + `OrderService` + `ApiOrderDTO`; **live Postman run pending** — no running backend/DB in this environment.)
 - [ ] Status IDs and returned status spellings are verified against live responses/database values. (Source: `OrderStatus` names are lowercase `pending`/`in progress`/`delivered`, IDs 1/2/3 per `DataSeeder`; **live/DB confirmation pending**.)
-- [ ] The exact safe broad-update body, including rating behavior, is proven for status IDs 2 and 3. (**BLOCKED — see gate finding below.** `ApiUpdateOrderDTO` requires `restaurant_rating`, but `ApiOrderDTO` does not return it, so the client cannot round-trip it; `updateOrderFromDTO` overwrites the stored rating with whatever is sent. A safe value needs a user/coach decision + live verification.)
+- [ ] The final status-update contract is proven safe for status IDs 2 and 3. (**Pending — see gate finding below.** The broad update cannot safely round-trip `restaurant_rating`; if live verification confirms that behavior, implement and verify the authorized minimum status-only backend operation.)
 - [ ] Assignment body/response and persistence are verified. (Source: `assignCourier` sets courier, requires courier to exist, leaves status untouched; **live/DB confirmation pending**.)
 - [ ] Partial status-success/assignment-failure behavior and recovery are demonstrated and documented. (**Pending** — depends on the blocked mutation code and live verification.)
-- [ ] PostmanCollection documents the actual immutable-backend calls without secrets. (**Pending** live capture.)
-- [x] No Java backend file is modified. (`git status` shows zero `server/` changes; backend read for inspection only.)
+- [ ] PostmanCollection documents the final verified backend calls without secrets. (**Pending** live capture.)
+- [x] The completed read-only pass modified no Java backend file. (`git status` showed zero `server/` changes during that pass.)
+- [ ] Any later backend adjustment is proven necessary, limited to the minimum status contract, backward compatible, tested, and documented in the global spec and `README.md`.
 
-> **Contract-gate finding (broad-update rating round-trip).** `PUT /api/orders/{id}` binds `ApiUpdateOrderDTO { restaurant_id, customer_id, order_status_id, restaurant_rating }`, and `OrderService.updateOrderFromDTO` sets all four fields (courier is left untouched, so a status change does **not** wipe the assignment — good). But `ApiOrderDTO` (the only list/response shape) omits `restaurant_rating`, so a courier client cannot read the current rating to preserve it. Sending `restaurant_rating: null` would erase any existing rating on that order. `restaurant_id` and `customer_id` are present in the response and round-trip safely. This is an unresolved decision gate: the status-mutation code is deferred until the safe rating value is decided and verified live.
+> **Contract-gate finding (broad-update rating round trip).** `PUT /api/orders/{id}` binds `ApiUpdateOrderDTO { restaurant_id, customer_id, order_status_id, restaurant_rating }`, and `OrderService.updateOrderFromDTO` sets all four fields (courier is left untouched, so a status change does **not** wipe the assignment). But `ApiOrderDTO` omits `restaurant_rating`, so a courier client cannot read the current rating to preserve it. Sending `restaurant_rating: null` could erase an existing rating. `restaurant_id` and `customer_id` are present and can round-trip. The policy decision is now resolved: if live verification confirms this incompatibility, add the documented minimum status-only backend operation instead of guessing a rating. The final endpoint contract and live evidence remain pending.
 
 ### 10.2 Retrieval and eligibility
 
@@ -516,14 +530,15 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 - [x] `npx expo config --type public` succeeds without exposing secrets. (EXIT 0.)
 - [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
 - [ ] Representative iOS and Android native scenarios verify list, refresh, both transitions, lock, modal, errors, and back behavior. (**Pending native run**; transitions also await the mutation gate.)
-- [x] Final status/diff contains no server edits, secret/live URL, private log, generated output, or unrelated change. (`git status` shows only client + spec files; `server/` untouched; `.omi/` gitignored.)
+- [x] The read-only-pass status/diff contained no server edits, secret/live URL, private log, generated output, or unrelated change. (`server/` was untouched; `.omi/` gitignored.)
+- [ ] The completed mutation diff contains no undocumented or non-minimal server edit, secret/live URL, private log, generated output, or unrelated change.
 
 Claude must leave every criterion unchecked until current evidence exists. Static inspection/export cannot prove native interaction, live API behavior, or database persistence.
 
 ## 11. Feature Definition of Done
 
 - [ ] Every graded Courier Delivery criterion has current evidence. (Read-only retrieval/list/details complete with code evidence; status-mutation criteria **deferred/blocked** on the rating gate + live verification.)
-- [ ] The live immutable-backend contract and frontend adaptation are recorded before mutation code. (Contract recorded from source in the log; the *live* confirmation and the mutation adapter itself are **pending** the gate.)
+- [ ] The live baseline contract, frontend-only limitation, final minimum backend decision, and frontend adaptation are recorded before mutation code. (Baseline contract is source-recorded; live confirmation and final mutation contract remain pending.)
 - [ ] Eligible visibility is exact and role-safe across initial load, refresh, focus, mutation, logout, and restart. (Load/refresh/focus/role-scoping implemented and code-verified; mutation/restart paths **pending**.)
 - [ ] Both allowed transitions persist in order and failures never leave a false final UI state. (**Deferred/blocked**.)
 - [ ] Delivered and invalid/foreign/stale orders cannot mutate from either UI or service entry points. (Retrieval excludes foreign/unassigned; service mutation guards **deferred** with the mutation code.)
@@ -532,7 +547,7 @@ Claude must leave every criterion unchecked until current evidence exists. Stati
 - [ ] Postman and database evidence confirm status/assignment behavior. (**Pending**.)
 - [x] This spec and the global spec match final verified behavior with no unsupported checked items. (Only code/automated-verified items are checked; every live/native/mutation item is annotated pending.)
 - [x] The private implementation log records the discrepancy, decision, adapter, recovery behavior, evidence, manual gaps, and technical-demo cue. (Feature-3 entry appended to `.omi/m14/IMPLEMENTATION_LOG.md`.)
-- [x] The complete diff contains no backend edits, dead code, debug output, generated artifacts, secrets, or unrelated changes. (Client + spec files only; `server/` untouched; `dist/` removed.)
+- [ ] The completed feature diff contains no undocumented/non-minimal backend edit, dead code, debug output, generated artifact, secret, or unrelated change. (The earlier read-only pass was clean; mutation work remains pending.)
 - [x] Claude's handoff reports outcome, changed files, exact checks/results, remaining manual checks, a narrowly scoped stage command, and a copy-ready Conventional Commit command. (See session handoff.)
 
 ## 12. Notes for AI tools
@@ -541,7 +556,7 @@ Claude must leave every criterion unchecked until current evidence exists. Stati
 - Read the global spec first, this entire feature spec second, and both completed M14 navigation specs before any implementation edit.
 - Start with `git status --short`, `rg --files`, targeted callers/DTO/controller searches, and a complete inspection of every allowed file.
 - Complete the Section 10.1 live contract gate before writing status mutation code. Read-only UI/list work may proceed only when it cannot prejudice the unresolved mutation decision.
-- Never modify the Java backend. Reconfigure the frontend service adapter to the verified backend that exists.
+- Prefer reconfiguring the frontend service adapter. If the verified API cannot satisfy the feature without data loss, use only the documented minimum backend status-contract adjustment and add focused tests.
 - Treat `PUT /api/orders/{id}` as dangerous until every required field and round-trip effect is proven; never guess a payload from the DTO alone.
 - Preserve the confirmed operation order: status ID 2 first, active-courier assignment second; status ID 3 later without reassignment.
 - Keep dirty unassigned non-pending rows out of the mobile list. Do not build an automatic client data-repair tool.

@@ -10,6 +10,7 @@
 - [Installation / Setup](#installation--setup)
 - [Environment Variables](#environment-variables)
 - [API Documentation](#api-documentation)
+- [Backend Compatibility and Minimum-Change Policy](#backend-compatibility-and-minimum-change-policy)
 - [Examples from This Project](#examples-from-this-project)
 - [Seeded Development Data](#seeded-development-data)
 - [Verification](#verification)
@@ -215,6 +216,28 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
 | `POST` | `/api/orders` | Create an order with restaurant, customer, and product quantities |
 | `GET` | `/api/orders?type=customer&id={id}` | Load the authenticated customer's order history |
+
+## Backend Compatibility and Minimum-Change Policy
+
+Module 14 uses the existing Spring Boot API by default. Frontend services should adapt verified backend request and response shapes into stable client models whenever that can satisfy the feature safely.
+
+A backend adjustment is allowed only when repository/live evidence proves that a required frontend behavior cannot be implemented through an adapter without data loss, guessed values, or a missing operation. The adjustment must:
+
+- Change the smallest possible controller/DTO/service surface and preserve existing API compatibility.
+- Avoid unrelated cleanup, renaming, schema changes, broad refactors, or speculative redesign.
+- Include focused backend tests and updated Postman requests when API-facing.
+- Be integrated through the frontend service boundary rather than directly from screen code.
+- Be documented in `ai/M14/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
+
+Each documented backend adjustment must identify the source discrepancy, why a frontend-only adapter was unsafe or insufficient, the exact method/path/body/response, changed server and client files, compatibility impact, tests, Postman/database evidence, and any remaining manual verification.
+
+### Module 14 backend adjustment record
+
+| Status | Feature | Verified discrepancy | Minimum authorized resolution |
+|---|---|---|---|
+| Decision recorded; implementation pending | Courier Delivery status progression | The broad `PUT /api/orders/{id}` request accepts `restaurant_rating`, but the order response does not return that value. A client cannot safely round-trip it and could erase an existing rating. | If live verification confirms the blocker, add a narrow status-only operation that changes only `order_status_id`, reusing existing status-update behavior and preserving the broad endpoint. Document the final contract, files, tests, frontend adapter, Postman result, and DBeaver result here when implemented. |
+
+This table is a decision record, not a completion claim. At the time of this entry, the Courier list and Delivery Details frontend exist, while status mutation and any backend adjustment remain pending verification.
 
 ## Examples from This Project
 
