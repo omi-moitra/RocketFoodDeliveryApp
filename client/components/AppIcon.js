@@ -14,6 +14,8 @@ import {
   faMagnifyingGlass,
   faMinus,
   faPlus,
+  faTruck,
+  faUser,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -30,6 +32,8 @@ const ICONS_BY_NAME = Object.freeze({
   'magnifying-glass': faMagnifyingGlass,
   minus: faMinus,
   plus: faPlus,
+  truck: faTruck,
+  user: faUser,
   xmark: faXmark,
 });
 

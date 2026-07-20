@@ -13,6 +13,7 @@ import {
   clearAuthSession,
   getStoredSession,
   saveAuthSession,
+  saveRoleSelection,
 } from '../storage/authStorage';
 
 // A null default lets useAuth detect components rendered outside the required provider.
@@ -67,7 +68,7 @@ export function AuthProvider({ children }) {
 
   /**
    * Persists a verified login before exposing it to protected navigation.
-   * LoginScreen calls it after authenticateCustomer succeeds.
+   * LoginScreen calls it after authenticateUser succeeds.
    * useCallback keeps its identity stable so screens can safely list it in effect dependencies.
    * Read aloud: “complete sign in.”
    */
@@ -81,6 +82,18 @@ export function AuthProvider({ children }) {
       setSession(null);
       throw error;
     }
+  }, []);
+
+  /**
+   * Persists a dual-role user's explicit choice, then exposes only the selected role tree.
+   * Account Selection calls it; the root guard swaps trees once storage confirms the choice.
+   * useCallback keeps its identity stable for effect dependencies and disabled-tap guards.
+   * Read aloud: “select role.”
+   */
+  const selectRole = useCallback(async (role) => {
+    // Storage validates the role against the session's available IDs before it becomes active.
+    const updatedSession = await saveRoleSelection(role);
+    setSession(updatedSession);
   }, []);
 
   /**
@@ -116,10 +129,11 @@ export function AuthProvider({ children }) {
       completeSignIn,
       handleUnauthorized,
       isSessionLoading,
+      selectRole,
       session,
       signOut,
     }),
-    [completeSignIn, handleUnauthorized, isSessionLoading, session, signOut],
+    [completeSignIn, handleUnauthorized, isSessionLoading, selectRole, session, signOut],
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;

@@ -43,6 +43,17 @@ function RootNavigator() {
     );
   }
 
+  // Exactly one root branch is exposed for any resolved session. Each guard reads the validated
+  // active role/ID from storage-restored context; no screen infers a role from a route name.
+  const hasCustomerRole = Boolean(session?.customerId);
+  const hasCourierRole = Boolean(session?.courierId);
+  const isDualRolePending =
+    Boolean(session) && hasCustomerRole && hasCourierRole && !session.activeRole;
+  const isCustomerActive =
+    Boolean(session) && session.activeRole === 'customer' && hasCustomerRole;
+  const isCourierActive =
+    Boolean(session) && session.activeRole === 'courier' && hasCourierRole;
+
   return (
     <>
       <StatusBar style="auto" />
@@ -50,8 +61,14 @@ function RootNavigator() {
         <Stack.Protected guard={!session}>
           <Stack.Screen name="index" />
         </Stack.Protected>
-        <Stack.Protected guard={Boolean(session)}>
+        <Stack.Protected guard={isDualRolePending}>
+          <Stack.Screen name="selection" />
+        </Stack.Protected>
+        <Stack.Protected guard={isCustomerActive}>
           <Stack.Screen name="customer" />
+        </Stack.Protected>
+        <Stack.Protected guard={isCourierActive}>
+          <Stack.Screen name="courier" />
         </Stack.Protected>
       </Stack>
     </>
