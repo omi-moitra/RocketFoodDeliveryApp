@@ -188,3 +188,6 @@ GoogleService-Info.plist
 server/src/main/resources/application.properties
 server/src/main/resources/application-local.properties
 server/src/main/resources/application-secrets.properties
+
+
+ai/M14/features/feature-name.feature.md
