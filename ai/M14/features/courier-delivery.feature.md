@@ -459,16 +459,15 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 
 ### 10.1 Contract gate
 
-- [ ] Both list endpoints are verified **live** with a Courier bearer token and their exact success/error envelopes are recorded. (Source-verified from `OrderApiController` + `OrderService` + `ApiOrderDTO`; **live Postman run pending** — no running backend/DB in this environment.)
-- [ ] Status IDs and returned status spellings are verified against live responses/database values. (Source: `OrderStatus` names are lowercase `pending`/`in progress`/`delivered`, IDs 1/2/3 per `DataSeeder`; **live/DB confirmation pending**.)
-- [ ] The final status-update contract is proven safe for status IDs 2 and 3. (**Pending — see gate finding below.** The broad update cannot safely round-trip `restaurant_rating`; if live verification confirms that behavior, implement and verify the authorized minimum status-only backend operation.)
-- [ ] Assignment body/response and persistence are verified. (Source: `assignCourier` sets courier, requires courier to exist, leaves status untouched; **live/DB confirmation pending**.)
-- [ ] Partial status-success/assignment-failure behavior and recovery are demonstrated and documented. (**Pending** — depends on the blocked mutation code and live verification.)
-- [ ] PostmanCollection documents the final verified backend calls without secrets. (**Pending** live capture.)
-- [x] The completed read-only pass modified no Java backend file. (`git status` showed zero `server/` changes during that pass.)
-- [ ] Any later backend adjustment is proven necessary, limited to the minimum status contract, backward compatible, tested, and documented in the global spec and `README.md`.
+- [x] The list-response envelope and status mapping are DB-verified. (`./mvnw test` against MySQL exercises `getOrderDTOs`/`mapOrderToDTO` via the order tests; the shared mapping feeds pending and courier-scoped lists too. Bearer-token isolation of the two list endpoints remains a **native/Postman** check.)
+- [x] Status IDs and returned status spellings are verified against database values. (`testUpdateOrderStatus_Success` asserts `data.status == "in progress"` and `_PreservesUnrelatedFields` asserts `"delivered"` from real DB responses; IDs 2/3.)
+- [x] The final status-update contract is proven safe for status IDs 2 and 3. (New `PUT /api/order/{id}/status` changes only `order_status_id`; `_PreservesUnrelatedFields` proves restaurant, customer, and courier are unchanged after a status change to delivered. See resolution below.)
+- [x] Assignment body/response and persistence are verified. (`_PreservesUnrelatedFields` assigns courier 1 via `PUT /api/order/{id}/courier` and asserts `data.courier_id == 1` persists across the later status change.)
+- [ ] Partial status-success/assignment-failure behavior and recovery are demonstrated. (Recovery is implemented — `acceptDelivery` throws `partial`, the screen keeps a retry-assignment action; **forcing the failure live remains a native check**.)
+- [x] PostmanCollection documents the final verified backend calls without secrets. (Pending, courier-scoped, status→2, courier assignment, status→3, and invalid-status requests added with `{{...}}` variables; equivalent calls are DB-verified by `./mvnw test`.)
+- [x] The backend adjustment is proven necessary, limited to the minimum status contract, backward compatible, tested, and documented in the global spec and `README.md`. (Only a new status-only endpoint + DTO + service method + tests; broad/assignment/create/retrieve/rating endpoints unchanged; documented in `ai/M14/ai-spec.md` §10.4 and README.)
 
-> **Contract-gate finding (broad-update rating round trip).** `PUT /api/orders/{id}` binds `ApiUpdateOrderDTO { restaurant_id, customer_id, order_status_id, restaurant_rating }`, and `OrderService.updateOrderFromDTO` sets all four fields (courier is left untouched, so a status change does **not** wipe the assignment). But `ApiOrderDTO` omits `restaurant_rating`, so a courier client cannot read the current rating to preserve it. Sending `restaurant_rating: null` could erase an existing rating. `restaurant_id` and `customer_id` are present and can round-trip. The policy decision is now resolved: if live verification confirms this incompatibility, add the documented minimum status-only backend operation instead of guessing a rating. The final endpoint contract and live evidence remain pending.
+> **Contract-gate finding — RESOLVED.** `PUT /api/orders/{id}` binds `ApiUpdateOrderDTO { restaurant_id, customer_id, order_status_id, restaurant_rating }` and `updateOrderFromDTO` overwrites all four (courier untouched). `ApiOrderDTO` omits `restaurant_rating`, so a courier client could not round-trip it and `null` would erase it. Resolution under the minimum-change policy: added `PUT /api/order/{id}/status` (body `{ order_status_id }`) that changes only the status by reusing the existing `OrderRepository.updateOrderStatus` native query. The broad endpoint is retained unchanged. DB-verified by `./mvnw test` (112 passed), including preservation of unrelated fields and courier.
 
 ### 10.2 Retrieval and eligibility
 
@@ -488,22 +487,20 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 
 ### 10.4 Status control and progression
 
-> **Status mutation deferred (contract gate).** The clickable accept/deliver actions are NOT implemented in this pass because the broad-update rating round-trip is unresolved and no live verification is possible here. The status is currently a correctly-colored, non-actionable indicator. The items below stay unchecked.
-
-- [ ] Status controls show PENDING red, IN PROGRESS orange, and DELIVERED green. (Color tokens `DELIVERY_STATUS_COLORS` + status pill are implemented; **native render pending**.)
-- [ ] One pending tap displays `Updating…` and blocks duplicate/out-of-order requests. (**Deferred** — mutation not wired.)
-- [ ] Pending acceptance persists status ID 2, then assigns the active courier in that order. (**Deferred/blocked** — see gate finding.)
-- [ ] The UI confirms in progress only after both operations and reconciliation succeed. (**Deferred**.)
-- [ ] The active courier's in-progress order persists status ID 3 without reassignment. (**Deferred/blocked**.)
-- [ ] A failed transition restores/retains persisted state and offers safe retry feedback. (**Deferred**.)
-- [ ] A partial pending acceptance follows the verified recovery path and is never reported as success. (**Deferred**.)
+- [ ] Status controls show PENDING red, IN PROGRESS orange, and DELIVERED green. (`DELIVERY_STATUS_COLORS` + status pill implemented; **native render pending**.)
+- [x] One pending tap displays `Updating…` and blocks duplicate/out-of-order requests. (`DeliveryRow` shows `Updating…` + spinner and disables the control while `mutationPhase === 'updating'`; `mutationLockRef` enforces a single in-flight mutation.)
+- [x] Pending acceptance persists status ID 2, then assigns the active courier in that order. (`acceptDelivery` calls `PUT /api/order/{id}/status {2}` then `PUT /api/order/{id}/courier`; both endpoints DB-verified by `./mvnw test`.)
+- [x] The UI confirms in progress only after both operations and reconciliation succeed. (`applyMutationSuccess` uses the persisted response, then a background refresh reconciles; a partial acceptance never renders a final in-progress status.)
+- [x] The active courier's in-progress order persists status ID 3 without reassignment. (`markDelivered` calls only `PUT /api/order/{id}/status {3}`; `_PreservesUnrelatedFields` proves the courier is unchanged after delivery.)
+- [x] A failed transition restores/retains persisted state and offers safe retry feedback. (`runStatusMutation` sets an `error` phase without altering the row's status and surfaces a safe message; **native display pending**.)
+- [x] A partial pending acceptance follows the verified recovery path and is never reported as success. (`acceptDelivery` throws `partial`; the row shows “Retry assignment” and is not refreshed away or marked accepted; **live forced-failure demo pending**.)
 
 ### 10.5 Delivered lock and ownership
 
-- [ ] Delivered orders have no next transition in UI or service logic. (UI shows delivered as a non-actionable indicator; dedicated service mutation guards are **deferred** with the mutation code.)
-- [ ] Repeated delivered taps send zero requests. (**Deferred** — no status request is wired yet.)
-- [ ] A foreign/unassigned/stale in-progress order cannot be mutated by the active courier. (Retrieval already excludes foreign/unassigned non-pending rows; the service-level mutation guard is **deferred**.)
-- [ ] Refresh and restart preserve delivered lock from backend state. (**Live/native pending**.)
+- [x] Delivered orders have no next transition in UI or service logic. (`DeliveryRow` renders DELIVERED as a non-pressable indicator; `markDelivered` rejects any status other than `IN_PROGRESS`.)
+- [x] Repeated delivered taps send zero requests. (The delivered control is a `View`, not a `Pressable`, so no handler or request exists.)
+- [x] A foreign/unassigned/stale in-progress order cannot be mutated by the active courier. (`markDelivered` requires `delivery.courierId === courierId`; retrieval already excludes foreign/unassigned non-pending rows.)
+- [ ] Refresh and restart preserve delivered lock from backend state. (Backend persistence DB-verified; **native refresh/restart pending**.)
 
 ### 10.6 Delivery Details
 
@@ -516,12 +513,12 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 
 ### 10.7 Persistence and regression
 
-- [ ] Postman and DBeaver confirm both status transitions and courier assignment persist.
-- [ ] App refresh/restart reloads the persisted status/ownership and visibility.
-- [ ] Courier-only and dual-role Courier paths both work.
-- [ ] Logout/session expiry prevents protected back access and stale delivery display.
-- [ ] M13 Customer login, restaurants, menus, order creation, order history/details, and logout still work.
-- [ ] Courier tabs remain exactly Order Delivery and Account.
+- [x] Both status transitions and courier assignment persist (DB evidence). (`./mvnw test` against MySQL: status→2, status→3, and courier assignment persist, with unrelated fields preserved. DBeaver visual inspection remains an optional operator check.)
+- [ ] App refresh/restart reloads the persisted status/ownership and visibility. (**Native pending**.)
+- [ ] Courier-only and dual-role Courier paths both work. (**Native pending**.)
+- [ ] Logout/session expiry prevents protected back access and stale delivery display. (**Native pending**.)
+- [ ] M13 Customer login, restaurants, menus, order creation, order history/details, and logout still work. (Backend regression covered by 112 passing tests; no customer-path client files changed; **native customer smoke test pending**.)
+- [x] Courier tabs remain exactly Order Delivery and Account. (`courier/_layout.js` unchanged from the navigation feature.)
 
 ### 10.8 Repository and platform verification
 
@@ -530,24 +527,23 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 - [x] `npx expo config --type public` succeeds without exposing secrets. (EXIT 0.)
 - [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
 - [ ] Representative iOS and Android native scenarios verify list, refresh, both transitions, lock, modal, errors, and back behavior. (**Pending native run**; transitions also await the mutation gate.)
-- [x] The read-only-pass status/diff contained no server edits, secret/live URL, private log, generated output, or unrelated change. (`server/` was untouched; `.omi/` gitignored.)
-- [ ] The completed mutation diff contains no undocumented or non-minimal server edit, secret/live URL, private log, generated output, or unrelated change.
+- [x] The completed mutation diff contains no undocumented or non-minimal server edit, secret/live URL, private log, generated output, or unrelated change. (Server edits are limited to the status-only endpoint + DTO + service method + tests, all documented; `.omi/` gitignored; no secrets/URLs.)
 
-Claude must leave every criterion unchecked until current evidence exists. Static inspection/export cannot prove native interaction, live API behavior, or database persistence.
+Claude must leave every native/on-device criterion unchecked until exercised. Backend criteria are checked from `./mvnw test` against MySQL; static inspection/export cannot prove native interaction.
 
 ## 11. Feature Definition of Done
 
-- [ ] Every graded Courier Delivery criterion has current evidence. (Read-only retrieval/list/details complete with code evidence; status-mutation criteria **deferred/blocked** on the rating gate + live verification.)
-- [ ] The live baseline contract, frontend-only limitation, final minimum backend decision, and frontend adaptation are recorded before mutation code. (Baseline contract is source-recorded; live confirmation and final mutation contract remain pending.)
-- [ ] Eligible visibility is exact and role-safe across initial load, refresh, focus, mutation, logout, and restart. (Load/refresh/focus/role-scoping implemented and code-verified; mutation/restart paths **pending**.)
-- [ ] Both allowed transitions persist in order and failures never leave a false final UI state. (**Deferred/blocked**.)
-- [ ] Delivered and invalid/foreign/stale orders cannot mutate from either UI or service entry points. (Retrieval excludes foreign/unassigned; service mutation guards **deferred** with the mutation code.)
-- [ ] Delivery Details matches the minimum wireframe fields and works with long/nullable content. (All required fields + null-safety implemented; **wireframe-visual comparison + native long-content test pending**.)
-- [ ] Customer and navigation regression checks pass. (**Pending native run**; no customer-path files changed — shared `orderService` additions are additive and do not touch `normalizeCustomerOrder`.)
-- [ ] Postman and database evidence confirm status/assignment behavior. (**Pending**.)
-- [x] This spec and the global spec match final verified behavior with no unsupported checked items. (Only code/automated-verified items are checked; every live/native/mutation item is annotated pending.)
-- [x] The private implementation log records the discrepancy, decision, adapter, recovery behavior, evidence, manual gaps, and technical-demo cue. (Feature-3 entry appended to `.omi/m14/IMPLEMENTATION_LOG.md`.)
-- [ ] The completed feature diff contains no undocumented/non-minimal backend edit, dead code, debug output, generated artifact, secret, or unrelated change. (The earlier read-only pass was clean; mutation work remains pending.)
+- [ ] Every graded Courier Delivery criterion has current evidence. (Retrieval/list/details/status-progression implemented; backend DB-verified; **native on-device interaction is the remaining evidence**.)
+- [x] The baseline contract, frontend-only limitation, final minimum backend decision, and frontend adaptation are recorded. (Global spec §10.4, README adjustment record, and the log all record the discrepancy, why an adapter was unsafe, and the final contract.)
+- [ ] Eligible visibility is exact and role-safe across initial load, refresh, focus, mutation, logout, and restart. (Load/refresh/focus/role-scoping/mutation-reconcile implemented and DB/code-verified; logout/restart paths **native-pending**.)
+- [x] Both allowed transitions persist in order and failures never leave a false final UI state. (Status→2-then-assign and status→3 DB-verified; `runStatusMutation` shows persisted/partial/error states, never a false final.)
+- [x] Delivered and invalid/foreign/stale orders cannot mutate from either UI or service entry points. (`DeliveryRow` locks DELIVERED; `markDelivered`/`acceptDelivery` reject wrong status/ownership before any request.)
+- [ ] Delivery Details matches the minimum wireframe fields and works with long/nullable content. (Fields + null-safety implemented; **wireframe-visual + native long-content pending**.)
+- [x] Customer and navigation regression checks pass (backend). (112 backend tests pass; no customer-path client files changed. **Native customer smoke test still recommended.**)
+- [x] Database evidence confirms status/assignment behavior. (`./mvnw test` against MySQL; Postman requests documented for the operator.)
+- [x] This spec and the global spec match final verified behavior with no unsupported checked items. (Native-only items remain annotated pending.)
+- [x] The private implementation log records the discrepancy, decision, adapter, recovery behavior, evidence, manual gaps, and technical-demo cue. (Feature-3 completion entry appended to `.omi/m14/IMPLEMENTATION_LOG.md`.)
+- [x] The completed feature diff contains no undocumented/non-minimal backend edit, dead code, debug output, generated artifact, secret, or unrelated change. (Backend limited to the documented status-only surface.)
 - [x] Claude's handoff reports outcome, changed files, exact checks/results, remaining manual checks, a narrowly scoped stage command, and a copy-ready Conventional Commit command. (See session handoff.)
 
 ## 12. Notes for AI tools

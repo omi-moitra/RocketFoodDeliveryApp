@@ -347,12 +347,231 @@
         },
         "description": "Lists every order belonging to the authenticated customer captured by the auth request. Expects HTTP 200 with { message: 'Success', data: [ ...order objects... ] }; an empty array is a valid no-orders result."
       }
+    },
+    {
+      "name": "GET /api/orders/pending — all pending deliveries (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('pending deliveries load with the Success envelope', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/pending",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "pending"]
+        },
+        "description": "Loads every pending order available to any courier for acceptance. Expects HTTP 200 with { message: 'Success', data: [ ...order objects... ] }."
+      }
+    },
+    {
+      "name": "GET /api/orders — courier assigned deliveries (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier-scoped deliveries load with the Success envelope', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders?type=courier&id={{courierId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"],
+          "query": [
+            { "key": "type", "value": "courier" },
+            { "key": "id", "value": "{{courierId}}" }
+          ]
+        },
+        "description": "Lists orders assigned to the courier captured by the auth request. The client merges these with the pending list and shows only this courier's in-progress/delivered orders."
+      }
+    },
+    {
+      "name": "PUT /api/order/{id}/status — pending to in progress (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('status advances to in progress and unrelated fields are preserved', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.status).to.eql('in progress');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_status_id\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/order/{{orderId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "order", "{{orderId}}", "status"]
+        },
+        "description": "Status-only update that changes just order_status_id, preserving restaurant, customer, rating, and courier. Use a disposable order ID. Step 1 of accepting a pending delivery; the client follows it with the courier assignment below."
+      }
+    },
+    {
+      "name": "PUT /api/order/{id}/courier — assign the active courier (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier is assigned to the order', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.courier_id).to.eql(Number(pm.variables.get('courierId')));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"courier_id\": {{courierId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/order/{{orderId}}/courier",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "order", "{{orderId}}", "courier"]
+        },
+        "description": "Assigns the active courier to the order. Step 2 of accepting a pending delivery; the status update above must succeed first."
+      }
+    },
+    {
+      "name": "PUT /api/order/{id}/status — in progress to delivered (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('status advances to delivered without dropping the courier', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.status).to.eql('delivered');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_status_id\": 3\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/order/{{orderId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "order", "{{orderId}}", "status"]
+        },
+        "description": "Completes an in-progress delivery. The status-only update leaves the existing courier assignment untouched, so the order stays owned by the same courier."
+      }
+    },
+    {
+      "name": "PUT /api/order/{id}/status — invalid status (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('an unknown status id is rejected as Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "    pm.expect(body.error).to.eql('Bad Request');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_status_id\": 99\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/order/{{orderId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "order", "{{orderId}}", "status"]
+        },
+        "description": "Sends a status ID that does not exist so the backend rejects it with HTTP 400 { error: 'Bad Request' } and leaves the order unchanged."
+      }
     }
   ],
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
     { "key": "accessToken", "value": "" },
     { "key": "customerId", "value": "2" },
+    { "key": "courierId", "value": "1" },
+    { "key": "orderId", "value": "1" },
     { "key": "restaurantId", "value": "1" },
     { "key": "unknownRestaurantId", "value": "999999" },
     { "key": "rating", "value": "4" },

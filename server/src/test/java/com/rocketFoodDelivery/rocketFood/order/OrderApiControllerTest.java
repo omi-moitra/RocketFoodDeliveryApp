@@ -110,6 +110,91 @@ public class OrderApiControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    // ==================== PUT /api/order/{id}/status ====================
+
+    @Test
+    public void testUpdateOrderStatus_Success() throws Exception {
+        int id = createFreshOrder();
+
+        mockMvc.perform(put("/api/order/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"order_status_id\": 2}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.id").value(id))
+                .andExpect(jsonPath("$.data.status").value("in progress"));
+    }
+
+    @Test
+    public void testUpdateOrderStatus_PreservesUnrelatedFields() throws Exception {
+        // The fresh order is created with restaurant 1 and customer 1, so those values are known
+        // without re-reading them. Assign a courier so courier preservation can also be asserted.
+        int id = createFreshOrder();
+
+        mockMvc.perform(put("/api/order/{id}/courier", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"courier_id\": 1}"))
+                .andExpect(status().isOk());
+
+        // A status change to delivered must keep the courier assignment and restaurant/customer.
+        mockMvc.perform(put("/api/order/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"order_status_id\": 3}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("delivered"))
+                .andExpect(jsonPath("$.data.courier_id").value(1))
+                .andExpect(jsonPath("$.data.restaurant_id").value(1))
+                .andExpect(jsonPath("$.data.customer_id").value(1));
+    }
+
+    @Test
+    public void testUpdateOrderStatus_Failure_NotFound() throws Exception {
+        mockMvc.perform(put("/api/order/{id}/status", 999999)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"order_status_id\": 2}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testUpdateOrderStatus_Failure_InvalidStatus() throws Exception {
+        int id = createFreshOrder();
+
+        mockMvc.perform(put("/api/order/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"order_status_id\": 99}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"));
+    }
+
+    @Test
+    public void testUpdateOrderStatus_Failure_MissingStatus() throws Exception {
+        int id = createFreshOrder();
+
+        mockMvc.perform(put("/api/order/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"order_status_id\": 0}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    /** Creates a fresh pending order (restaurant 1, customer 1, product 1) and returns its id. */
+    private int createFreshOrder() throws Exception {
+        ApiCreateOrderDTO request = new ApiCreateOrderDTO();
+        request.setRestaurantId(1);
+        request.setCustomerId(1);
+        ApiCreateOrderDTO.ProductItem item = new ApiCreateOrderDTO.ProductItem();
+        item.setId(1);
+        item.setQuantity(1);
+        request.setProducts(List.of(item));
+
+        MvcResult createResult = mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.id");
+    }
+
     // ==================== DELETE /api/orders/{id} ====================
 
     @Test

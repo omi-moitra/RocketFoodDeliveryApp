@@ -216,6 +216,10 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
 | `POST` | `/api/orders` | Create an order with restaurant, customer, and product quantities |
 | `GET` | `/api/orders?type=customer&id={id}` | Load the authenticated customer's order history |
+| `GET` | `/api/orders/pending` | Load all pending orders for courier acceptance |
+| `GET` | `/api/orders?type=courier&id={id}` | Load the authenticated courier's assigned orders |
+| `PUT` | `/api/order/{id}/status` | Change only an order's status (courier progression); body `{ "order_status_id": 2\|3 }` |
+| `PUT` | `/api/order/{id}/courier` | Assign a courier to an order; body `{ "courier_id": {id} }` |
 
 ## Backend Compatibility and Minimum-Change Policy
 
@@ -235,9 +239,21 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 
 | Status | Feature | Verified discrepancy | Minimum authorized resolution |
 |---|---|---|---|
-| Decision recorded; implementation pending | Courier Delivery status progression | The broad `PUT /api/orders/{id}` request accepts `restaurant_rating`, but the order response does not return that value. A client cannot safely round-trip it and could erase an existing rating. | If live verification confirms the blocker, add a narrow status-only operation that changes only `order_status_id`, reusing existing status-update behavior and preserving the broad endpoint. Document the final contract, files, tests, frontend adapter, Postman result, and DBeaver result here when implemented. |
+| Implemented and DB-verified | Courier Delivery status progression | The broad `PUT /api/orders/{id}` request requires `restaurant_rating`, but `ApiOrderDTO` (the order response) does not return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client cannot round-trip the rating and would erase it by sending `null`. | Added a status-only endpoint `PUT /api/order/{id}/status` that changes only `order_status_id`, reusing the existing `OrderRepository.updateOrderStatus` native query. The broad endpoint is retained unchanged for backward compatibility. |
 
-This table is a decision record, not a completion claim. At the time of this entry, the Courier list and Delivery Details frontend exist, while status mutation and any backend adjustment remain pending verification.
+**Implemented contract**
+
+- **Method / path:** `PUT /api/order/{id}/status`
+- **Request body:** `{ "order_status_id": <1|2|3> }` (`@Min(1)`; the service also rejects an unknown status ID)
+- **Success:** `200 { "message": "Success", "data": <ApiOrderDTO> }` with the new status and all other fields (restaurant, customer, rating, courier) unchanged
+- **Errors:** `404` unknown order · `400` missing/invalid or unknown status · `401/403` unauthenticated
+- **Changed server files:** `dtos/order/ApiUpdateOrderStatusDTO.java` (new), `service/OrderService.java` (`updateOrderStatusFromDTO`, reusing `updateOrderStatus`), `controller/api/OrderApiController.java` (new mapping), `order/OrderApiControllerTest.java` (5 new tests)
+- **Why a frontend-only adapter was unsafe:** the response never exposes `restaurant_rating`, so no adapter can rebuild the broad-update body without guessing that field; the broad update then overwrites it, causing silent data loss. A status-only operation was the smallest safe fix.
+- **Compatibility impact:** additive only. The broad `PUT /api/orders/{id}`, creation, retrieval, assignment, and rating endpoints are unchanged; no schema, entity, migration, security, or seeder change.
+- **Frontend integration:** `client/services/orderService.js` calls the endpoint from `acceptDelivery` (status 2 then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery); screens never build the request body.
+- **Tests:** `./mvnw test` → 112 passed, 0 failures (includes success, unrelated-field/courier preservation, 404, invalid status, missing status).
+- **Postman:** `PostmanCollection.json` includes pending, courier-scoped, status→2, courier assignment, status→3, and invalid-status requests.
+- **DBeaver / native:** database before/after inspection and on-device courier interaction remain manual checks for the operator with a running device.
 
 ## Examples from This Project
 

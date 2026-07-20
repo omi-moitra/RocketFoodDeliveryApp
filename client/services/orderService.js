@@ -41,8 +41,11 @@ const BACKEND_STATUS_TO_INTERNAL = Object.freeze({
 // User-safe classification messages; raw server details and tokens never reach the interface.
 export const ORDER_ERROR_MESSAGES = Object.freeze({
   invalid: 'The order could not be processed. Please review your selection and try again.',
+  notFound: 'This delivery is no longer available. Please refresh and try again.',
+  partial: 'The delivery moved to in progress, but assigning you failed. Please retry assignment.',
   response: 'The order service returned an unexpected response. Please try again.',
   service: 'The order service is unavailable right now. Please try again.',
+  status: 'The delivery status could not be updated. Please try again.',
   token: 'Your session has expired. Please log in again.',
 });
 
@@ -552,4 +555,195 @@ export async function fetchCourierDeliveries({ signal } = {}) {
   }
 
   return eligibleDeliveries;
+}
+
+// ==================== Courier status mutation ====================
+
+// Backend order_status_id for each internal status (confirmed 1/2/3 and DB-verified in tests).
+const DELIVERY_STATUS_ID = Object.freeze({
+  DELIVERED: 3,
+  IN_PROGRESS: 2,
+  PENDING: 1,
+});
+
+/**
+ * Reads a validated active courier session or throws the shared unauthorized failure.
+ * The status-mutation functions call it so courier identity stays at the service boundary.
+ * Read aloud: “require courier session.”
+ */
+async function requireCourierSession() {
+  const session = await getStoredSession();
+  const courierId = Number(session?.courierId);
+
+  if (!session || session.activeRole !== ROLES.courier || !isPositiveSafeInteger(courierId)) {
+    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, 401);
+  }
+
+  return { courierId, session };
+}
+
+/**
+ * Classifies a non-2xx mutation response into the shared error codes, or returns for success.
+ * Read aloud: “throw for mutation failure.”
+ */
+function throwForMutationFailure(response) {
+  if (response.status === 401 || response.status === 403) {
+    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, response.status);
+  }
+
+  if (response.status === 404) {
+    throw new ApiRequestError('notFound', ORDER_ERROR_MESSAGES.notFound, response.status);
+  }
+
+  if (response.status >= 500) {
+    throw new ApiRequestError('service', ORDER_ERROR_MESSAGES.service, response.status);
+  }
+
+  if (!response.ok) {
+    throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.status, response.status);
+  }
+}
+
+/**
+ * Validates the single-object `{ message: "Success", data }` envelope and normalizes the order.
+ * Every mutation returns the persisted order, so the screen renders reconciled state, not a guess.
+ * Read aloud: “normalize updated delivery.”
+ */
+function normalizeUpdatedDelivery(responseData) {
+  const rawOrder =
+    responseData?.message === 'Success' &&
+    responseData.data &&
+    typeof responseData.data === 'object' &&
+    !Array.isArray(responseData.data)
+      ? responseData.data
+      : null;
+  const delivery = rawOrder ? normalizeCourierDelivery(rawOrder) : null;
+
+  if (!delivery) {
+    throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response);
+  }
+
+  return delivery;
+}
+
+/**
+ * Persists a status-only change through the minimal `PUT /api/order/{id}/status` endpoint.
+ * This endpoint changes only `order_status_id`; it never overwrites restaurant, customer, rating,
+ * or courier, so a status change cannot erase unrelated order data.
+ * Read aloud: “put order status.”
+ */
+async function putOrderStatus(orderId, statusId, session, signal) {
+  const { data, response } = await requestJson(
+    `/api/order/${encodeURIComponent(orderId)}/status`,
+    {
+      body: JSON.stringify({ order_status_id: statusId }),
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PUT',
+      signal,
+    },
+  );
+
+  throwForMutationFailure(response);
+  return normalizeUpdatedDelivery(data);
+}
+
+/**
+ * Assigns the given courier to the order through the existing assignment endpoint.
+ * Read aloud: “put order courier.”
+ */
+async function putOrderCourier(orderId, courierId, session, signal) {
+  const { data, response } = await requestJson(
+    `/api/order/${encodeURIComponent(orderId)}/courier`,
+    {
+      body: JSON.stringify({ courier_id: courierId }),
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'PUT',
+      signal,
+    },
+  );
+
+  throwForMutationFailure(response);
+  return normalizeUpdatedDelivery(data);
+}
+
+/**
+ * Accepts a pending delivery: persist status IN PROGRESS first, then assign the active courier.
+ * The order is confirmed business sequence (status ID 2, then assignment). If the status update
+ * succeeds but assignment fails, a `partial` error carrying `orderId` is thrown so the screen can
+ * offer a retry-assignment recovery instead of losing the order or claiming acceptance succeeded.
+ * Read aloud: “accept delivery.”
+ * @param {{delivery: object, signal?: AbortSignal}} options
+ * @returns {Promise<object>} The persisted, assigned in-progress delivery.
+ * @throws {ApiRequestError} Codes: `unauthorized`, `invalid`, `notFound`, `service`, `response`,
+ *   `connection`, `aborted`, `partial`.
+ */
+export async function acceptDelivery({ delivery, signal }) {
+  const { courierId, session } = await requireCourierSession();
+
+  // Only a genuinely pending delivery may be accepted; anything else is a stale/duplicate action.
+  if (!delivery || delivery.status !== DELIVERY_STATUS.PENDING) {
+    throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.status);
+  }
+
+  // Step 1: status → IN PROGRESS. A failure here leaves the order PENDING and is surfaced as-is.
+  await putOrderStatus(delivery.id, DELIVERY_STATUS_ID.IN_PROGRESS, session, signal);
+
+  // Step 2: assign the active courier. A failure now is a partial acceptance, not a full failure.
+  try {
+    return await putOrderCourier(delivery.id, courierId, session, signal);
+  } catch (error) {
+    if (error?.code === 'aborted') {
+      throw error;
+    }
+
+    const partialError = new ApiRequestError('partial', ORDER_ERROR_MESSAGES.partial, error?.status ?? null);
+    partialError.orderId = delivery.id;
+    throw partialError;
+  }
+}
+
+/**
+ * Recovery for a partial acceptance: assign the active courier to an order already at status 2.
+ * Read aloud: “assign active courier.”
+ * @param {{orderId: number, signal?: AbortSignal}} options
+ * @returns {Promise<object>} The persisted, now-assigned in-progress delivery.
+ */
+export async function assignActiveCourier({ orderId, signal }) {
+  const { courierId, session } = await requireCourierSession();
+  const normalizedOrderId = Number(orderId);
+
+  if (!isPositiveSafeInteger(normalizedOrderId)) {
+    throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.status);
+  }
+
+  return putOrderCourier(normalizedOrderId, courierId, session, signal);
+}
+
+/**
+ * Completes the active courier's in-progress delivery by persisting status DELIVERED (ID 3).
+ * Only an in-progress delivery owned by the active courier may advance; the courier is not
+ * reassigned because the status-only endpoint leaves the existing assignment untouched.
+ * Read aloud: “mark delivered.”
+ * @param {{delivery: object, signal?: AbortSignal}} options
+ * @returns {Promise<object>} The persisted delivered delivery.
+ */
+export async function markDelivered({ delivery, signal }) {
+  const { courierId, session } = await requireCourierSession();
+
+  // Guard against skipped/reversed/foreign/duplicate transitions before any request is sent.
+  if (
+    !delivery ||
+    delivery.status !== DELIVERY_STATUS.IN_PROGRESS ||
+    delivery.courierId !== courierId
+  ) {
+    throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.status);
+  }
+
+  return putOrderStatus(delivery.id, DELIVERY_STATUS_ID.DELIVERED, session, signal);
 }

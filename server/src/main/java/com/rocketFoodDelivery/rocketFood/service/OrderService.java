@@ -23,6 +23,9 @@ import com.rocketFoodDelivery.rocketFood.models.Product;
 import com.rocketFoodDelivery.rocketFood.models.ProductOrder;
 import com.rocketFoodDelivery.rocketFood.models.Restaurant;
 
+// Project exceptions
+import com.rocketFoodDelivery.rocketFood.exception.BadRequestException;
+
 // Project DTOs
 import com.rocketFoodDelivery.rocketFood.dtos.order.ApiAssignCourierDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.order.ApiOrderDTO;
@@ -214,6 +217,26 @@ public class OrderService {
         entityManager.clear();
         Optional<Order> updated = this.findOrderById(id);
         return updated.map(this::mapOrderToDTO);
+    }
+
+    // UPDATE - Update only the order status from a DTO, preserving all unrelated order fields.
+    // Reuses the status-only native update (updateOrderStatus), which sets order_status_id alone,
+    // so restaurant, customer, restaurant_rating, and courier are never overwritten. Returns empty
+    // when the order does not exist (mapped to 404); rejects an unknown status ID with 400.
+    @Transactional
+    public Optional<ApiOrderDTO> updateOrderStatusFromDTO(int id, int orderStatusId) {
+        Optional<Order> existing = this.findOrderById(id);
+        if (existing.isEmpty()) return Optional.empty();
+
+        if (orderStatusRepository.findById(orderStatusId).isEmpty()) {
+            throw new BadRequestException(String.format("Order status with id %d not found", orderStatusId));
+        }
+
+        this.updateOrderStatus(id, orderStatusId);
+        // The status-only update is a native modifying query, so detach cached entities before
+        // re-reading to return the freshly persisted row rather than a stale in-context copy.
+        entityManager.clear();
+        return this.findOrderById(id).map(this::mapOrderToDTO);
     }
 
     // UPDATE - Assign a courier to an order
