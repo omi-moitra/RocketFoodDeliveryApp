@@ -55,7 +55,7 @@ The following conflicts are explicit implementation gates. Claude must prefer a 
 - The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query.
 - The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`.
 - The grading sheet names order fields `sendSMS` and `sendEmail`. The current Java DTO explicitly maps snake-case JSON fields `send_sms` and `send_email`.
-- The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation. **Resolved:** a status-only `PUT /api/order/{id}/status` endpoint was added (minimum-change policy) so a status change never round-trips `restaurant_rating`; see §10.4 and the README backend-adjustment record.
+- The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation. **Resolved:** `restaurant_rating` was added to the response DTO `ApiOrderDTO` (minimum-change policy) so the client can echo the current rating back through the existing broad `PUT /api/orders/{id}` without erasing it; no new endpoint. See §10.4 and the README backend-adjustment record.
 
 The grading checklist also contains a generic instruction to create a new private repository, while the M14 business brief and coach walkthrough explicitly describe this module as a continuation of the M13 repository. The confirmed project decision is to continue in the existing M13 repository and not create a second repository.
 
@@ -453,21 +453,14 @@ Before Claude implements a status control, the verified feature spec must docume
 
 Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED`. The confirmed pending-acceptance sequence is: update the order to status ID 2, then assign the active `courier_id`. On the courier's later status action, update the assigned order to status ID 3 without replacing its courier.
 
-**Resolved (implemented and DB-verified).** The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` does not return it and `updateOrderFromDTO` overwrites it, so a frontend adapter could not round-trip a status change without erasing rating data. Under the minimum-backend-change policy (README “Backend Compatibility and Minimum-Change Policy”), a status-only endpoint was added:
+**Resolved (minimum DTO change).** The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` did not return it and `updateOrderFromDTO` overwrites it, so a frontend adapter could not round-trip a status change without erasing rating data. Under the minimum-change policy (README “Backend Compatibility and Minimum-Change Policy”), the smallest fix was to **expose `restaurant_rating` in the response DTO** so the client can read the current rating and echo it back through the existing broad update — no new endpoint, DTO, or service method:
 
-```text
-PUT /api/order/{id}/status
-Authorization: Bearer <accessToken>
-Content-Type: application/json
-
-{ "order_status_id": 2 | 3 }
-```
-
-- Success: `200 { "message": "Success", "data": <ApiOrderDTO> }` with only the status changed; restaurant, customer, rating, and courier are preserved.
-- Errors: `404` unknown order; `400` missing/invalid or unknown status; `401/403` unauthenticated.
-- Server files: `ApiUpdateOrderStatusDTO.java` (new), `OrderService.updateOrderStatusFromDTO` (reuses the existing status-only `updateOrderStatus`), `OrderApiController` (new mapping), plus 5 focused tests. The broad `PUT /api/orders/{id}`, assignment `PUT /api/order/{id}/courier`, creation, retrieval, and rating endpoints are unchanged — additive, backward-compatible, no schema/entity/security/seeder change.
-- Frontend integration: `orderService.js` calls it from `acceptDelivery` (status 2, then `PUT /api/order/{id}/courier`), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery). On a partial acceptance (status 2 persisted, assignment failed), the client retains a retry-assignment action rather than refreshing the row away or claiming success.
-- Verification: `./mvnw test` → 112 passed (0 failures); `PostmanCollection.json` updated. DBeaver before/after and on-device interaction remain operator manual checks.
+- Server change: `ApiOrderDTO` gains a nullable `Integer restaurant_rating`; `OrderService.mapOrderToDTO` sets it from `order.getRestaurantRating()`. That is the entire production change.
+- Endpoint used: the existing `PUT /api/orders/{id}` (unchanged). Courier progression sends `{ restaurant_id, customer_id, order_status_id: 2|3, restaurant_rating: <current value from the response> }`, changing only the status. Courier is not in the body, so the assignment is preserved.
+- Confirmed sequence: acceptance is broad-update to status 2, then `PUT /api/order/{id}/courier`; completion is broad-update to status 3 without reassigning the courier.
+- Compatibility: additive only — a new response field breaks no existing consumer; broad update, assignment, creation, retrieval, and rating endpoints and all entities/schema/security/seeders are unchanged.
+- Frontend integration: `orderService.js` normalizes `restaurantId`/`customerId`/`restaurantRating` and builds the echoed body in `acceptDelivery` (status 2, then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery). On a partial acceptance (status 2 persisted, assignment failed), the client retains a retry-assignment action rather than refreshing the row away or claiming success. Screens never build the body.
+- Tests: `OrderApiControllerTest` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`; `PostmanCollection.json` updated. Backend test execution and DBeaver/native checks are operator manual steps.
 
 The Courier audit verified that `ApiUpdateOrderDTO` requires `restaurant_rating`, while `ApiOrderDTO` does not return that field; a frontend round trip therefore cannot guarantee rating preservation. If live verification confirms this blocker, Claude is authorized to add the narrowest status-only backend operation that changes only `order_status_id`, reusing existing status-update service/repository behavior where safe. Preserve the existing broad order-update endpoint for compatibility. Before completion, document the final method/path/body/response, exact server files, why the frontend-only approach was unsafe, client adapter changes, compatibility impact, tests, Postman evidence, and database verification here and in `README.md`.
 

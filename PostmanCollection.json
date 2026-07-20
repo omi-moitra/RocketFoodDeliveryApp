@@ -419,7 +419,7 @@
       }
     },
     {
-      "name": "PUT /api/order/{id}/status — pending to in progress (200)",
+      "name": "PUT /api/orders/{id} — pending to in progress (200)",
       "event": [
         {
           "listen": "test",
@@ -427,7 +427,7 @@
             "type": "text/javascript",
             "exec": [
               "const body = pm.response.json();",
-              "pm.test('status advances to in progress and unrelated fields are preserved', function () {",
+              "pm.test('status advances to in progress', function () {",
               "    pm.response.to.have.status(200);",
               "    pm.expect(body.message).to.eql('Success');",
               "    pm.expect(body.data.status).to.eql('in progress');",
@@ -445,14 +445,14 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"order_status_id\": 2\n}"
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"order_status_id\": 2,\n  \"restaurant_rating\": null\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/api/order/{{orderId}}/status",
+          "raw": "{{baseUrl}}/api/orders/{{orderId}}",
           "host": ["{{baseUrl}}"],
-          "path": ["api", "order", "{{orderId}}", "status"]
+          "path": ["api", "orders", "{{orderId}}"]
         },
-        "description": "Status-only update that changes just order_status_id, preserving restaurant, customer, rating, and courier. Use a disposable order ID. Step 1 of accepting a pending delivery; the client follows it with the courier assignment below."
+        "description": "Broad order update advancing the status to in progress. The client echoes the order's own restaurant_id, customer_id, and current restaurant_rating (from the order response, which now exposes it) so only the status changes and the rating is not erased. Courier is not part of this body, so an existing assignment is preserved. Use a disposable order ID. Step 1 of accepting a pending delivery; the client follows it with the courier assignment below."
       }
     },
     {
@@ -493,7 +493,7 @@
       }
     },
     {
-      "name": "PUT /api/order/{id}/status — in progress to delivered (200)",
+      "name": "PUT /api/orders/{id} — in progress to delivered (200)",
       "event": [
         {
           "listen": "test",
@@ -501,7 +501,7 @@
             "type": "text/javascript",
             "exec": [
               "const body = pm.response.json();",
-              "pm.test('status advances to delivered without dropping the courier', function () {",
+              "pm.test('status advances to delivered and the rating is preserved', function () {",
               "    pm.response.to.have.status(200);",
               "    pm.expect(body.message).to.eql('Success');",
               "    pm.expect(body.data.status).to.eql('delivered');",
@@ -519,50 +519,14 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"order_status_id\": 3\n}"
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"order_status_id\": 3,\n  \"restaurant_rating\": null\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/api/order/{{orderId}}/status",
+          "raw": "{{baseUrl}}/api/orders/{{orderId}}",
           "host": ["{{baseUrl}}"],
-          "path": ["api", "order", "{{orderId}}", "status"]
+          "path": ["api", "orders", "{{orderId}}"]
         },
-        "description": "Completes an in-progress delivery. The status-only update leaves the existing courier assignment untouched, so the order stays owned by the same courier."
-      }
-    },
-    {
-      "name": "PUT /api/order/{id}/status — invalid status (400)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const body = pm.response.json();",
-              "pm.test('an unknown status id is rejected as Bad Request', function () {",
-              "    pm.response.to.have.status(400);",
-              "    pm.expect(body.error).to.eql('Bad Request');",
-              "});"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
-        },
-        "method": "PUT",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"order_status_id\": 99\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/order/{{orderId}}/status",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "order", "{{orderId}}", "status"]
-        },
-        "description": "Sends a status ID that does not exist so the backend rejects it with HTTP 400 { error: 'Bad Request' } and leaves the order unchanged."
+        "description": "Completes an in-progress delivery via the broad update, echoing restaurant_id, customer_id, and the current restaurant_rating. Set restaurant_rating to the value returned in the order response (null when the order has none) so it is not erased. Courier is not in this body, so the assignment is preserved."
       }
     }
   ],

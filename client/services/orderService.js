@@ -400,6 +400,8 @@ function normalizeCourierDelivery(rawOrder) {
   }
 
   const id = Number(rawOrder.id);
+  const customerId = Number(rawOrder.customer_id);
+  const restaurantId = Number(rawOrder.restaurant_id);
   const restaurantName =
     typeof rawOrder.restaurant_name === 'string' ? rawOrder.restaurant_name.trim() : '';
   const status = normalizeDeliveryStatus(rawOrder.status);
@@ -420,12 +422,23 @@ function normalizeCourierDelivery(rawOrder) {
       ? null
       : Number(rawOrder.courier_id);
 
+  // The nullable restaurant rating is retained only so a status change can echo it back through the
+  // broad order update without erasing it; a missing or non-positive value normalizes to null.
+  const restaurantRating =
+    rawOrder.restaurant_rating === null ||
+    rawOrder.restaurant_rating === undefined ||
+    !isPositiveSafeInteger(Number(rawOrder.restaurant_rating))
+      ? null
+      : Number(rawOrder.restaurant_rating);
+
   const products = Array.isArray(rawOrder.products)
     ? rawOrder.products.map(normalizeDeliveryProduct)
     : null;
 
   if (
     !isPositiveSafeInteger(id) ||
+    !isPositiveSafeInteger(customerId) ||
+    !isPositiveSafeInteger(restaurantId) ||
     !restaurantName ||
     !status ||
     !isNonNegativeSafeInteger(totalCost) ||
@@ -440,10 +453,13 @@ function normalizeCourierDelivery(rawOrder) {
   return {
     courierId,
     createdOn,
+    customerId,
     deliveryAddress,
     id,
     products,
+    restaurantId,
     restaurantName,
+    restaurantRating,
     status,
     totalCost,
   };
@@ -627,16 +643,23 @@ function normalizeUpdatedDelivery(responseData) {
 }
 
 /**
- * Persists a status-only change through the minimal `PUT /api/order/{id}/status` endpoint.
- * This endpoint changes only `order_status_id`; it never overwrites restaurant, customer, rating,
- * or courier, so a status change cannot erase unrelated order data.
- * Read aloud: “put order status.”
+ * Persists a status change through the existing broad `PUT /api/orders/{id}` endpoint.
+ * The broad update overwrites restaurant, customer, status, and rating, so the request echoes the
+ * delivery's own `restaurantId`, `customerId`, and current `restaurantRating` and changes only the
+ * status. The rating is preserved because the order response now exposes it (courier is not part of
+ * the broad body, so the assignment is untouched).
+ * Read aloud: “put order status update.”
  */
-async function putOrderStatus(orderId, statusId, session, signal) {
+async function putOrderStatusUpdate(delivery, statusId, session, signal) {
   const { data, response } = await requestJson(
-    `/api/order/${encodeURIComponent(orderId)}/status`,
+    `/api/orders/${encodeURIComponent(delivery.id)}`,
     {
-      body: JSON.stringify({ order_status_id: statusId }),
+      body: JSON.stringify({
+        customer_id: delivery.customerId,
+        order_status_id: statusId,
+        restaurant_id: delivery.restaurantId,
+        restaurant_rating: delivery.restaurantRating,
+      }),
       headers: {
         Authorization: `Bearer ${session.accessToken}`,
         'Content-Type': 'application/json',
@@ -686,13 +709,18 @@ async function putOrderCourier(orderId, courierId, session, signal) {
 export async function acceptDelivery({ delivery, signal }) {
   const { courierId, session } = await requireCourierSession();
 
-  // Only a genuinely pending delivery may be accepted; anything else is a stale/duplicate action.
-  if (!delivery || delivery.status !== DELIVERY_STATUS.PENDING) {
+  // Only a genuinely pending delivery with the identifiers the broad update needs may be accepted.
+  if (
+    !delivery ||
+    delivery.status !== DELIVERY_STATUS.PENDING ||
+    !isPositiveSafeInteger(delivery.restaurantId) ||
+    !isPositiveSafeInteger(delivery.customerId)
+  ) {
     throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.status);
   }
 
   // Step 1: status → IN PROGRESS. A failure here leaves the order PENDING and is surfaced as-is.
-  await putOrderStatus(delivery.id, DELIVERY_STATUS_ID.IN_PROGRESS, session, signal);
+  await putOrderStatusUpdate(delivery, DELIVERY_STATUS_ID.IN_PROGRESS, session, signal);
 
   // Step 2: assign the active courier. A failure now is a partial acceptance, not a full failure.
   try {
@@ -736,14 +764,16 @@ export async function assignActiveCourier({ orderId, signal }) {
 export async function markDelivered({ delivery, signal }) {
   const { courierId, session } = await requireCourierSession();
 
-  // Guard against skipped/reversed/foreign/duplicate transitions before any request is sent.
+  // Guard against skipped/reversed/foreign/duplicate transitions and a body missing identifiers.
   if (
     !delivery ||
     delivery.status !== DELIVERY_STATUS.IN_PROGRESS ||
-    delivery.courierId !== courierId
+    delivery.courierId !== courierId ||
+    !isPositiveSafeInteger(delivery.restaurantId) ||
+    !isPositiveSafeInteger(delivery.customerId)
   ) {
     throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.status);
   }
 
-  return putOrderStatus(delivery.id, DELIVERY_STATUS_ID.DELIVERED, session, signal);
+  return putOrderStatusUpdate(delivery, DELIVERY_STATUS_ID.DELIVERED, session, signal);
 }

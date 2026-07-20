@@ -218,7 +218,7 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/orders?type=customer&id={id}` | Load the authenticated customer's order history |
 | `GET` | `/api/orders/pending` | Load all pending orders for courier acceptance |
 | `GET` | `/api/orders?type=courier&id={id}` | Load the authenticated courier's assigned orders |
-| `PUT` | `/api/order/{id}/status` | Change only an order's status (courier progression); body `{ "order_status_id": 2\|3 }` |
+| `PUT` | `/api/orders/{id}` | Update an order; courier progression echoes `restaurant_id`, `customer_id`, and the current `restaurant_rating`, changing only `order_status_id` (`2`\|`3`) |
 | `PUT` | `/api/order/{id}/courier` | Assign a courier to an order; body `{ "courier_id": {id} }` |
 
 ## Backend Compatibility and Minimum-Change Policy
@@ -239,20 +239,18 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 
 | Status | Feature | Verified discrepancy | Minimum authorized resolution |
 |---|---|---|---|
-| Implemented and DB-verified | Courier Delivery status progression | The broad `PUT /api/orders/{id}` request requires `restaurant_rating`, but `ApiOrderDTO` (the order response) does not return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client cannot round-trip the rating and would erase it by sending `null`. | Added a status-only endpoint `PUT /api/order/{id}/status` that changes only `order_status_id`, reusing the existing `OrderRepository.updateOrderStatus` native query. The broad endpoint is retained unchanged for backward compatibility. |
+| Implemented | Courier Delivery status progression | The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` (the order response) did **not** return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client could not read the current rating to round-trip it and would erase it by sending `null`. | Add `restaurant_rating` to the response DTO `ApiOrderDTO` (one field + one mapping line) so the client can read the current rating and echo it back through the **existing** broad `PUT /api/orders/{id}`. No new endpoint, DTO, or service method. |
 
-**Implemented contract**
+**Implemented change (DTO field addition)**
 
-- **Method / path:** `PUT /api/order/{id}/status`
-- **Request body:** `{ "order_status_id": <1|2|3> }` (`@Min(1)`; the service also rejects an unknown status ID)
-- **Success:** `200 { "message": "Success", "data": <ApiOrderDTO> }` with the new status and all other fields (restaurant, customer, rating, courier) unchanged
-- **Errors:** `404` unknown order · `400` missing/invalid or unknown status · `401/403` unauthenticated
-- **Changed server files:** `dtos/order/ApiUpdateOrderStatusDTO.java` (new), `service/OrderService.java` (`updateOrderStatusFromDTO`, reusing `updateOrderStatus`), `controller/api/OrderApiController.java` (new mapping), `order/OrderApiControllerTest.java` (5 new tests)
-- **Why a frontend-only adapter was unsafe:** the response never exposes `restaurant_rating`, so no adapter can rebuild the broad-update body without guessing that field; the broad update then overwrites it, causing silent data loss. A status-only operation was the smallest safe fix.
-- **Compatibility impact:** additive only. The broad `PUT /api/orders/{id}`, creation, retrieval, assignment, and rating endpoints are unchanged; no schema, entity, migration, security, or seeder change.
-- **Frontend integration:** `client/services/orderService.js` calls the endpoint from `acceptDelivery` (status 2 then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery); screens never build the request body.
-- **Tests:** `./mvnw test` → 112 passed, 0 failures (includes success, unrelated-field/courier preservation, 404, invalid status, missing status).
-- **Postman:** `PostmanCollection.json` includes pending, courier-scoped, status→2, courier assignment, status→3, and invalid-status requests.
+- **Server change:** `dtos/order/ApiOrderDTO.java` — added nullable `Integer restaurant_rating`; `service/OrderService.java#mapOrderToDTO` — `dto.setRestaurant_rating(order.getRestaurantRating())`. That is the entire production change.
+- **Endpoint used:** the existing `PUT /api/orders/{id}` (unchanged). Courier progression sends `{ restaurant_id, customer_id, order_status_id: 2|3, restaurant_rating: <current value> }`, changing only the status. Courier is not in this body, so an existing assignment is preserved.
+- **Response:** `ApiOrderDTO` now includes `restaurant_rating` (nullable). All other fields unchanged.
+- **Why a frontend-only adapter was insufficient:** the response never exposed `restaurant_rating`, so no adapter could rebuild the required broad-update body without guessing it; the broad update then overwrites it, causing silent data loss. Exposing the field in the response is the smallest change that removes the guess.
+- **Compatibility impact:** additive only. Adding a field to a response breaks no existing consumer; the broad update, creation, retrieval, assignment, and rating endpoints, and all entities/schema/security/seeders are unchanged.
+- **Frontend integration:** `client/services/orderService.js` normalizes `restaurantId`, `customerId`, and `restaurantRating`, then `acceptDelivery` (status 2 via broad update, then assign courier), `markDelivered` (status 3 via broad update), and `assignActiveCourier` (partial-acceptance recovery) build the body; screens never build it.
+- **Tests:** `server/.../order/OrderApiControllerTest.java` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`. (Backend test run pending on the operator's machine; not re-run in the latest pass.)
+- **Postman:** `PostmanCollection.json` includes pending, courier-scoped, broad-update→in progress, courier assignment, and broad-update→delivered requests.
 - **DBeaver / native:** database before/after inspection and on-device courier interaction remain manual checks for the operator with a running device.
 
 ## Examples from This Project

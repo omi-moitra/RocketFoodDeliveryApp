@@ -4,14 +4,12 @@ import com.rocketFoodDelivery.rocketFood.dtos.order.ApiAssignCourierDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.order.ApiCreateOrderDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.order.ApiOrderDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.order.ApiUpdateOrderDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.order.ApiUpdateOrderStatusDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.order.ApiUpdateRatingDTO;
 import com.rocketFoodDelivery.rocketFood.exception.BadRequestException;
 import com.rocketFoodDelivery.rocketFood.exception.ResourceNotFoundException;
 import com.rocketFoodDelivery.rocketFood.service.OrderService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,17 +60,6 @@ public class OrderApiController {
         boolean deleted = orderService.deleteOrderIfExists(id);
         if (!deleted) throw new ResourceNotFoundException(String.format("Order with id %d not found", id));
         return ResponseBuilder.buildOkResponse(null);
-    }
-
-    // Status-only update: changes just order_status_id, preserving every other order field. This
-    // exists because the broad PUT /api/orders/{id} requires restaurant_rating, which the order
-    // response never returns, so a courier client cannot round-trip a status change without risking
-    // rating loss. The broad endpoint above is retained unchanged for backward compatibility.
-    @PutMapping("/api/order/{id}/status")
-    public ResponseEntity<Object> updateOrderStatus(@PathVariable int id, @RequestBody @Valid ApiUpdateOrderStatusDTO dto) {
-        Optional<ApiOrderDTO> updated = orderService.updateOrderStatusFromDTO(id, dto.getOrderStatusId());
-        if (updated.isEmpty()) throw new ResourceNotFoundException(String.format("Order with id %d not found", id));
-        return ResponseBuilder.buildOkResponse(updated.get());
     }
 
     @PutMapping("/api/order/{id}/courier")
