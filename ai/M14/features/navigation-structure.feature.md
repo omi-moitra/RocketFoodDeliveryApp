@@ -61,15 +61,7 @@ The concrete output is route files, navigator ownership, authenticated guards, r
 
 Claude may modify or create only these implementation surfaces unless it first records why an additional shared owner is necessary:
 
-- `client/app/_layout.js`
-- `client/app/index.js`
-- `client/app/selection.js`
-- `client/app/customer/_layout.js`
-- `client/app/customer/account.js`
-- `client/app/customer/restaurant/_layout.js` only if required to preserve the documented stack
-- `client/app/courier/_layout.js`
-- `client/app/courier/index.js`
-- `client/app/courier/account.js`
+- The route/layout interfaces in Section 6.1; `client/app/customer/restaurant/_layout.js` may change only if required to preserve the documented stack.
 - `client/contexts/AuthContext.js`
 - `client/storage/authStorage.js`
 - `client/services/authService.js`
@@ -102,7 +94,7 @@ Claude may modify or create only these implementation surfaces unless it first r
 - Customer is available only when `activeRole` is `customer` and a customer ID exists.
 - Courier is available only when `activeRole` is `courier` and a courier ID exists.
 - Root navigator headers remain hidden because authenticated role layouts supply the shared header.
-- Protected routes must close immediately when their guard becomes false. Use the installed Expo Router 6 protected-route mechanism already present in the project unless current official SDK 54 documentation proves it unsuitable.
+- Protected routes must close immediately when their guard becomes false. Follow the existing Expo Router 6 `Stack.Protected` pattern already used in `client/app/_layout.js`; extend that established root guard rather than introducing a competing navigation mechanism.
 - Preserve existing font loading, safe-area provider, error boundary, status bar, and neutral loading behavior.
 
 ### 4.2 Requirement B — Role Selection screen route
@@ -113,6 +105,7 @@ Claude may modify or create only these implementation surfaces unless it first r
 - Selecting a role must call the shared AuthContext action, await persistence, and let the root guard expose the matching tree. The screen must not push a protected route before storage succeeds.
 - Invalid, unavailable, or stale role choices must fail safely without opening the wrong app.
 - This route is not a tab in either role app.
+- Match the supplied Account Selection wireframe: this root destination shows neither the role-app logo/logout header nor a Customer/Courier footer. Role-specific chrome begins only after a role choice opens its matching tab tree.
 - While persistence is pending, disable both choices and ignore duplicate taps. On storage failure, keep Selection visible and provide retryable, user-safe feedback.
 
 ### 4.3 Requirement C — Customer Tabs
@@ -147,6 +140,8 @@ Claude may modify or create only these implementation surfaces unless it first r
 
 ### 4.6 Requirement F — Session and role persistence
 
+This section is the canonical session-lifecycle contract for this feature. Section 7 defines its data shape and validation without replacing these persistence rules.
+
 - Persist `accessToken`, `userId`, optional `customerId`, optional `courierId`, and selected/derived `activeRole`.
 - A usable session requires a token, user ID, and at least one supported role ID.
 - A single-role login derives and persists its only valid active role.
@@ -157,6 +152,11 @@ Claude may modify or create only these implementation surfaces unless it first r
 - A new login must remove role IDs and active-role data belonging to the previous session before the new guarded tree becomes visible.
 - Context exposes one role-selection action; route screens must not call AsyncStorage directly.
 - Service normalization accepts positive numeric IDs returned as numbers or numeric strings and maps missing role IDs to null.
+
+Existing customer-only gates that this feature must inspect and broaden without regressing Customer login:
+
+- `client/services/authService.js`: `authenticateCustomer` currently rejects every otherwise successful response without `customer_id` and maps no `courierId`. Replace that customer-only boundary with role-capable authentication that accepts at least one supported role ID, maps both optional role IDs, and safely rejects a response with neither role.
+- `client/storage/authStorage.js`: `getStoredSession` currently returns null without `customerId`, while `saveAuthSession` accepts no `courierId` or `activeRole`. Broaden storage to accept at least one supported role ID, persist the canonical active role, validate that it matches an available role, and keep the completed M13 customer-only path working.
 
 ### 4.7 Requirement G — Placeholder destination boundary
 
@@ -198,6 +198,8 @@ Claude may modify or create only these implementation surfaces unless it first r
 4. Customer choice persists `activeRole = customer` and opens Customer Tabs.
 5. Courier choice persists `activeRole = courier` and opens Courier Tabs.
 6. A storage failure leaves the user on Account Selection with both role trees closed.
+
+Account Selection itself has no role-specific header or footer, matching the supplied wireframe; its successful choice opens the first destination where role-app chrome appears.
 
 ### 5.5 Customer navigation
 
@@ -320,7 +322,7 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 - `activeRole = customer` requires `customerId`.
 - `activeRole = courier` requires `courierId`.
 - Both role IDs with no active role is a valid pending-selection state.
-- A single role with no active role is normalized to that only role.
+- A newly saved single-role session must include its derived `activeRole`; a restored single-role record without it is incomplete and is rejected/cleared rather than silently normalized at read time.
 - Any other combination is rejected or cleared.
 - Do not accept role names outside exact lowercase `customer` and `courier`.
 - Do not accept zero, negative, fractional, blank, nonnumeric, or unsafe identifiers.
@@ -363,8 +365,8 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 
 ## 9. Technical constraints
 
-- Before coding, Claude must read `client/AGENTS.md`, `client/CLAUDE.md`, `client/package.json`, and current official Expo SDK 54/Router 6 documentation.
-- Use Expo Router 6 JavaScript `Stack`, `Stack.Protected`, `Tabs`, and `Redirect` primitives supported by the installed SDK 54 baseline.
+- Before coding, Claude must read `client/AGENTS.md`, `client/CLAUDE.md`, `client/package.json`, and the current root/customer layouts that establish the project navigation conventions.
+- Extend the installed Expo Router 6 JavaScript pattern: the existing root `Stack` with `Stack.Protected`, role-specific `Tabs`, and `Redirect` only where the established route flow needs it.
 - Do not add a second navigation container.
 - Use current `.js` route files; do not introduce TypeScript for this feature.
 - Keep navigator-native headers hidden where `AppHeader` supplies the authenticated header.
@@ -380,12 +382,7 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 
 ### 10.1 Required structure
 
-- [ ] `client/app/_layout.js` defines the protected root Stack.
-- [ ] `client/app/selection.js` exists as Account Selection.
-- [ ] `client/app/customer/_layout.js` defines Customer Tabs.
-- [ ] `client/app/courier/_layout.js` defines Courier Tabs.
-- [ ] `client/app/customer/restaurant/_layout.js` remains the nested Restaurant Stack.
-- [ ] The resulting hierarchy matches the tree in Section 6.2.
+- [ ] Every interface in Section 6.1 exists with its stated responsibility, and the resulting hierarchy matches the single navigation tree in Section 6.2.
 
 Evidence: `rg --files client/app`, focused layout inspection, and an Expo Router configuration/export check.
 
@@ -399,6 +396,8 @@ Evidence: `rg --files client/app`, focused layout inspection, and an Expo Router
 - [ ] A selected dual-role session exposes only the selected role app.
 - [ ] Logout/unauthorized handling clears every identity/role key.
 - [ ] Back navigation cannot reopen a closed protected tree.
+- [ ] Authentication accepts a valid courier-only response instead of enforcing the current customer-only gate, while customer-only login still works.
+- [ ] Storage accepts either supported role ID, persists the derived/selected active role, and rejects a newly restored single-role record that lacks its required persisted active role.
 
 Evidence: storage-helper inspection/tests plus named manual scenarios for fresh launch, restart, logout, direct route access, and platform back behavior.
 
@@ -408,6 +407,7 @@ Evidence: storage-helper inspection/tests plus named manual scenarios for fresh 
 - [ ] Each choice persists only a role available in the current session.
 - [ ] A choice opens the matching role tabs.
 - [ ] Selection is unavailable to logged-out and single-role sessions.
+- [ ] Selection matches the supplied wireframe boundary with no role-app header or role-specific footer.
 - [ ] Duplicate taps are safely ignored while persistence is pending.
 
 Evidence: inspect the shared role-selection action and manually exercise both choices, a repeated tap, and a simulated/observed storage failure.
@@ -462,6 +462,7 @@ Claude must record exact commands and exit results. Manual iOS/Android items rem
 - Begin with `git status --short`, `rg --files`, targeted caller searches, and inspection of all allowed files. Preserve every unrelated change.
 - Extend the existing M13 navigation; do not replace working layouts wholesale or reimplement completed screen behavior.
 - Keep authentication and role identity in shared context/storage, never route parameters.
+- Follow the two-pass specification guidance in the global spec before manual debugging. It is development guidance, not required grading evidence.
 - Treat the generic `feature-name.feature.md` as an ignored drafting template, not an implementation authority.
 - Do not mark manual iOS/Android behavior complete from static inspection alone.
 - Do not implement account or courier API behavior while creating navigation placeholders.

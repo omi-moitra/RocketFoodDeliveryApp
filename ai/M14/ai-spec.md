@@ -32,18 +32,19 @@ Treat every statement containing **must**, **must not**, **only**, **exactly**, 
 
 ## 1. Document authority
 
-This committed document is Claude's self-contained, project-wide authority for Module 14 implementation. It consolidates the official grading requirements, business rules, teaching guidance, and private planning research used during drafting. Claude must be able to implement from committed files alone; ignored planning files are never a hidden dependency.
+This committed document is Claude's self-contained implementation contract for Module 14. It consolidates the official grading requirements, business rules, teaching guidance, and planning research used during drafting so implementation does not depend on ignored source files. It is subordinate to the current official grading checklist and explicit coach clarification; it cannot overrule either authority.
 
-Within the committed repository, follow this order when sources conflict:
+Use this authority order when sources conflict:
 
-1. `ai/M14/ai-spec.md` — global Module 14 requirements, boundaries, and cross-feature rules.
-2. The relevant exact feature specification under `ai/M14/features/` — Claude's executable feature contract; it may narrow this document but may not contradict it.
-3. `support_materials_14/Wireframe.pdf` and `support_materials_14/Email Template.pdf` — supplied visual and notification references.
-4. `ai/M13/ai-spec.md` and the eight M13 feature specifications — retained customer behavior and established conventions.
-5. `client/AGENTS.md` and `client/CLAUDE.md` — committed client-scoped working instructions; they govern how tools work in `client/`, not the product requirements themselves.
-6. Existing repository code — implementation reality, but not permission to contradict a higher-priority requirement.
+1. The current official Module 14 grading checklist and explicit coach clarification — final grading and product authority.
+2. `ai/M14/ai-spec.md` — self-contained global implementation contract after official requirements have been reconciled into it.
+3. The relevant exact feature specification under `ai/M14/features/` — executable feature contract; it may narrow this document but may not contradict it.
+4. `support_materials_14/Wireframe.pdf` and `support_materials_14/Email Template.pdf` — supplied visual references, subject to checklist scope and explicit coach clarification.
+5. `ai/M13/ai-spec.md` and the eight M13 feature specifications — retained customer behavior and established conventions.
+6. `client/AGENTS.md` and `client/CLAUDE.md` — committed client-scoped working instructions; they govern how tools work in `client/`, not product requirements.
+7. Existing repository code — implementation reality, but not permission to contradict a higher-priority requirement.
 
-Drafting provenance only: this specification was created from the official M14 grading sheet, business document, slides, and project breakdown stored privately under `.omi/m14/`. Those ignored files are not part of Claude's implementation input. When new official feedback changes a requirement, update this specification and the affected feature specification before asking Claude to implement it.
+When a checklist revision or explicit coach clarification changes a requirement, stop the affected implementation decision, reconcile the change into this document and every affected feature specification, and then resume from the updated committed contracts. Ignored planning material remains drafting/audit evidence rather than a hidden runtime dependency.
 
 For each conflict, Claude must quote or identify both conflicting sources, state which file/behavior is blocked, and continue only with independent work that cannot prejudice the decision. Claude must not silently choose a convenient interpretation, invent a requirement, or broaden permission.
 
@@ -54,9 +55,22 @@ The following conflicts are explicit implementation gates. Claude may inspect co
 - The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query.
 - The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`.
 - The grading sheet names order fields `sendSMS` and `sendEmail`. The current Java DTO explicitly maps snake-case JSON fields `send_sms` and `send_email`.
-- The current order API separates all pending orders from courier-assigned orders and does not expose one confirmed status-transition endpoint. The courier feature must document the verified request sequence, status identifiers, assignment rules, and delivered lock before implementation.
+- The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation.
+
+The grading checklist also contains a generic instruction to create a new private repository, while the M14 business brief and coach walkthrough explicitly describe this module as a continuation of the M13 repository. The confirmed project decision is to continue in the existing M13 repository and not create a second repository.
 
 For each resolved gate, Claude must update the relevant feature specification with the verified method, path, query, request body, response envelope, error behavior, and evidence source before client implementation. Do not change the backend merely to remove a mismatch unless the user and project authority explicitly authorize that backend change.
+
+### 1.2 Confirmed project decisions
+
+- Continue the existing M13 repository for M14.
+- For a pending delivery acceptance, update the order to status ID 2 and then assign the active courier. On the courier's later status action, update the assigned order to status ID 3. Verify the safe HTTP bodies/responses before coding.
+- Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED`.
+- Repair dirty status-2/status-3 rows with null courier IDs by assigning a valid courier; do not expose an unassigned non-pending row as eligible work.
+- Use separate role routes backed by one shared Account screen/form/service implementation.
+- Delivery Details follows the supplied wireframe field set and does not add unsupported personal fields.
+- A pending status request displays `Updating…`, not the ambiguous status label `In Progress`.
+- The two-pass AI/specification workflow remains development guidance from the coach transcript, but iteration evidence is not a grading deliverable.
 
 ## 2. Project identity
 
@@ -103,7 +117,7 @@ Implement a role-aware iOS and Android application by extending the working clie
 - A default role guess for a dual-role user.
 - Editing the base user email from the mobile Account screen.
 - Skipping status stages, reversing a delivery status, or changing a delivered order.
-- Sending confirmation notifications when order creation fails.
+- A separate client notification request after order creation or baseline direct integration with Twilio/Notify.EU.
 - Storing secrets in client code or `EXPO_PUBLIC_*` values.
 - Extra-mile rating or Google Maps work before all baseline requirements pass and receive coach review.
 
@@ -301,10 +315,12 @@ Before adding a file, Claude must search for an existing owner with `rg --files`
 - Courier persists `activeRole = courier`; the root guard then exposes Courier tabs.
 - Do not default to one role or expose this screen to a single-role user.
 - Claude must prevent duplicate choice writes and must not pass tokens or identity through route parameters.
+- Match the supplied Account Selection wireframe: it has no role-specific tab footer or authenticated role-app header. Login and Account Selection are the two root destinations without role-app chrome; the shared logo/logout header and role footer begin only after Customer or Courier is selected.
+- If an explicit coach clarification later requires a logout control or other authenticated chrome on Account Selection, reconcile that decision into this section and the navigation/UI feature specs before implementation.
 
 ### 8.3 Customer tabs
 
-- `client/app/customer/_layout.js` contains Restaurants, Order History, and Account, in that order unless the wireframe dictates otherwise.
+- `client/app/customer/_layout.js` contains the checklist tab labels Restaurants, Order History, and Account, in that order.
 - Preserve the nested Restaurant Stack at `client/app/customer/restaurant/_layout.js`.
 - Restaurant list and menu remain below the Restaurants tab.
 
@@ -420,6 +436,10 @@ The current backend exposes:
 
 If both calls are verified and used, Claude must merge and deduplicate by order ID at the service boundary. Re-check eligibility after refresh and status changes. Do not expose another courier's assigned non-pending delivery, even briefly through stale state.
 
+Coach-walkthrough evidence warns that seed data may contain status-2 or status-3 orders with a null courier ID. Repair each dirty row by assigning a valid courier through a controlled data/API correction. Until repaired, treat it as ineligible rather than inferring assignment from status; afterward, it appears only for its assigned courier. Verify the live response shapes before finalizing the filter.
+
+The Courier Delivery feature spec must define the Delivery Details modal's minimum wireframe fields: status, delivery address, restaurant, order date, line items, quantity, item price, and total. Do not add customer or courier personal fields unless an authoritative requirement explicitly demands them and the API safely supplies them.
+
 ### 10.4 Courier assignment and status update
 
 Before Claude implements a status control, the verified feature spec must document the exact sequence for:
@@ -430,6 +450,8 @@ Before Claude implements a status control, the verified feature spec must docume
 - Persisting `IN PROGRESS` → `DELIVERED`.
 - Proving delivered orders cannot advance again.
 
+Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED`. The confirmed pending-acceptance sequence is: update the order to status ID 2, then assign the active `courier_id`. On the courier's later status action, update the assigned order to status ID 3 without replacing its courier. Verify the exact safe request bodies, responses, and failure recovery in the live API/Postman before implementation.
+
 Current code includes `PUT /api/order/{id}/courier` for assignment and a broad `PUT /api/orders/{id}` update, but the latter expects additional order fields. Claude must not send guessed values, copy stale entity data into a broad update, or treat an optimistic UI change as persisted until Postman confirms the safe contract and the response succeeds.
 
 ### 10.5 Order confirmation notifications
@@ -439,7 +461,9 @@ The user-facing choices are independent SMS and email checkboxes. The feature sp
 - Official grading names: `sendSMS`, `sendEmail`.
 - Current backend JSON names: `send_sms`, `send_email`.
 
-Claude must resolve the request shape before implementation and record the chosen mapping in the feature spec. Both values default to false. Only selected products are sent. Checkbox state maps explicitly to the verified request keys; a failed order must not display or imply a successful notification.
+Claude must resolve the request shape before implementation and record the chosen mapping in the feature spec. Both values default to false. Only selected products are sent. Both notification booleans travel inside the order-creation POST; the baseline client makes no separate post-success notification request. The backend may act on selected options only when order creation succeeds, and a failed order must not display or imply a successful notification.
+
+Direct Twilio SMS and Notify.EU email delivery are business-brief extra miles, not baseline client behavior. The supplied Email Template applies only if the Notify.EU extra mile is coach-approved and implemented; it then requires the Rocket Food presentation plus customer name, order ID, restaurant name, and total cost. The baseline requirement is limited to opt-in UI and verified boolean mapping in the order POST.
 
 ### 10.6 Postman minimum scope
 
@@ -482,9 +506,8 @@ Delivery status colors are semantic: `PENDING` red, `IN PROGRESS` orange, and `D
 
 ### 11.3 Shared layout
 
-- Header and role-specific footer remain visible on authenticated pages.
-- Login hides both header and footer.
-- Account Selection follows its supplied wireframe; do not assume the standard tabs belong there.
+- Header and role-specific footer remain visible on Customer and Courier destinations.
+- Login and Account Selection hide role-app header/footer chrome. This explicit Account Selection exception follows its supplied wireframe and avoids choosing a role-specific footer before a role exists.
 - Header contains the Rocket Food Delivery logo and Log Out action where the wireframe shows them.
 - Content is centered within the global layout.
 - Pages and modals scroll when content overflows.
@@ -522,19 +545,21 @@ Preserve the original files under `support_materials_14/`; Claude may inspect th
 - Disable Save while the request is pending.
 - Refresh displayed values from the confirmed response or a follow-up GET.
 - Preserve current values on validation or request failure.
-- Share the Account form/logic between roles instead of duplicating it.
+- Keep separate Customer and Courier Account route destinations, but make them thin wrappers around one shared Account screen/form, validation flow, request service, and loading/error/save behavior. Supply role-specific labels, IDs, and values through validated session/configuration data. This satisfies the checklist and business-brief reuse rule without pretending both roles are one route.
 
 ### 12.3 Courier deliveries
 
 - Show all pending orders and only the active courier's assigned in-progress/delivered orders.
+- Do not infer assignment from status: repair dirty non-pending rows by assigning a valid courier, and exclude them from courier lists until that repair succeeds.
 - Normalize backend status spelling/case once at the service boundary.
 - Status order is exactly `PENDING` → `IN PROGRESS` → `DELIVERED`.
-- Disable the status control and display `In Progress` while its request is pending.
+- Disable the status control and display `Updating…` while its request is pending.
 - Prevent duplicate or out-of-order updates.
 - Persist before treating a transition as final; roll back or refresh on failure.
 - Delivered status has no further transition.
 - View opens details for the selected order.
-- Nullable courier/product/address data must not crash the modal or render `undefined`.
+- Delivery Details displays at least status, delivery address, restaurant, order date, line items, quantity, item price, and total, matching the supplied wireframe.
+- Nullable product/address data must not crash the modal or render `undefined`; customer/courier personal fields remain absent unless an authoritative requirement and safe API contract require them.
 
 ### 12.4 Customer order confirmation
 
@@ -626,11 +651,15 @@ Claude must execute every feature in this order:
 2. **Inventory:** Use `rg --files` and targeted `rg` searches to map existing owners, routes, callers, tests, and dependencies. Do not create duplicate architecture.
 3. **Contract gate:** Verify required API calls in Postman or from authoritative live evidence. Record method, path, query, body, authentication, success envelope, validation, and failures in the feature spec.
 4. **Plan:** Map each acceptance criterion to files and verification. Stop decision-dependent work when a Section 1.1 mismatch remains unresolved.
-5. **Implement:** Make the smallest cohesive change that satisfies the active feature. Preserve working M13 behavior and unrelated user changes.
-6. **Verify:** Run targeted static/automated checks, exercise success and meaningful failure states, compare owned UI to the wireframe, and re-test affected M13 flows.
-7. **Reconcile:** Update the feature spec, this global spec, Postman, tree, and docs only where the verified implementation changed their truth.
-8. **Clean:** Remove temporary logs, dead code, unused imports, stale comments, generated output, and accidental secrets; inspect the complete diff.
-9. **Handoff:** Report the outcome first, list changed files, give exact checks/results and manual gaps, then provide narrowly scoped staging and copy-ready commit commands.
+5. **Iteration 1 — implement:** Prompt with this global spec and the active feature spec, then make the smallest cohesive change that satisfies the feature. Preserve working M13 behavior and unrelated user changes.
+6. **Iteration 1 — read and verify:** Read the complete generated diff, confirm every line is understood, run targeted checks, exercise success and meaningful failure states, compare owned UI to the wireframe, and re-test affected M13 flows. Do not blindly accept generated code.
+7. **Improve the specification:** Correct every missing requirement, ambiguity, incorrect result, or verification gap in the active feature spec. If iteration one appears correct, do not invent a deficiency.
+8. **Iteration 2 — re-prompt:** Prompt again with this global spec and the improved feature spec. A second AI pass is coach workflow guidance before manual debugging; when iteration one required no correction, use the second pass to review the implementation against every acceptance criterion.
+9. **Iteration 2 — verify:** Read the complete second-pass diff and repeat affected checks.
+10. **Manual debugging:** Only after both AI/specification iterations may Claude or the developer manually debug remaining imperfections. Read, understand, and verify every manual correction.
+11. **Reconcile:** Update the feature spec, this global spec, Postman, tree, and docs only where verified implementation changed their truth.
+12. **Clean:** Remove temporary logs, dead code, unused imports, stale comments, generated output, and accidental secrets; inspect the complete diff.
+13. **Handoff:** Report the outcome first, list changed files, give exact checks/results and manual gaps, then provide narrowly scoped staging and copy-ready commit commands. Two-pass iteration evidence is not required for grading or handoff.
 
 Claude must not change code first and knowingly leave specifications inaccurate. A spec checkbox remains unchecked until evidence exists; code presence alone is not proof of runtime behavior.
 
@@ -777,6 +806,8 @@ Extra miles are optional only after all baseline work passes and a coach reviews
 - Completed-order rating from 1–5 with restaurant-rating impact.
 - Google Maps restaurant-list option using valid addresses.
 
+The business brief also presents direct Twilio SMS and Notify.EU email delivery as optional extra miles. They are not guaranteed current grading-checklist credit without explicit coach confirmation. If Notify.EU work is approved, follow the supplied Email Template; neither provider integration belongs to baseline notification opt-in.
+
 ## 22. Rules for AI tools
 
 Claude is the implementation agent for these specifications. Claude must:
@@ -787,6 +818,7 @@ Claude is the implementation agent for these specifications. Claude must:
 - Inspect actual routes, services, callers, storage, DTOs, tests, and API responses before changing code.
 - Keep changes within the requested feature scope and preserve unrelated user work.
 - Treat official/current-backend mismatches as blockers to resolve, not invitations to guess.
+- Follow the coach's two-pass specification guidance before manual debugging; do not present iteration evidence as a grading requirement.
 - Reuse shared components and services where behavior is genuinely shared.
 - Keep code junior-readable and explain non-obvious role, security, request, and transition logic.
 - Update specifications when verified implementation evidence changes a contract.
@@ -845,7 +877,7 @@ Sections 23.1–23.5 are the **agent-verifiable** Definition of Done: Claude can
 ### 23.4 Customer notifications and regression
 
 - [ ] SMS/email choices work independently and all four combinations send accurate booleans.
-- [ ] Notifications are requested only after successful order creation.
+- [ ] Every order POST carries accurate SMS/email booleans; the backend acts on them only for a successfully created order, with no separate baseline client notification request.
 - [ ] Confirmation submission is duplicate-safe and preserves correct retry/reset behavior.
 - [ ] The full M13 customer journey passes without regression.
 
