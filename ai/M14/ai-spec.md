@@ -1,6 +1,8 @@
 # Rocket Food Delivery Mobile App — Module 14 Global AI Specification
 
-> Read this document before implementing or modifying any Module 14 feature. Use it together with the exact feature specification under `ai/M14/features/`. This specification extends the completed Module 13 customer app; it does not replace it.
+> **Claude implementation contract:** Claude will run and implement the Module 14 feature specifications. Before changing files, Claude must read this entire document, then the exact feature specification under `ai/M14/features/`, then every repository instruction file governing the files it may touch. This specification extends the completed Module 13 customer app; it does not authorize replacing it.
+
+Treat every statement containing **must**, **must not**, **only**, **exactly**, or **do not** as a hard constraint. Treat target paths as planned until repository inspection confirms them. When a decision-critical fact is absent or conflicts with current evidence, Claude must stop that decision, report the evidence, and request resolution instead of guessing.
 
 ## Table of Contents
 
@@ -30,31 +32,31 @@
 
 ## 1. Document authority
 
-This committed document is the self-contained, project-wide authority for Module 14 implementation. It consolidates the official grading requirements, business rules, teaching guidance, and private planning research used during drafting. A repository reader does not need access to ignored planning files to follow or apply it.
+This committed document is Claude's self-contained, project-wide authority for Module 14 implementation. It consolidates the official grading requirements, business rules, teaching guidance, and private planning research used during drafting. Claude must be able to implement from committed files alone; ignored planning files are never a hidden dependency.
 
 Within the committed repository, follow this order when sources conflict:
 
-1. `ai/M14/ai-spec.md` — consolidated Module 14 project requirements and cross-feature rules.
-2. The relevant exact feature specification under `ai/M14/features/` — detailed feature behavior and acceptance criteria; it may narrow this global document but may not contradict it.
+1. `ai/M14/ai-spec.md` — global Module 14 requirements, boundaries, and cross-feature rules.
+2. The relevant exact feature specification under `ai/M14/features/` — Claude's executable feature contract; it may narrow this document but may not contradict it.
 3. `support_materials_14/Wireframe.pdf` and `support_materials_14/Email Template.pdf` — supplied visual and notification references.
 4. `ai/M13/ai-spec.md` and the eight M13 feature specifications — retained customer behavior and established conventions.
 5. `client/AGENTS.md` and `client/CLAUDE.md` — committed client-scoped working instructions; they govern how tools work in `client/`, not the product requirements themselves.
 6. Existing repository code — implementation reality, but not permission to contradict a higher-priority requirement.
 
-Drafting provenance only: this specification was created from the official M14 grading sheet, business document, slides, and project breakdown stored privately under `.omi/m14/`. Those ignored files are not part of the committed authority chain. When new official feedback changes a requirement, update this specification and the affected feature specification first so the committed repository remains self-contained.
+Drafting provenance only: this specification was created from the official M14 grading sheet, business document, slides, and project breakdown stored privately under `.omi/m14/`. Those ignored files are not part of Claude's implementation input. When new official feedback changes a requirement, update this specification and the affected feature specification before asking Claude to implement it.
 
-If a conflict cannot be resolved from the committed sources, stop that decision, record the exact mismatch, and ask a coach. Do not silently choose a convenient interpretation or invent a requirement.
+For each conflict, Claude must quote or identify both conflicting sources, state which file/behavior is blocked, and continue only with independent work that cannot prejudice the decision. Claude must not silently choose a convenient interpretation, invent a requirement, or broaden permission.
 
 ### 1.1 Known contract mismatches requiring verification
 
-The following conflicts exist between the official M14 wording and the current Java code. Resolve them through live Postman tests and coach direction before implementing the dependent client feature:
+The following conflicts are explicit implementation gates. Claude may inspect code and run read-only/API verification, but must not implement the dependent request body or mutation until the chosen contract is recorded in the relevant feature spec:
 
 - The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query.
 - The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`.
 - The grading sheet names order fields `sendSMS` and `sendEmail`. The current Java DTO explicitly maps snake-case JSON fields `send_sms` and `send_email`.
 - The current order API separates all pending orders from courier-assigned orders and does not expose one confirmed status-transition endpoint. The courier feature must document the verified request sequence, status identifiers, assignment rules, and delivered lock before implementation.
 
-Do not change the backend merely to remove one of these mismatches unless a coach or updated official requirement explicitly authorizes that backend change.
+For each resolved gate, Claude must update the relevant feature specification with the verified method, path, query, request body, response envelope, error behavior, and evidence source before client implementation. Do not change the backend merely to remove a mismatch unless the user and project authority explicitly authorize that backend change.
 
 ## 2. Project identity
 
@@ -68,13 +70,13 @@ Do not change the backend merely to remove one of these mismatches unless a coac
 - **Primary users:** Customers and couriers
 - **Repository strategy:** Continue the existing repository and extend the existing Expo application
 
-Module 14 preserves the full Module 13 customer journey, adds role-aware login and navigation, adds a Courier application, adds shared account management, and extends order confirmation with notification preferences.
+Claude's implementation objective is to preserve the full Module 13 customer journey while adding role-aware login/navigation, a Courier application, shared account management, and customer notification preferences. Existing working behavior is a regression baseline, not disposable starter code.
 
 ## 3. Goal and scope
 
 ### 3.1 Goal
 
-Expand the working customer mobile app into a role-aware iOS and Android application. Customers retain restaurant and ordering features and gain account editing and notification choices. Couriers gain delivery visibility, status progression, delivery details, and account editing.
+Implement a role-aware iOS and Android application by extending the working client in place. A completed implementation lets each supported account type reach only its permitted experience, preserves all M13 customer flows, and persists every required API/database mutation without fabricating success.
 
 ### 3.2 In scope
 
@@ -138,7 +140,7 @@ The Courier Account tab is reachable throughout the authenticated courier area.
 
 ## 5. Required feature specifications
 
-Create and use these seven exactly named Module 14 feature specifications:
+Claude must implement one feature specification at a time, in the order requested by the user. Create and use these seven exactly named Module 14 feature specifications:
 
 1. `ai/M14/features/navigation-structure.feature.md`
 2. `ai/M14/features/role-based-navigation.feature.md`
@@ -148,19 +150,28 @@ Create and use these seven exactly named Module 14 feature specifications:
 6. `ai/M14/features/ui.feature.md`
 7. `ai/M14/features/code-quality.feature.md`
 
-Each feature file must contain:
+#### Authoring status
+
+**Feature specifications authored: 1 of 7.** Authored so far: `navigation-structure.feature.md`. The remaining six are planned targets, not existing files, and the Section 7 tree lists them as such. `ai/M14/features/feature-name.feature.md` is the placeholder template to copy when authoring a new spec; it is a scaffold, not a deliverable, and is not counted.
+
+Whenever Claude authors (or finishes) one of the seven specifications, it must increment this counter and move the file name into the "authored so far" list in the same change, so the count always matches reality. Do not raise the count for a stub; a spec counts as authored only when it satisfies the required contents below and its feature-specific Definition of Done.
+
+Each feature file is a direct prompt for Claude and must contain:
 
 - Feature goal and explicit in/out scope.
 - Requirement breakdown and complete user flow.
 - Routes, pages, components, contexts, services, storage, and endpoints involved.
 - Confirmed request/response fields, validation, state transitions, and expected behavior.
 - Loading, empty, error, retry, duplicate-action, and session-expiry behavior where applicable.
-- Testable acceptance criteria tied to the grading rows.
+- Exact allowed implementation files plus files that must only be inspected.
+- Decision gates that tell Claude when to stop rather than guess.
+- Testable acceptance criteria tied to grading rows and the evidence required to mark each item complete.
 - A feature-specific Definition of Done.
+- A required Claude handoff: changed files, verification commands/results, unresolved manual checks, and narrowly scoped staging/commit commands.
 
-The eight specifications under `ai/M13/features/` remain the behavior authority for retained Module 13 features unless an M14 requirement explicitly extends one. M14 changes must not weaken their acceptance criteria.
+The eight specifications under `ai/M13/features/` remain regression contracts for retained Module 13 behavior unless an M14 requirement explicitly extends one. Claude must inspect the relevant M13 implementation/spec before editing a shared surface and must not weaken its acceptance criteria.
 
-> The grading sheet names submission paths as `ai/ai-spec.md` and `ai/features/*.feature.md`. This module-organized file is the M14 authoring source requested for this repository. Before submission, confirm with the project owner or coach whether M14 specs must also be promoted to those root grading paths; do not create divergent duplicate copies.
+> **Submission paths (coach-confirmed).** The grading sheet names generic paths `ai/ai-spec.md` and `ai/features/*.feature.md`. The coach has confirmed that the module-organized paths used here — `ai/M14/ai-spec.md` and `ai/M14/features/*.feature.md` — are the accepted submission source for this repository. Author and submit at the `ai/M14/` paths only. Do not promote copies to the generic root paths and do not create divergent duplicate copies.
 
 ## 6. Technology and constraints
 
@@ -200,7 +211,7 @@ The eight specifications under `ai/M13/features/` remain the behavior authority 
 
 ## 7. Repository architecture
 
-Target combined structure; create M14 paths only when their feature is implemented:
+Target combined structure; Claude must compare it with `rg --files` before every feature. Existing paths are implementation reality, while missing paths are authorized targets only when the active feature specification owns them:
 
 ```text
 M13-rocketFoodDelivery/
@@ -257,25 +268,27 @@ M13-rocketFoodDelivery/
 └── PostmanCollection.json
 ```
 
-This tree distinguishes existing and planned paths. Update it when implementation chooses a different real path. Do not claim that a target file already exists before it does.
+This tree distinguishes existing and planned paths. The seven feature files under `ai/M14/features/` are shown as planned targets; only those counted as authored in Section 5 exist today, alongside the `feature-name.feature.md` template scaffold. Claude must update this tree when an authorized implementation creates, removes, or renames a listed path. Do not claim a target file exists before it does, and do not create a target merely to make the tree appear correct.
 
 ### 7.1 Responsibility boundaries
 
-- `app/`: Expo Router route entry points and layouts; keep business/API logic thin.
+- `app/`: Expo Router route entry points and layouts; Claude keeps business/API logic thin and delegates reusable work below.
 - `components/`: Reusable visual behavior such as Account form, delivery row, status control, detail modal, result states, header, and order confirmation.
 - `contexts/`: Authenticated identity, available roles, active role, session restore, and logout orchestration.
-- `services/`: Shared API client and domain-specific request functions.
+- `services/`: Shared API client and domain-specific request functions; normalize untrusted backend data here before UI consumption.
 - `storage/`: Central AsyncStorage keys and validated read/write/clear helpers.
 - `constants/`: Theme, typography, status mappings, currency, and stable configuration.
-- `utils/`: Pure validation, normalization, and formatting helpers.
+- `utils/`: Pure validation and formatting helpers that do not own requests, storage, or rendered state.
+
+Before adding a file, Claude must search for an existing owner with `rg --files` and `rg`. Reuse or extend an existing module when its responsibility already matches; do not force reuse when it would merge unrelated responsibilities.
 
 ## 8. Navigation architecture
 
 ### 8.1 Root stack
 
-- `client/app/_layout.js` owns session restoration and the protected navigation boundary.
+- Claude must preserve `client/app/_layout.js` as the single owner of session restoration and the protected navigation boundary.
 - It manages Login, Account Selection, Customer, and Courier destinations.
-- Do not route until AsyncStorage restoration finishes.
+- Render a neutral loading state until AsyncStorage restoration finishes; do not briefly expose Login or protected content.
 - Successful single-role login replaces Login with the corresponding role app.
 - Successful dual-role login replaces Login with Account Selection.
 - Logout clears all session/role data and replaces the protected route with Login.
@@ -284,9 +297,10 @@ This tree distinguishes existing and planned paths. Update it when implementatio
 ### 8.2 Account Selection
 
 - `client/app/selection.js` is available only when both `customer_id` and `courier_id` exist.
-- Customer sets `activeRole = customer` and routes to Customer tabs.
-- Courier sets `activeRole = courier` and routes to Courier tabs.
+- Customer persists `activeRole = customer`; the root guard then exposes Customer tabs.
+- Courier persists `activeRole = courier`; the root guard then exposes Courier tabs.
 - Do not default to one role or expose this screen to a single-role user.
+- Claude must prevent duplicate choice writes and must not pass tokens or identity through route parameters.
 
 ### 8.3 Customer tabs
 
@@ -307,6 +321,7 @@ This tree distinguishes existing and planned paths. Update it when implementatio
 - Account Selection requires both supported role IDs.
 - A restored active role must still exist in the restored role IDs.
 - Role changes must occur through an authorized selection flow, not arbitrary route parameters.
+- Guards must fail closed: an inconsistent session exposes no role application and is cleared or routed to Login according to the active feature contract.
 
 ## 9. Authentication, roles, and storage
 
@@ -342,16 +357,17 @@ Never store the password. Never log the token.
 
 ### 9.4 Storage rules
 
-- Define keys once.
-- Await storage operations that affect navigation or requests.
+- Define every storage key once, in a single module.
+- Await storage reads/writes/clears that affect navigation or requests.
 - Validate restored values as one coherent session, not as independent trusted strings.
-- Clear all identity and role data on logout or invalid authentication.
+- Clear all identity and role data on logout or invalid authentication, and remove a previous user's stale keys before exposing a new session.
 - Treat corrupt/incomplete data as logged out.
 - On protected-request authentication failure, clear stale session data and return to Login with a safe message.
+- Test restoration for customer-only, courier-only, unselected dual-role, selected dual-role, partial, corrupt, and logged-out states.
 
 ## 10. Backend API contract
 
-`${API_BASE_URL}` is the configured server origin. On a physical phone it is normally an ngrok HTTPS URL forwarding to local port 8080. All calls below except login are protected by the bearer token.
+`${API_BASE_URL}` is the configured server origin. On a physical phone it is normally an ngrok HTTPS URL forwarding to local port 8080. All calls below except login are protected by the bearer token. Claude must keep request construction in services, map backend keys at the service boundary, and never let a screen invent a fallback response.
 
 ### 10.1 Retained M13 calls
 
@@ -377,7 +393,7 @@ Official required update path:
 /api/account/{userId}
 ```
 
-Before implementation, the Account feature spec must record:
+Before Claude edits Account client behavior, the Account feature spec must record:
 
 - Confirmed retrieval query values (`customer`, `courier`) and whether the live API accepts them.
 - Confirmed update HTTP method and whether `type` is a query value or body field.
@@ -385,7 +401,7 @@ Before implementation, the Account feature spec must record:
 - Response envelope and field names for base user email, role email, and role phone.
 - Validation and error responses.
 
-The current repository suggests a read-only base email plus role-specific nested data, and a PUT update using body fields `email` and `phone`; this is implementation evidence, not permission to override the official contract without resolution.
+The current repository suggests a read-only base email plus role-specific nested data, and a PUT update using body fields `email` and `phone`; this is implementation evidence, not permission to override the official contract without resolution. If live evidence differs, Claude must update the spec first and identify the evidence in its handoff.
 
 ### 10.3 Courier delivery retrieval
 
@@ -402,11 +418,11 @@ The current backend exposes:
 - `GET /api/orders/pending`
 - `GET /api/orders?type=courier&id={courierId}`
 
-If both calls are used, merge and deduplicate by order ID at the service boundary. Re-check eligibility after refresh and status changes. Do not expose another courier's assigned non-pending delivery.
+If both calls are verified and used, Claude must merge and deduplicate by order ID at the service boundary. Re-check eligibility after refresh and status changes. Do not expose another courier's assigned non-pending delivery, even briefly through stale state.
 
 ### 10.4 Courier assignment and status update
 
-The verified feature spec must document the exact sequence for:
+Before Claude implements a status control, the verified feature spec must document the exact sequence for:
 
 - Assigning the active courier when a pending order becomes in progress.
 - Mapping status names to the backend's accepted status values or IDs.
@@ -414,7 +430,7 @@ The verified feature spec must document the exact sequence for:
 - Persisting `IN PROGRESS` → `DELIVERED`.
 - Proving delivered orders cannot advance again.
 
-Current code includes `PUT /api/order/{id}/courier` for assignment and a broad `PUT /api/orders/{id}` update, but the latter expects additional order fields. Do not send guessed values or rely on a destructive broad update until Postman confirms the safe contract.
+Current code includes `PUT /api/order/{id}/courier` for assignment and a broad `PUT /api/orders/{id}` update, but the latter expects additional order fields. Claude must not send guessed values, copy stale entity data into a broad update, or treat an optimistic UI change as persisted until Postman confirms the safe contract and the response succeeds.
 
 ### 10.5 Order confirmation notifications
 
@@ -423,11 +439,11 @@ The user-facing choices are independent SMS and email checkboxes. The feature sp
 - Official grading names: `sendSMS`, `sendEmail`.
 - Current backend JSON names: `send_sms`, `send_email`.
 
-Resolve the request shape before implementation and record the chosen mapping. Both default to false. Only selected products are sent. Notifications are requested only as part of a successfully created order. A failed order must not trigger a success notification.
+Claude must resolve the request shape before implementation and record the chosen mapping in the feature spec. Both values default to false. Only selected products are sent. Checkbox state maps explicitly to the verified request keys; a failed order must not display or imply a successful notification.
 
 ### 10.6 Postman minimum scope
 
-The root `PostmanCollection.json` must include all retained M13 calls plus:
+Claude must keep the root `PostmanCollection.json` synchronized with implemented calls. It must include all retained M13 calls plus:
 
 1. Login for customer-only, courier-only, and dual-role users.
 2. Account retrieval for customer and courier.
@@ -438,7 +454,7 @@ The root `PostmanCollection.json` must include all retained M13 calls plus:
 7. Delivered-state rejection/lock evidence where the API supports it.
 8. Order creation with neither notification, SMS only, email only, and both.
 
-Preconfigure base URL, token, IDs, types, parameters, paths, and bodies so graders do not edit queries.
+Preconfigure base URL, token, IDs, types, parameters, paths, and bodies so graders do not edit queries. Claude must run or manually verify each changed request when the environment is available and must identify any unexecuted request honestly.
 
 ## 11. UI and design rules
 
@@ -476,7 +492,7 @@ Delivery status colors are semantic: `PENDING` red, `IN PROGRESS` orange, and `D
 
 ### 11.4 M14 wireframe surfaces
 
-Match these supplied surfaces closely:
+Claude must inspect the supplied wireframe before styling each owned surface and match:
 
 - Account Selection.
 - Order Confirmation with SMS/email checkboxes.
@@ -485,7 +501,7 @@ Match these supplied surfaces closely:
 - Customer Account Settings.
 - Courier Account Settings.
 
-Preserve the original files under `support_materials_14/` and do not modify them as runtime assets.
+Preserve the original files under `support_materials_14/`; Claude may inspect them but must not modify them or import the PDFs directly as runtime assets.
 
 ## 12. Cross-feature behavior rules
 
@@ -524,10 +540,8 @@ Preserve the original files under `support_materials_14/` and do not modify them
 
 - Preserve M13 product summary, totals, processing, success, failure, retry, and duplicate-submit behavior.
 - SMS and email choices operate independently, allowing four combinations.
-- Both choices default to false for a new order form.
-- Reset notification choices after success with the order state.
-- Preserve choices during a retryable failure.
-- Request booleans must match the visible checkbox states.
+- Reset notification choices after success with the order state; preserve them during a retryable failure.
+- The request shape, defaults (both false), and checkbox-to-key mapping follow Section 10.5.
 
 ### 12.5 Retained M13 behavior
 
@@ -574,6 +588,7 @@ Login validation, restaurant loading/filtering, menu navigation, button-only qua
 
 ## 15. Error, loading, and state rules
 
+- Claude must define the state model before JSX for each remote or mutating surface; impossible combinations are a design error, not an edge case to ignore.
 - Remote screens distinguish initial loading, refreshing, empty data, recoverable error, and rendered data.
 - Mutating controls distinguish idle, pending, success, and error.
 - Disable actions while their request is pending and restore them after retryable failure.
@@ -584,6 +599,7 @@ Login validation, restaurant loading/filtering, menu navigation, button-only qua
 - Delivery update failures must not leave the UI showing an unpersisted status.
 - Empty eligible deliveries is a valid empty state, not an exception.
 - Avoid boolean combinations that permit impossible session, modal, or request states.
+- A completed acceptance criterion must identify how its success and at least one meaningful failure state were verified.
 
 ## 16. Environment variables and secrets
 
@@ -604,21 +620,19 @@ Rules:
 
 ## 17. Specification-driven workflow
 
-For every feature:
+Claude must execute every feature in this order:
 
-1. Read the grading rows, this global spec, the exact feature spec, the relevant wireframe, and retained M13 rules.
-2. Verify every required API call in Postman before client implementation.
-3. Record method, path, parameters, body, authentication, success, validation, and failure shapes in the feature spec.
-4. Resolve source/API mismatches or record the coach-approved decision.
-5. Create the feature branch from current `dev`.
-6. Implement only the feature-spec scope with reusable project conventions.
-7. Test every acceptance criterion, including meaningful failure and duplicate-action cases.
-8. Compare the UI to the supplied wireframe on a native platform.
-9. Re-test affected M13 behavior.
-10. Update specs, code, Postman, and documentation so they describe one final reality.
-11. Remove temporary logging/dead code, inspect the diff, and merge the completed feature into `dev`.
+1. **Preflight:** Read this file, the exact feature spec, applicable `AGENTS.md`/`CLAUDE.md`, retained M13 specs, and the current worktree. Record unrelated changes and preserve them.
+2. **Inventory:** Use `rg --files` and targeted `rg` searches to map existing owners, routes, callers, tests, and dependencies. Do not create duplicate architecture.
+3. **Contract gate:** Verify required API calls in Postman or from authoritative live evidence. Record method, path, query, body, authentication, success envelope, validation, and failures in the feature spec.
+4. **Plan:** Map each acceptance criterion to files and verification. Stop decision-dependent work when a Section 1.1 mismatch remains unresolved.
+5. **Implement:** Make the smallest cohesive change that satisfies the active feature. Preserve working M13 behavior and unrelated user changes.
+6. **Verify:** Run targeted static/automated checks, exercise success and meaningful failure states, compare owned UI to the wireframe, and re-test affected M13 flows.
+7. **Reconcile:** Update the feature spec, this global spec, Postman, tree, and docs only where the verified implementation changed their truth.
+8. **Clean:** Remove temporary logs, dead code, unused imports, stale comments, generated output, and accidental secrets; inspect the complete diff.
+9. **Handoff:** Report the outcome first, list changed files, give exact checks/results and manual gaps, then provide narrowly scoped staging and copy-ready commit commands.
 
-Do not change code first and knowingly leave the specifications inaccurate.
+Claude must not change code first and knowingly leave specifications inaccurate. A spec checkbox remains unchecked until evidence exists; code presence alone is not proof of runtime behavior.
 
 ## 18. Git and commit workflow
 
@@ -683,7 +697,7 @@ Never commit the live tunnel URL.
 
 ### 20.1 API-first verification
 
-- Confirm all M14 contracts from Section 10 in Postman.
+- Claude must confirm all active-feature contracts from Section 10 in Postman before dependent client mutation code.
 - Verify account edits, courier assignment/status, and order creation in DBeaver where applicable.
 - Test all notification boolean combinations.
 - Record exact limitations; never claim an unverified call works.
@@ -694,6 +708,7 @@ Never commit the live tunnel URL.
 - Include success, validation, server/network failure, session expiry, duplicate tap, and retry where relevant.
 - Compare each new screen/modal to the wireframe.
 - Verify shared components with both customer and courier data.
+- Tie every checked acceptance criterion to a command result, inspected artifact, or named manual scenario.
 
 ### 20.3 Integration and regression
 
@@ -764,21 +779,23 @@ Extra miles are optional only after all baseline work passes and a coach reviews
 
 ## 22. Rules for AI tools
 
-AI tools must:
+Claude is the implementation agent for these specifications. Claude must:
 
-- Read this file first and the relevant M14 feature spec second.
+- Read this file first, the relevant M14 feature spec second, and applicable repository instruction files before any edit.
 - Read the M13 feature spec when modifying retained customer behavior.
 - Follow Section 1 source authority.
-- Inspect actual routes, services, DTOs, and API responses before changing code.
+- Inspect actual routes, services, callers, storage, DTOs, tests, and API responses before changing code.
 - Keep changes within the requested feature scope and preserve unrelated user work.
 - Treat official/current-backend mismatches as blockers to resolve, not invitations to guess.
 - Reuse shared components and services where behavior is genuinely shared.
 - Keep code junior-readable and explain non-obvious role, security, request, and transition logic.
 - Update specifications when verified implementation evidence changes a contract.
 - Test changes in proportion to risk and report exact results.
-- End file-changing handoffs with a narrowly scoped stage command followed by a copy-ready commit command/message.
+- Keep a visible distinction between verified current files and planned target files.
+- Mark acceptance criteria complete only from evidence gathered against the current diff.
+- End file-changing handoffs with the outcome, changed-file summary, exact verification, remaining manual checks, a narrowly scoped stage command, and a copy-ready commit command/message.
 
-AI tools must not:
+Claude must not:
 
 - Modify the Java backend without explicit authority.
 - Invent endpoints, status IDs, JSON keys, screens, dependencies, or grading rules.
@@ -788,14 +805,17 @@ AI tools must not:
 - Duplicate customer/courier implementations when a shared component safely fits both.
 - Add baseline-unrelated extras before required work passes.
 - Rewrite unrelated code, delete user work, or conceal failed/skipped verification.
+- Stage, commit, merge, push, contact coaches, or mutate external systems unless the user explicitly authorizes that action.
+- Continue through a decision gate by choosing undocumented JSON keys, status IDs, routes, libraries, or UI behavior.
 
 ## 23. Global Definition of Done
 
-The Module 14 project is complete only when every applicable baseline item passes.
+The Module 14 project is complete only when every applicable baseline item passes with current evidence. Claude must leave unchecked anything that is planned, inferred, unrun, manually unverified, or blocked.
+
+Sections 23.1–23.5 are the **agent-verifiable** Definition of Done: Claude can confirm each from code, commands, or committed artifacts, and is responsible for them. Section 23.6 lists **human/process** items that depend on GitHub settings, external uploads, coach interaction, or wall-clock deadlines; Claude cannot perform or verify these and must never check them on the student's behalf.
 
 ### 23.1 Repository and specifications
 
-- [ ] Repository is private and all coaches are collaborators.
 - [ ] History clearly follows `feature/*` → `dev` → `main`; final stable work is on `main`.
 - [ ] M14 global spec and all seven exact feature specs exist at coach-confirmed grading paths and match final behavior.
 - [ ] Known API-contract mismatches are resolved and recorded from live evidence.
@@ -836,6 +856,14 @@ The Module 14 project is complete only when every applicable baseline item passe
 - [ ] No dead code, unused imports, commented-out implementations, stale comments, or debug logs remain.
 - [ ] Postman runs all required requests without query editing and DBeaver evidence matches mutations.
 - [ ] Applicable Expo, dependency, export, server, manual, iOS, and Android checks pass or have honestly recorded blockers.
-- [ ] README, CONCEPTS, screenshots, three videos, and non-committed submission summary are complete and accurate.
+- [ ] README, CONCEPTS, and LeetCode screenshots are committed, complete, and accurate.
+
+### 23.6 Human and process items (not agent-verifiable)
+
+Claude must not check these on the student's behalf; they are listed so the human owner can track completion.
+
+- [ ] Repository is private and all coaches are collaborators.
+- [ ] Three unlisted YouTube videos (concepts, five-challenge walkthrough, technical demo) are recorded and linked.
+- [ ] The non-committed submission summary (name, module, repo link, video links, reviewer credentials/setup) is complete.
 - [ ] Two progress updates and one pre-Friday coach review are complete.
 - [ ] Submission is made from final `main` by Friday at 11:59 PM.

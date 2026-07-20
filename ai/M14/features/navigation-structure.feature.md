@@ -2,7 +2,7 @@
 
 > Defines the combined Module 14 Expo Router hierarchy. Use this document together with `ai/M14/ai-spec.md` and the retained M13 navigation specification at `ai/M13/features/navigation-structure.feature.md`.
 
-> **Implementation owner:** Claude will run with this specification and implement the feature. The specification must therefore be complete enough for Claude to work without relying on private `.omi/` files, guessing missing product behavior, or expanding the feature scope.
+> **Implementation owner:** Claude will run and implement this specification. Claude must treat it as an executable prompt: inspect before editing, stay inside the allowed file boundary, stop at unresolved decision gates, verify every claimed criterion, and never depend on private `.omi/` files.
 
 ## Table of Contents
 
@@ -27,17 +27,20 @@
 - **Specification file:** `ai/M14/features/navigation-structure.feature.md`
 - **Implementation branch:** `feature/navigation-structure`
 - **Grading requirements:** Root authentication layout, Account Selection route, Customer Tabs, Courier Tabs, and nested Restaurant Stack
+- **Claude deliverable:** A verified navigation skeleton and role-capable session boundary; later Account and Courier business screens remain honest placeholders.
+- **Completion evidence:** Current diff, Expo/dependency/export checks, and named manual navigation scenarios. File existence alone is insufficient.
 
 ## 2. Feature goal
 
-Extend the working M13 customer navigation into a protected, role-aware structure that can safely route authenticated users to Account Selection, Customer, or Courier sections. Preserve the existing Restaurant List → Restaurant Menu stack while adding the required Account destinations and Courier tabs.
+Claude must extend the working M13 customer navigation in place into a protected, role-aware structure. After implementation, exactly one valid root branch is exposed for any resolved session: Login, Account Selection, Customer, or Courier. The existing Restaurant List → Restaurant Menu stack must continue working unchanged from the user's perspective.
 
-This feature establishes route files, navigator ownership, authenticated guards, role/session persistence, and placeholder destinations. Later feature specifications own the final Account forms, Courier delivery behavior, detailed role-selection wireframe behavior, and business data.
+The concrete output is route files, navigator ownership, authenticated guards, role/session persistence, and clearly labeled placeholder destinations. Claude must not simulate completed Account or Delivery features. Later feature specifications own their final UI, validation, requests, mutations, and acceptance evidence.
 
 ## 3. Feature scope
 
 ### 3.1 In scope
 
+- Before editing, Claude must inspect all existing files named below plus their imports/callers. A listed target that already exists must be extended rather than recreated.
 - Continue using `client/app/_layout.js` as the root Stack.
 - Keep `client/app/index.js` as Login outside authenticated navigation.
 - Extend the authenticated session to retain user, customer, courier, and active-role identity.
@@ -54,6 +57,24 @@ This feature establishes route files, navigator ownership, authenticated guards,
 - Keep the shared authenticated header visible on Customer/Courier tabs.
 - Use replacement/protected navigation so logout, role resolution, and invalid sessions do not leave unsafe back paths.
 - Support iOS and Android navigation behavior.
+- Update this feature specification only when verified implementation details require reconciliation.
+
+Claude may modify or create only these implementation surfaces unless it first records why an additional shared owner is necessary:
+
+- `client/app/_layout.js`
+- `client/app/index.js`
+- `client/app/selection.js`
+- `client/app/customer/_layout.js`
+- `client/app/customer/account.js`
+- `client/app/customer/restaurant/_layout.js` only if required to preserve the documented stack
+- `client/app/courier/_layout.js`
+- `client/app/courier/index.js`
+- `client/app/courier/account.js`
+- `client/contexts/AuthContext.js`
+- `client/storage/authStorage.js`
+- `client/services/authService.js`
+- Existing shared icon/theme/header components only when the new navigators require a reusable addition
+- This feature specification and the global spec only when final reality changes them
 
 ### 3.2 Out of scope
 
@@ -66,28 +87,33 @@ This feature establishes route files, navigator ownership, authenticated guards,
 - Employee or restaurant-owner routes.
 - Switching roles from inside a role app unless a later approved requirement adds it.
 - Extra tabs, drawers, or navigators not required by M14.
+- Account, courier-delivery, order-notification, restaurant, order-history, or backend service behavior not required to establish navigation.
+- Dependency upgrades, formatting sweeps, broad comment rewrites, or unrelated refactors.
+- Editing `feature-name.feature.md`, private `.omi/` materials, supplied PDFs, live `.env`, generated output, or unrelated user changes.
 
 ## 4. Requirements breakdown
 
 ### 4.1 Requirement A — Root Stack with authentication flow
 
-- `client/app/_layout.js` remains the root Expo Router Stack.
+- Claude must keep `client/app/_layout.js` as the only root Expo Router Stack; do not introduce a second navigation container.
 - It must not render protected content until fonts and stored-session restoration finish.
 - Login is available only without a usable session.
 - Account Selection is available only to a usable dual-role session with no selected active role.
 - Customer is available only when `activeRole` is `customer` and a customer ID exists.
 - Courier is available only when `activeRole` is `courier` and a courier ID exists.
 - Root navigator headers remain hidden because authenticated role layouts supply the shared header.
-- Protected routes must close immediately when their guard becomes false.
+- Protected routes must close immediately when their guard becomes false. Use the installed Expo Router 6 protected-route mechanism already present in the project unless current official SDK 54 documentation proves it unsuitable.
+- Preserve existing font loading, safe-area provider, error boundary, status bar, and neutral loading behavior.
 
 ### 4.2 Requirement B — Role Selection screen route
 
 - Create `client/app/selection.js`.
 - It must provide explicit Customer and Courier choices.
 - It must not infer a choice for a dual-role user.
-- Selecting a role persists a valid `activeRole`; the root guard then opens the matching role tree.
+- Selecting a role must call the shared AuthContext action, await persistence, and let the root guard expose the matching tree. The screen must not push a protected route before storage succeeds.
 - Invalid, unavailable, or stale role choices must fail safely without opening the wrong app.
 - This route is not a tab in either role app.
+- While persistence is pending, disable both choices and ignore duplicate taps. On storage failure, keep Selection visible and provide retryable, user-safe feedback.
 
 ### 4.3 Requirement C — Customer Tabs
 
@@ -97,6 +123,7 @@ This feature establishes route files, navigator ownership, authenticated guards,
 - The shared header is visible on all Customer tab destinations.
 - Customer routes reject a missing session, the wrong active role, or a missing customer ID.
 - No route file may appear as an unintended extra tab.
+- Reuse the existing tab styles/icon wrapper; add only the Account icon/registration needed by this feature.
 
 ### 4.4 Requirement D — Courier Tabs
 
@@ -106,6 +133,7 @@ This feature establishes route files, navigator ownership, authenticated guards,
 - The shared header is visible on both Courier destinations.
 - Courier routes reject a missing session, the wrong active role, or a missing courier ID.
 - No Customer route appears in Courier tabs.
+- Match Customer layout conventions for shared header, tab accessibility labels, active indicator, typography, safe areas, and keyboard behavior.
 
 ### 4.5 Requirement E — Nested Restaurant Stack
 
@@ -126,6 +154,9 @@ This feature establishes route files, navigator ownership, authenticated guards,
 - A restored active role is accepted only when its matching role ID exists.
 - Corrupt, partial, or unsupported stored state is logged out and cleared.
 - Logout clears every authentication and role key.
+- A new login must remove role IDs and active-role data belonging to the previous session before the new guarded tree becomes visible.
+- Context exposes one role-selection action; route screens must not call AsyncStorage directly.
+- Service normalization accepts positive numeric IDs returned as numbers or numeric strings and maps missing role IDs to null.
 
 ### 4.7 Requirement G — Placeholder destination boundary
 
@@ -133,6 +164,7 @@ This feature establishes route files, navigator ownership, authenticated guards,
 - Placeholder routes must prove the correct header, footer, labels, active-role guard, safe area, and scrolling layout.
 - They must not fake successful account or delivery API behavior.
 - Later feature implementation must replace placeholder content without changing the required route hierarchy.
+- Use one small reusable placeholder presentation when practical; do not copy the same layout into all three destination files.
 
 ## 5. User flow and navigation logic
 
@@ -142,6 +174,7 @@ This feature establishes route files, navigator ownership, authenticated guards,
 2. No usable session resolves.
 3. Root Stack exposes Login only.
 4. Authenticated headers and tabs are absent.
+5. A direct attempt to open Selection, Customer, or Courier fails closed through the root guard.
 
 ### 5.2 Customer-only login
 
@@ -164,6 +197,7 @@ This feature establishes route files, navigator ownership, authenticated guards,
 3. Root guards expose Account Selection only.
 4. Customer choice persists `activeRole = customer` and opens Customer Tabs.
 5. Courier choice persists `activeRole = courier` and opens Courier Tabs.
+6. A storage failure leaves the user on Account Selection with both role trees closed.
 
 ### 5.5 Customer navigation
 
@@ -202,6 +236,8 @@ This feature establishes route files, navigator ownership, authenticated guards,
 | `client/app/courier/index.js` | Order Delivery destination | Placeholder until Courier Delivery feature. |
 | `client/app/courier/account.js` | Courier Account destination | Placeholder until Account Details feature. |
 
+Claude must verify this table against the live repository before editing. “Create” means create only when absent; “preserve” means modify only if the active requirement cannot be met otherwise.
+
 ### 6.2 Navigation tree
 
 ```text
@@ -228,6 +264,14 @@ Root Stack
 - `client/components/AppHeader.js`: shared authenticated logo/logout boundary.
 - `client/components/AppIcon.js`: registered footer icons.
 
+Implementation ownership rules:
+
+- Layouts declare routes, guards, labels, and navigator presentation; they do not authenticate or persist directly.
+- AuthContext coordinates in-memory transitions and calls storage helpers.
+- `authStorage.js` owns raw keys, normalization, persistence, restoration, and clearing.
+- `authService.js` owns validation/mapping of the untrusted login response.
+- Route screens consume shared actions and render state; they do not duplicate service/storage rules.
+
 ### 6.4 Backend/API
 
 This feature adds no endpoint. It consumes the existing login contract:
@@ -237,6 +281,8 @@ POST /api/auth
 ```
 
 Required successful response values are `accessToken`, `user_id`, optional `customer_id`, and optional `courier_id`. Later feature specs own account and delivery endpoints.
+
+Before implementation, Claude must inspect the current `AuthApiController`/success DTO or verify a live response. If the login response does not provide the four values above with the documented optionality, Claude must stop the dependent session change and report the mismatch.
 
 ## 7. Data, validation, and state
 
@@ -254,6 +300,18 @@ Required successful response values are `accessToken`, `user_id`, optional `cust
 
 Identifiers may arrive as numbers or numeric strings but are normalized to positive numeric strings at storage boundaries.
 
+Use these centralized AsyncStorage keys unless the existing storage module has an equivalent established naming scheme:
+
+```text
+rocketFood.accessToken
+rocketFood.userId
+rocketFood.customerId
+rocketFood.courierId
+rocketFood.activeRole
+```
+
+Claude must update the complete-key collection used by logout/cleanup whenever it adds a key.
+
 ### 7.2 Session validation
 
 - `accessToken` must be a nonblank string.
@@ -264,6 +322,9 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - Both role IDs with no active role is a valid pending-selection state.
 - A single role with no active role is normalized to that only role.
 - Any other combination is rejected or cleared.
+- Do not accept role names outside exact lowercase `customer` and `courier`.
+- Do not accept zero, negative, fractional, blank, nonnumeric, or unsafe identifiers.
+- Do not coerce the strings `null`, `undefined`, or `NaN` into usable data.
 
 ### 7.3 Navigation state table
 
@@ -282,9 +343,11 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - Only `restaurantId` is required by the retained dynamic Restaurant Menu route.
 - Token, password, role IDs, and full objects do not travel through route parameters.
 - Route access is derived from AuthContext, not user-controlled URL data.
+- Account Selection receives no token or role object through params; it reads the validated session from context.
 
 ## 8. Expected behavior
 
+- Claude must implement these as observable outcomes, not merely matching code shapes.
 - Root Stack exposes exactly one valid branch after session restoration.
 - Every single-role session bypasses Account Selection.
 - Every unresolved dual-role session requires an explicit choice.
@@ -295,9 +358,12 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - Existing Restaurant List/Menu navigation remains structurally and behaviorally intact.
 - Placeholder destinations are honest about later implementation and do not call unverified APIs.
 - Invalid state fails closed to Login rather than opening a guessed role.
+- A failed persistence operation cannot leave the UI in one role while storage says another.
+- Restarting the app reconstructs the same valid single-role or selected dual-role destination.
 
 ## 9. Technical constraints
 
+- Before coding, Claude must read `client/AGENTS.md`, `client/CLAUDE.md`, `client/package.json`, and current official Expo SDK 54/Router 6 documentation.
 - Use Expo Router 6 JavaScript `Stack`, `Stack.Protected`, `Tabs`, and `Redirect` primitives supported by the installed SDK 54 baseline.
 - Do not add a second navigation container.
 - Use current `.js` route files; do not introduce TypeScript for this feature.
@@ -307,6 +373,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - Preserve unrelated M13 files and behavior.
 - Do not modify the Java backend.
 - Do not add a new navigation or state-management dependency.
+- Preserve JavaScript, existing formatting, purpose headers, semantic naming, accessibility labels, and established theme constants.
+- Use `apply_patch`-style focused edits and preserve unrelated worktree changes.
 
 ## 10. Acceptance criteria
 
@@ -319,6 +387,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] `client/app/customer/restaurant/_layout.js` remains the nested Restaurant Stack.
 - [ ] The resulting hierarchy matches the tree in Section 6.2.
 
+Evidence: `rg --files client/app`, focused layout inspection, and an Expo Router configuration/export check.
+
 ### 10.2 Session and root guards
 
 - [ ] Startup waits for fonts and stored-session resolution.
@@ -330,6 +400,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] Logout/unauthorized handling clears every identity/role key.
 - [ ] Back navigation cannot reopen a closed protected tree.
 
+Evidence: storage-helper inspection/tests plus named manual scenarios for fresh launch, restart, logout, direct route access, and platform back behavior.
+
 ### 10.3 Account Selection
 
 - [ ] Customer and Courier choices are both visible and accessible.
@@ -337,6 +409,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] A choice opens the matching role tabs.
 - [ ] Selection is unavailable to logged-out and single-role sessions.
 - [ ] Duplicate taps are safely ignored while persistence is pending.
+
+Evidence: inspect the shared role-selection action and manually exercise both choices, a repeated tap, and a simulated/observed storage failure.
 
 ### 10.4 Customer navigation
 
@@ -346,6 +420,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] Restaurant List → Menu → back behavior still works.
 - [ ] Header/footer and retained filter/quantity boundaries do not regress.
 
+Evidence: manually traverse all Customer tabs, open/back from two restaurant menus, and confirm existing list/menu state rules.
+
 ### 10.5 Courier navigation
 
 - [ ] Courier footer labels are Order Delivery and Account.
@@ -353,6 +429,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] Each Courier tab resolves to the correct route.
 - [ ] Customer destinations do not appear in Courier tabs.
 - [ ] Shared header and Courier footer remain visible.
+
+Evidence: manually traverse both Courier tabs and attempt direct Customer navigation while Courier is active.
 
 ### 10.6 Verification
 
@@ -363,6 +441,8 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] `git diff --check` passes.
 - [ ] No secret, live URL, generated output, or unrelated change is included.
 
+Claude must record exact commands and exit results. Manual iOS/Android items remain unchecked until actually exercised; a successful export does not prove touch, back, or persistence behavior.
+
 ## 11. Feature Definition of Done
 
 - [ ] Every in-scope route/layout and session boundary is implemented.
@@ -371,15 +451,20 @@ Identifiers may arrive as numbers or numeric strings but are normalized to posit
 - [ ] Relevant M13 regression behavior passes.
 - [ ] Code and this specification match the same final implementation.
 - [ ] The final diff contains no debug code, dead code, stale comments, or accidental generated files.
+- [ ] Claude's handoff identifies every changed file, check/result, unresolved manual item, and contract decision.
+- [ ] Claude provides a narrowly scoped staging command followed by a copy-ready Conventional Commit command, but does not stage or commit without explicit user authorization.
 
 ## 12. Notes for AI tools
 
 - Claude will be the AI tool running and implementing this specification.
-- Claude must read `ai/M14/ai-spec.md` first, then this feature specification, before changing project files.
+- Claude must read `ai/M14/ai-spec.md` first, this entire feature specification second, and applicable client instruction files third before changing project files.
 - Claude must treat this document as the complete feature contract and must not depend on ignored `.omi/` planning files during implementation.
-- Read `client/AGENTS.md` and current Expo SDK 54 Router documentation before client changes.
-- Extend the existing M13 navigation; do not replace working layouts wholesale.
+- Begin with `git status --short`, `rg --files`, targeted caller searches, and inspection of all allowed files. Preserve every unrelated change.
+- Extend the existing M13 navigation; do not replace working layouts wholesale or reimplement completed screen behavior.
 - Keep authentication and role identity in shared context/storage, never route parameters.
 - Treat the generic `feature-name.feature.md` as an ignored drafting template, not an implementation authority.
 - Do not mark manual iOS/Android behavior complete from static inspection alone.
 - Do not implement account or courier API behavior while creating navigation placeholders.
+- If a required edit falls outside Section 3.1, stop and explain the file, reason, and scope impact before expanding the change.
+- If code evidence contradicts this spec, update neither silently: report the contradiction and ask for direction unless the global authority order resolves it.
+- Finish with outcome first; changed files; exact automated/static checks; manual checks completed and remaining; then the scoped stage command and copy-ready commit command.
