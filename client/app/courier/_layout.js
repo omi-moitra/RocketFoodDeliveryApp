@@ -1,6 +1,6 @@
 /**
  * File: _layout.js
- * Purpose: Defines authenticated customer tabs and their shared header boundary.
+ * Purpose: Defines authenticated courier tabs and their shared header boundary.
  * Contents: imports, tab layout, navigation options.
  */
 
@@ -12,14 +12,14 @@ import AppIcon from '../../components/AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Expo Router reads this reserved setting to choose Restaurants as the initial customer tab.
+// Expo Router reads this reserved setting to choose Order Delivery as the initial courier tab.
 export const unstable_settings = {
-  initialRouteName: 'restaurant',
+  initialRouteName: 'index',
 };
 
 /**
  * Renders one footer icon and its highlighted background when its tab is active.
- * CustomerTabsLayout uses it for both required footer destinations.
+ * CourierTabsLayout uses it for both required footer destinations.
  * Read aloud: “tab icon.”
  */
 function TabIcon({ color, focused, name, size }) {
@@ -31,15 +31,15 @@ function TabIcon({ color, focused, name, size }) {
 }
 
 /**
- * Defines the authenticated Restaurants, Order History, and Account tabs plus their shared header.
- * Expo Router loads it for every route inside the customer folder.
- * Read aloud: “customer tabs layout.”
+ * Defines the authenticated Order Delivery and Account tabs plus their shared header.
+ * Expo Router loads it for every route inside the courier folder.
+ * Read aloud: “courier tabs layout.”
  */
-export default function CustomerTabsLayout() {
+export default function CourierTabsLayout() {
   const { session } = useAuth();
 
-  // Fail closed: only an active customer session with a customer ID may render Customer tabs.
-  if (!session || session.activeRole !== 'customer' || !session.customerId) {
+  // Fail closed: only an active courier session with a courier ID may render Courier tabs.
+  if (!session || session.activeRole !== 'courier' || !session.courierId) {
     return <Redirect href="/" />;
   }
 
@@ -59,23 +59,13 @@ export default function CustomerTabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="restaurant"
+        name="index"
         options={{
-          tabBarAccessibilityLabel: 'Restaurants tab',
+          tabBarAccessibilityLabel: 'Order Delivery tab',
           tabBarIcon: ({ color, focused, size }) => (
-            <TabIcon color={color} focused={focused} name="burger" size={size} />
+            <TabIcon color={color} focused={focused} name="truck" size={size} />
           ),
-          title: 'Restaurants',
-        }}
-      />
-      <Tabs.Screen
-        name="order-history"
-        options={{
-          tabBarAccessibilityLabel: 'Order History tab',
-          tabBarIcon: ({ color, focused, size }) => (
-            <TabIcon color={color} focused={focused} name="clock-rotate-left" size={size} />
-          ),
-          title: 'Order History',
+          title: 'Order Delivery',
         }}
       />
       <Tabs.Screen

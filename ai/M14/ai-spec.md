@@ -660,6 +660,7 @@ Claude must execute every feature in this order:
 11. **Reconcile:** Update the feature spec, this global spec, Postman, tree, and docs only where verified implementation changed their truth.
 12. **Clean:** Remove temporary logs, dead code, unused imports, stale comments, generated output, and accidental secrets; inspect the complete diff.
 13. **Handoff:** Report the outcome first, list changed files, give exact checks/results and manual gaps, then provide narrowly scoped staging and copy-ready commit commands. Two-pass iteration evidence is not required for grading or handoff.
+14. **Log:** After each implementation (and after any material follow-up change to it), append the handoff report to the private implementation log at `.omi/m14/IMPLEMENTATION_LOG.md` as a dated, indexed section covering outcome, contract decisions, changed files, verification results, and remaining manual checks. Create the log on first use. This log is a write-only record, not a runtime dependency: it lives in the gitignored `.omi/` tree, must never be committed or promoted into a graded deliverable, and implementation must never read it to make decisions.
 
 Claude must not change code first and knowingly leave specifications inaccurate. A spec checkbox remains unchecked until evidence exists; code presence alone is not proof of runtime behavior.
 
@@ -859,8 +860,8 @@ Sections 23.1–23.5 are the **agent-verifiable** Definition of Done: Claude can
 - [ ] Courier-only login routes directly to Courier.
 - [ ] Dual-role login routes to Account Selection and both choices work.
 - [ ] Invalid/no-role and expired/corrupt sessions fail safely.
-- [ ] Customer tabs are Restaurants, Order History, and Account.
-- [ ] Courier tabs are Order Delivery and Account.
+- [x] Customer tabs are Restaurants, Order History, and Account. (Declared in `client/app/customer/_layout.js`; navigation-structure feature. On-device render pending.)
+- [x] Courier tabs are Order Delivery and Account. (Declared in `client/app/courier/_layout.js`; navigation-structure feature. On-device render pending.)
 - [ ] Nested Restaurant Stack and all retained M13 navigation continue working.
 - [ ] Logout clears all identity/role data and prevents protected back navigation.
 

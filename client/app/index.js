@@ -22,7 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiRequestError } from '../services/apiClient';
-import { authenticateCustomer } from '../services/authService';
+import { authenticateUser } from '../services/authService';
 
 // These module constants keep validation rules and user messages identical across submissions.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -127,7 +127,7 @@ export default function LoginScreen() {
     activeRequestRef.current = requestController;
 
     try {
-      const session = await authenticateCustomer({
+      const session = await authenticateUser({
         email: normalizedEmail,
         password,
         signal: requestController.signal,
