@@ -167,7 +167,7 @@ Claude must implement one feature specification at a time, in the order requeste
 
 #### Authoring status
 
-**Feature specifications authored: 2 of 7.** Authored so far: `navigation-structure.feature.md` and `role-based-navigation.feature.md`. The remaining five are planned targets, not existing files, and the Section 7 tree lists them as such. `ai/M14/features/feature-name.feature.md` is the placeholder template to copy when authoring a new spec; it is a scaffold, not a deliverable, and is not counted.
+**Feature specifications authored: 3 of 7.** Authored so far: `navigation-structure.feature.md`, `role-based-navigation.feature.md`, and `courier-delivery.feature.md`. The remaining four are planned targets, not existing files, and the Section 7 tree lists them as such. `ai/M14/features/feature-name.feature.md` is the placeholder template to copy when authoring a new spec; it is a scaffold, not a deliverable, and is not counted.
 
 Whenever Claude authors (or finishes) one of the seven specifications, it must increment this counter and move the file name into the "authored so far" list in the same change, so the count always matches reality. Do not raise the count for a stub; a spec counts as authored only when it satisfies the required contents below and its feature-specific Definition of Done.
 
