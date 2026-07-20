@@ -6,11 +6,37 @@
  * 2. Create-order request-body construction
  * 3. Protected order submission and envelope validation
  * 4. Customer order-history normalization and request
+ * 5. Courier delivery status model, normalization, and eligible-delivery retrieval
  */
 
-import { getStoredSession } from '../storage/authStorage';
+import { getStoredSession, ROLES } from '../storage/authStorage';
 import { isNonNegativeSafeInteger, isPositiveSafeInteger } from '../utils/validation';
 import { ApiRequestError, requestJson } from './apiClient';
+
+// Internal status values used by the courier UI. The backend stores lowercase status names
+// ("pending", "in progress", "delivered"); these stable uppercase tokens are the client's model.
+// Visible text uses a space ("IN PROGRESS"); the internal token uses an underscore.
+export const DELIVERY_STATUS = Object.freeze({
+  DELIVERED: 'DELIVERED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  PENDING: 'PENDING',
+});
+
+// Human-readable label for each internal status, matching the wireframe's uppercase display.
+export const DELIVERY_STATUS_LABELS = Object.freeze({
+  DELIVERED: 'DELIVERED',
+  IN_PROGRESS: 'IN PROGRESS',
+  PENDING: 'PENDING',
+});
+
+// Allowlist mapping the only verified backend status spellings onto internal tokens. An
+// unrecognized status is intentionally left unmapped so a malformed row is excluded, never guessed
+// into one of the three supported states.
+const BACKEND_STATUS_TO_INTERNAL = Object.freeze({
+  delivered: DELIVERY_STATUS.DELIVERED,
+  'in progress': DELIVERY_STATUS.IN_PROGRESS,
+  pending: DELIVERY_STATUS.PENDING,
+});
 
 // User-safe classification messages; raw server details and tokens never reach the interface.
 export const ORDER_ERROR_MESSAGES = Object.freeze({
@@ -306,4 +332,224 @@ export async function fetchCustomerOrders({ signal } = {}) {
   }
 
   return normalizeCustomerOrders(data);
+}
+
+// ==================== Courier delivery retrieval ====================
+
+/**
+ * Maps a verified backend status spelling to its internal token, or null when unrecognized.
+ * Comparison is case- and whitespace-tolerant only for the three allowlisted spellings.
+ * Read aloud: “normalize delivery status.”
+ */
+function normalizeDeliveryStatus(rawStatus) {
+  if (typeof rawStatus !== 'string') {
+    return null;
+  }
+
+  // Collapse internal whitespace so "In  Progress" and "in progress" resolve identically.
+  const key = rawStatus.trim().toLowerCase().replace(/\s+/g, ' ');
+
+  return BACKEND_STATUS_TO_INTERNAL[key] ?? null;
+}
+
+/**
+ * Validates one raw delivery product and maps its snake_case fields to camelCase.
+ * Unlike the customer history product, the courier Delivery Details modal shows the per-item
+ * `unit_cost`, so this normalizer maps and validates it in addition to the line total.
+ * Returns null for a malformed entry so the caller can exclude the whole delivery.
+ * Read aloud: “normalize delivery product.”
+ */
+function normalizeDeliveryProduct(rawProduct) {
+  if (!rawProduct || typeof rawProduct !== 'object' || Array.isArray(rawProduct)) {
+    return null;
+  }
+
+  const productId = Number(rawProduct.product_id);
+  const productName =
+    typeof rawProduct.product_name === 'string' ? rawProduct.product_name.trim() : '';
+  const quantity = Number(rawProduct.quantity);
+  const unitCost = Number(rawProduct.unit_cost);
+  const totalCost = Number(rawProduct.total_cost);
+
+  if (
+    !isPositiveSafeInteger(productId) ||
+    !productName ||
+    !isPositiveSafeInteger(quantity) ||
+    !isNonNegativeSafeInteger(unitCost) ||
+    !isNonNegativeSafeInteger(totalCost)
+  ) {
+    return null;
+  }
+
+  return { productId, productName, quantity, totalCost, unitCost };
+}
+
+/**
+ * Validates one raw courier order and maps backend snake_case fields to the client Delivery shape.
+ * The backend has no per-order details endpoint, so the Delivery Details modal renders entirely
+ * from this normalized list object. A row with an unsupported status or malformed data returns
+ * null so the caller can exclude it rather than render `undefined` or a guessed status.
+ * Read aloud: “normalize courier delivery.”
+ */
+function normalizeCourierDelivery(rawOrder) {
+  if (!rawOrder || typeof rawOrder !== 'object' || Array.isArray(rawOrder)) {
+    return null;
+  }
+
+  const id = Number(rawOrder.id);
+  const restaurantName =
+    typeof rawOrder.restaurant_name === 'string' ? rawOrder.restaurant_name.trim() : '';
+  const status = normalizeDeliveryStatus(rawOrder.status);
+  const totalCost = Number(rawOrder.total_cost);
+  const createdOn = typeof rawOrder.created_on === 'string' ? rawOrder.created_on.trim() : '';
+
+  // customer_address is the delivery destination; a blank value normalizes to null so the modal
+  // shows a safe fallback instead of the strings "undefined" or "null".
+  const deliveryAddress =
+    typeof rawOrder.customer_address === 'string' && rawOrder.customer_address.trim()
+      ? rawOrder.customer_address.trim()
+      : null;
+
+  // A pending order has no courier (null); an assigned order carries the owning courier ID, which
+  // the retrieval filter compares against the active courier before the row may render.
+  const courierId =
+    rawOrder.courier_id === null || rawOrder.courier_id === undefined
+      ? null
+      : Number(rawOrder.courier_id);
+
+  const products = Array.isArray(rawOrder.products)
+    ? rawOrder.products.map(normalizeDeliveryProduct)
+    : null;
+
+  if (
+    !isPositiveSafeInteger(id) ||
+    !restaurantName ||
+    !status ||
+    !isNonNegativeSafeInteger(totalCost) ||
+    !createdOn ||
+    (courierId !== null && !isPositiveSafeInteger(courierId)) ||
+    !products ||
+    products.some((product) => product === null)
+  ) {
+    return null;
+  }
+
+  return {
+    courierId,
+    createdOn,
+    deliveryAddress,
+    id,
+    products,
+    restaurantName,
+    status,
+    totalCost,
+  };
+}
+
+/**
+ * Validates one `{ message: "Success", data: [...] }` list envelope and normalizes its rows.
+ * fetchCourierDeliveries calls it for both the pending and courier-scoped responses.
+ * A valid empty array is legitimate and returns []; a malformed envelope is a response error.
+ * Read aloud: “normalize delivery list.”
+ */
+function normalizeDeliveryList(responseData) {
+  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
+    throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response);
+  }
+
+  return responseData.data.map(normalizeCourierDelivery);
+}
+
+/**
+ * Performs one authenticated delivery-list GET and classifies its failures for the caller.
+ * fetchCourierDeliveries uses it for the pending and courier-scoped endpoints under one session.
+ * Read aloud: “request delivery list.”
+ */
+async function requestDeliveryList(path, session, signal) {
+  const { data, response } = await requestJson(path, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    method: 'GET',
+    signal,
+  });
+
+  // As verified live for the other order calls, this backend reports missing/invalid/expired
+  // tokens as 401 or 403 with no custom entry point; both exit through shared sign-out handling.
+  if (response.status === 401 || response.status === 403) {
+    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, response.status);
+  }
+
+  if (response.status >= 500) {
+    throw new ApiRequestError('service', ORDER_ERROR_MESSAGES.service, response.status);
+  }
+
+  if (!response.ok) {
+    throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response, response.status);
+  }
+
+  return normalizeDeliveryList(data);
+}
+
+/**
+ * Loads the active courier's eligible deliveries: every pending order plus only the orders this
+ * courier is assigned. The token and courier ID are read from the shared session boundary at
+ * request time, never from props or route parameters, and `courierId` (never `userId`) scopes the
+ * courier query. Results are merged, deduplicated by order ID, and ownership-filtered so another
+ * courier's assigned order can never render even if stale upstream data reaches the client.
+ * Read aloud: “fetch courier deliveries.”
+ * @param {{signal?: AbortSignal}} [options]
+ * @returns {Promise<Array<object>>} Eligible normalized deliveries; [] when none are available.
+ * @throws {ApiRequestError} Codes: `unauthorized`, `service`, `response`, `connection`, `aborted`.
+ */
+export async function fetchCourierDeliveries({ signal } = {}) {
+  const session = await getStoredSession();
+  const courierId = Number(session?.courierId);
+
+  // Only a validated active courier session may issue these requests; a missing session, the wrong
+  // active role, or a missing courier ID routes through shared logged-out handling.
+  if (!session || session.activeRole !== ROLES.courier || !isPositiveSafeInteger(courierId)) {
+    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, 401);
+  }
+
+  // Both lists load under one call so a single failure classifies the whole refresh; the courier
+  // query is scoped by the stored courier ID.
+  const [pendingRows, assignedRows] = await Promise.all([
+    requestDeliveryList('/api/orders/pending', session, signal),
+    requestDeliveryList(
+      `/api/orders?type=courier&id=${encodeURIComponent(courierId)}`,
+      session,
+      signal,
+    ),
+  ]);
+
+  // Deduplicate by order ID. The courier-scoped row is authoritative for an assigned order, so it
+  // is applied after the pending rows and wins any overlap; a downgrade to stale pending data for
+  // an already-assigned order is therefore impossible.
+  const deliveriesById = new Map();
+
+  for (const delivery of pendingRows) {
+    if (delivery && !deliveriesById.has(delivery.id)) {
+      deliveriesById.set(delivery.id, delivery);
+    }
+  }
+
+  for (const delivery of assignedRows) {
+    if (delivery) {
+      deliveriesById.set(delivery.id, delivery);
+    }
+  }
+
+  const eligibleDeliveries = [];
+
+  for (const delivery of deliveriesById.values()) {
+    // A pending order is visible to every courier for acceptance. Any non-pending order is visible
+    // only to its assigned courier, which excludes foreign and dirty unassigned non-pending rows.
+    const isEligible =
+      delivery.status === DELIVERY_STATUS.PENDING || delivery.courierId === courierId;
+
+    if (isEligible) {
+      eligibleDeliveries.push(delivery);
+    }
+  }
+
+  return eligibleDeliveries;
 }
