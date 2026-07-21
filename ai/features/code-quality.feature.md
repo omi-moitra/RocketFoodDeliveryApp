@@ -689,4 +689,40 @@ This is the append-only completion record for work selected from `docVault/REFAC
 - **Change:** Added component-local frozen constants for confirmation submission, Account load/save, courier mutation, and courier list-display states; replaced the corresponding initial values, setters, and comparisons. All existing visible states, retry paths, draft preservation, abort handling, and transition behavior remain unchanged; no reducer or backend change was introduced.
 - **Verification:** Targeted search found no remaining raw lifecycle literals in the selected setters/comparisons/phases; Babel parse, import resolution, Expo config, dependency-tree, and whitespace checks passed. Native transition-table regression for confirmation, Account, and courier mutations remains deferred.
 
+#### RF-26 — Remove React Bootstrap
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `react-bootstrap` was declared directly but no first-party client file imported it; `npm explain` confirmed the root project was its only owner. Removing this web UI library reduces an unused dependency branch without touching the React Native presentation stack.
+- **Files affected:** `client/package.json`, `client/package-lock.json`
+- **Change:** Removed `react-bootstrap` with npm so the manifest and lockfile changed together. No component, route, icon, style, or runtime behavior changed.
+- **Verification:** Caller search found no first-party import; `npm ls --depth=0` is clean; the focused Jest suite passes 58/58; `npx expo install --check` reports dependencies up to date using Expo SDK 54's local compatibility map because network validation was unavailable. Full platform export remains deferred under the token-efficient test policy.
+
+#### RF-27 — Remove the redundant direct Expo Vector Icons declaration
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** First-party icons use the established FontAwesome SVG stack and never import `@expo/vector-icons`. Expo 54 already declares and installs it transitively, so listing the same package as an application dependency falsely implied direct ownership.
+- **Files affected:** `client/package.json`, `client/package-lock.json`
+- **Change:** Removed only the root project's direct declaration. Expo's transitive `@expo/vector-icons` installation remains in the resolved dependency tree; all FontAwesome and `react-native-svg` dependencies were retained. No icon implementation changed.
+- **Verification:** First-party caller search is empty; the lockfile confirms Expo 54 still declares `@expo/vector-icons`; `npm ls --depth=0`, 58 focused Jest assertions, and the local Expo dependency check pass. Native icon rendering remains in the deferred manual checklist.
+
+#### RF-29 — Add focused client unit-test tooling
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The client had no repeatable test command, so pure validation, total-arithmetic, route-ID, and quantity-state regressions depended on manual reasoning or a full Expo build. A narrow Jest setup provides fast, reviewer-runnable evidence without a simulator.
+- **Files affected:** `client/package.json`, `client/package-lock.json`, `client/utils/__tests__/validation.test.js` (new), `client/utils/__tests__/orderTotals.test.js` (new), `client/utils/__tests__/menuState.test.js` (new)
+- **Change:** Added the Expo SDK 54-compatible `jest-expo` preset and Jest 29 as development-only dependencies, a concise non-watch `npm test` command, an opt-in `test:watch` command, and three pure utility suites. No UI-testing library, snapshot suite, simulator, TypeScript tooling, or production dependency was added.
+- **Verification:** `npm test` → 3 suites passed, 58 tests passed, 0 snapshots, approximately 1.2 seconds; all three test files parse; `npm ls --depth=0` is clean. `npm audit --omit=dev` still reports 13 moderate advisories in the retained Expo 54 dependency tree whose proposed automatic fix is the breaking Expo 57 upgrade; no force-fix or SDK upgrade was applied.
+
+#### RF-39 — Investigate duplicate `org.json.JSONObject` providers and retain both
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P3
+- **Reason and benefit:** The Maven warning needed dependency-owner evidence before any exclusion. The investigation showed the two providers serve different established owners, so retaining both avoids an unverified notification or assertion regression.
+- **Files affected:** None (read-only dependency investigation).
+- **Change:** `mvn dependency:tree` traced `com.vaadin.external.google:android-json` to Spring Boot Test → JSONassert and `org.json:json` to the compile-scoped Twilio SDK. No exclusion or backend file change was made because full provider and MySQL-backed regression evidence is unavailable; RF-37/RF-38 remain deferred per the selected zero-backend-change scope.
+- **Verification:** Focused Maven dependency-tree command completed successfully and identified both paths. A future exclusion requires the full notification/provider tests plus database-backed backend suite.
+
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
