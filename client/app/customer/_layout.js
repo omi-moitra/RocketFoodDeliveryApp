@@ -11,6 +11,7 @@ import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { ROLES } from '../../storage/authStorage';
 
 // Expo Router reads this reserved setting to choose Restaurants as the initial customer tab.
 export const unstable_settings = {
@@ -39,7 +40,7 @@ export default function CustomerTabsLayout() {
   const { session } = useAuth();
 
   // Fail closed: only an active customer session with a customer ID may render Customer tabs.
-  if (!session || session.activeRole !== 'customer' || !session.customerId) {
+  if (!session || session.activeRole !== ROLES.customer || !session.customerId) {
     return <Redirect href="/" />;
   }
 

@@ -174,6 +174,12 @@ export default function OrderConfirmationModal({
 
       setSubmissionState('error');
     } finally {
+      // Clear the settled controller only if it is still the active one, matching the Login/Account
+      // request owners so closing a settled modal never aborts a stale controller.
+      if (abortControllerRef.current === requestController) {
+        abortControllerRef.current = null;
+      }
+
       submitLockRef.current = false;
     }
   }

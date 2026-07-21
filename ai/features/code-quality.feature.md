@@ -466,3 +466,79 @@ Claude must leave criteria unchecked until current evidence supports them. Searc
 - Append the final dated handoff to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage it.
 - Do not stage, commit, merge, or push.
 - Finish with outcome, user-selected options, exact files, checks/results, retained justifications, manual gaps, scoped `git add`, and a copy-ready Conventional Commit command.
+
+## 13. Refactoring Implementation Record
+
+This is the append-only completion record for work selected from `docVault/REFACTORING_AUDIT.md`. Add an entry only after the user-selected audit item is implemented and its available verification is complete. A proposal, user selection, partial edit, or unverified change is not completed work. Entries remain chronological; if completed work is revised or reverted, append a dated correction rather than rewriting history.
+
+#### RF-19 — Remove stale `@JsonAlias` claims
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P0
+- **Reason and benefit:** Source/test comments claimed the backend accepted notification keys via `@JsonAlias`, but the DTO now uses canonical camelCase (`sendEmail` default-mapped, `sendSms` via `@JsonProperty("sendSMS")`). The stale claim contradicted the graded HTTP contract.
+- **Files affected:** `client/services/orderService.js`, `server/src/test/java/com/rocketFoodDelivery/rocketFood/order/OrderApiControllerTest.java`
+- **Change:** Rewrote both comments to describe the canonical camelCase mapping; no code/behavior change. Snake_case is intentionally not accepted (verified by the existing DTO deserialization test).
+- **Verification:** `rg JsonAlias client server` → no matches; `mvnw test` for `OrderApiControllerTest,ApiCreateOrderDTODeserializationTest` (local MySQL) → 15 passed, 0 failures.
+
+#### RF-03 — Reuse the shared email validator in Login
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Login defined a local `EMAIL_PATTERN` duplicating the `isValidEmail` rule already owned by `utils/validation.js` (used by Account). Sharing it prevents Login and Account email validation from drifting.
+- **Files affected:** `client/app/index.js`
+- **Change:** Imported `isValidEmail`, replaced `EMAIL_PATTERN.test(email)` with `!isValidEmail(email)`, and deleted the local regex. Behavior identical (empty → required message first, non-empty invalid → shape message).
+- **Verification:** `npx expo export --platform android` EXIT 0; `git diff --check` clean. Native email-field manual check pending.
+
+#### RF-04 — Route guards consume the `ROLES` constants
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Root and role tab guards repeated raw `'customer'`/`'courier'` string literals despite `authStorage.js` exporting the canonical `ROLES`. Using the constants removes typo-prone literals at the security-sensitive navigation boundary.
+- **Files affected:** `client/app/_layout.js`, `client/app/customer/_layout.js`, `client/app/courier/_layout.js`
+- **Change:** Imported `ROLES` and replaced the raw role literals in the active-role guards with `ROLES.customer` / `ROLES.courier`. No route/guard behavior change.
+- **Verification:** `rg` confirms no raw role literals remain in guards; `npx expo export --platform android` EXIT 0. Native four-way navigation (logged-out, customer-only, courier-only, dual-pending) manual check pending.
+
+#### RF-07 — Clear the confirmation modal's settled abort controller
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** `OrderConfirmationModal` stored the active `AbortController` but never cleared it in `finally`, so closing a settled modal aborted a stale controller — unlike the Login/Account request owners.
+- **Files affected:** `client/components/OrderConfirmationModal.js`
+- **Change:** In `finally`, clear `abortControllerRef.current` only when it still equals the local controller. Visible idle/processing/success/failure behavior unchanged.
+- **Verification:** `npx expo export --platform android` EXIT 0. Native confirm/failure/close-during-processing/close-after-settle manual checks pending.
+
+#### RF-08 — Emit the font-load warning from an effect
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** The dev-only font-failure warning ran during render, so unrelated re-renders could repeat it and logging became a render side effect.
+- **Files affected:** `client/app/_layout.js`
+- **Change:** Moved the `__DEV__` `console.warn` into a `useEffect` keyed by `fontError`. Font-fallback and loading behavior unchanged.
+- **Verification:** `npx expo export --platform android` EXIT 0.
+
+#### RF-20 — Correct obsolete role-scope comments
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The mandatory `_layout.js` header described only login/customer routes and `AppHeader.js` comments said only Customer tabs install it and logout returns "the customer" to Login. The app now supports Customer and Courier.
+- **Files affected:** `client/app/_layout.js`, `client/components/AppHeader.js`
+- **Change:** Updated the file header and JSDoc to reference login/account-selection/role routes and the Customer *and* Courier layouts; logout "returns the user to Login." Comments only.
+- **Verification:** Manual header review; `npx expo export --platform android` EXIT 0.
+
+#### RF-22 — Aggregate the malformed-order development warning
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** `normalizeCustomerOrders` could emit one identical warning for every malformed/duplicate row on every refresh.
+- **Files affected:** `client/services/orderService.js`
+- **Change:** Count skipped rows and emit at most one `__DEV__` warning after normalization, containing only a count — never IDs, customer data, or tokens. Valid rows still render; malformed/duplicate rows still skipped.
+- **Verification:** `npx expo export --platform android` EXIT 0. A mixed valid/invalid/duplicate response unit test remains a pending gap.
+
+#### RF-36 — Tidy the order controller test
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The test constructed two throwaway `ObjectMapper`s despite an injected one and duplicated the `createFreshOrder` fixture in the delete test.
+- **Files affected:** `server/src/test/java/com/rocketFoodDelivery/rocketFood/order/OrderApiControllerTest.java`
+- **Change:** Use the injected `objectMapper` in both create tests; reuse `createFreshOrder` in `testDeleteOrder_Success`. Assertions and endpoint coverage unchanged.
+- **Verification:** `mvnw test` for `OrderApiControllerTest,ApiCreateOrderDTODeserializationTest` (local MySQL) → 15 passed, 0 failures.

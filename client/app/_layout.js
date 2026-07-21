@@ -1,9 +1,11 @@
 /**
  * File: _layout.js
- * Purpose: Defines the root stack and protects login/customer routes from stale sessions.
+ * Purpose: Defines the root stack and protects the login, account-selection, and role
+ *          (customer/courier) routes from stale or mismatched sessions.
  * Contents: loading state, protected root navigator, providers.
  */
 
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Arimo_400Regular } from '@expo-google-fonts/arimo/400Regular';
@@ -16,6 +18,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { COLORS } from '../constants/theme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { ROLES } from '../storage/authStorage';
 
 /**
  * Chooses the public or authenticated route tree after fonts and session storage resolve.
@@ -32,11 +35,15 @@ function RootNavigator() {
     Oswald_600SemiBold,
   });
 
-  // A font-load failure falls back to system fonts instead of taking down the app; every
-  // text style routes through FONT_FAMILIES, which degrades safely when Oswald is missing.
-  if (fontError && __DEV__) {
-    console.warn('RootNavigator: fonts failed to load; continuing with system fonts.');
-  }
+  // A font-load failure falls back to system fonts instead of taking down the app; every text
+  // style routes through FONT_FAMILIES, which degrades safely when a custom face is missing. The
+  // development-only warning runs in an effect keyed by fontError so an unrelated re-render cannot
+  // repeat it or make logging a render side effect.
+  useEffect(() => {
+    if (fontError && __DEV__) {
+      console.warn('RootNavigator: fonts failed to load; continuing with system fonts.');
+    }
+  }, [fontError]);
 
   if (isSessionLoading || (!areFontsLoaded && !fontError)) {
     return (
@@ -54,9 +61,9 @@ function RootNavigator() {
   const isDualRolePending =
     Boolean(session) && hasCustomerRole && hasCourierRole && !session.activeRole;
   const isCustomerActive =
-    Boolean(session) && session.activeRole === 'customer' && hasCustomerRole;
+    Boolean(session) && session.activeRole === ROLES.customer && hasCustomerRole;
   const isCourierActive =
-    Boolean(session) && session.activeRole === 'courier' && hasCourierRole;
+    Boolean(session) && session.activeRole === ROLES.courier && hasCourierRole;
 
   return (
     <>

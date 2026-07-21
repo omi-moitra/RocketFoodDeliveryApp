@@ -23,10 +23,10 @@ import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiRequestError } from '../services/apiClient';
 import { authenticateUser } from '../services/authService';
+import { isValidEmail } from '../utils/validation';
 
-// These module constants keep validation rules and user messages identical across submissions.
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+// These module constants keep user messages identical across submissions; the email shape rule is
+// the shared isValidEmail helper so Login and Account cannot drift to different email validation.
 const FORM_MESSAGES = Object.freeze({
   emailRequired: 'Enter your email address.',
   emailShape: 'Enter a valid email address.',
@@ -45,7 +45,7 @@ function validateCredentials(email, password) {
     return { field: 'email', message: FORM_MESSAGES.emailRequired };
   }
 
-  if (!EMAIL_PATTERN.test(email)) {
+  if (!isValidEmail(email)) {
     return { field: 'email', message: FORM_MESSAGES.emailShape };
   }
 

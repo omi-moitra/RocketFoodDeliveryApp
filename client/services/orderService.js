@@ -81,7 +81,8 @@ function buildCreateOrderRequestBody({
     throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.invalid);
   }
 
-  // Notification keys use the official camelCase spelling (backend accepts them via @JsonAlias).
+  // Notification keys use the official camelCase spelling the backend maps canonically (sendEmail
+  // by Jackson default, sendSMS via @JsonProperty("sendSMS")); there is no snake_case alias.
   // The strict `=== true` check means only an explicit boolean true is sent as true, so a missing
   // or non-boolean value can never be coerced into an unintended notification opt-in.
   return {
@@ -287,21 +288,25 @@ function normalizeCustomerOrders(responseData) {
 
   const seenOrderIds = new Set();
   const orders = [];
+  let skippedCount = 0;
 
   for (const rawOrder of responseData.data) {
     const order = normalizeCustomerOrder(rawOrder);
 
-    // Skip-and-log keeps one malformed or duplicated entry from hiding the whole history; the
-    // development-only warning never includes customer data or tokens.
+    // Skipping a malformed or duplicated entry keeps it from hiding the whole history.
     if (!order || seenOrderIds.has(order.id)) {
-      if (__DEV__) {
-        console.warn('orderService: skipped a malformed or duplicate order-history entry.');
-      }
+      skippedCount += 1;
       continue;
     }
 
     seenOrderIds.add(order.id);
     orders.push(order);
+  }
+
+  // One aggregated development-only warning (a count only — never customer data, IDs, or tokens)
+  // avoids repeating the same message for every skipped row on every refresh.
+  if (skippedCount > 0 && __DEV__) {
+    console.warn(`orderService: skipped ${skippedCount} malformed or duplicate order-history entries.`);
   }
 
   return orders;

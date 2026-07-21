@@ -20,7 +20,7 @@ const LOGOUT_STATUS = Object.freeze({
 
 /**
  * Renders the authenticated brand header and a retry-safe logout action.
- * CustomerTabsLayout installs it once as the shared header for all customer screens.
+ * The Customer and Courier tab layouts install it once as the shared authenticated header.
  * Read aloud: “app header.”
  */
 export default function AppHeader() {
@@ -32,7 +32,7 @@ export default function AppHeader() {
   const isLoggingOut = logoutStatus === LOGOUT_STATUS.clearing;
 
   /**
-   * Clears the stored session once, then returns the customer to Login on success.
+   * Clears the stored session once, then returns the user to Login on success.
    * The header's Log Out button calls it; a storage failure leaves a safe retry path.
    * Read aloud: “handle logout.”
    */

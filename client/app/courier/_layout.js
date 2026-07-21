@@ -11,6 +11,7 @@ import AppHeader from '../../components/AppHeader';
 import AppIcon from '../../components/AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { ROLES } from '../../storage/authStorage';
 
 // Expo Router reads this reserved setting to choose Order Delivery as the initial courier tab.
 export const unstable_settings = {
@@ -39,7 +40,7 @@ export default function CourierTabsLayout() {
   const { session } = useAuth();
 
   // Fail closed: only an active courier session with a courier ID may render Courier tabs.
-  if (!session || session.activeRole !== 'courier' || !session.courierId) {
+  if (!session || session.activeRole !== ROLES.courier || !session.courierId) {
     return <Redirect href="/" />;
   }
 
