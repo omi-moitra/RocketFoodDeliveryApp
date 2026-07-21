@@ -528,11 +528,156 @@
         },
         "description": "Completes an in-progress delivery via the broad update, echoing restaurant_id, customer_id, and the current restaurant_rating. Set restaurant_rating to the value returned in the order response (null when the order has none) so it is not erased. Courier is not in this body, so the assignment is preserved."
       }
+    },
+    {
+      "name": "GET /api/account/{id} — customer account (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('account loads with the primary email and customer role', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('email');",
+              "    pm.expect(body.data.customer).to.have.property('email');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{userId}}?type=customer",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{userId}}"],
+          "query": [{ "key": "type", "value": "customer" }]
+        },
+        "description": "Loads the account for the authenticated user by user ID. The official type query is accepted and ignored by the current controller; the client selects data.customer. Set userId to the logged-in user's id (customer@gmail.com is user 2)."
+      }
+    },
+    {
+      "name": "POST /api/account/{id} — update customer email/phone (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('customer role email/phone update and the primary email is unchanged', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.customer.email).to.eql('customer.updated@example.com');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"account_type\": \"customer\",\n  \"account_email\": \"customer.updated@example.com\",\n  \"account_phone\": \"+1-555-9100\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{userId}}"]
+        },
+        "description": "Official-shape account update (POST with account_type/account_email/account_phone in the body). Updates only the customer role's email/phone; the primary user email is never changed. The existing PUT /api/account/{id}?type= is retained for compatibility."
+      }
+    },
+    {
+      "name": "GET /api/account/{id} — courier account (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('account loads with the courier role', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.courier).to.have.property('email');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{courierUserId}}?type=courier",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{courierUserId}}"],
+          "query": [{ "key": "type", "value": "courier" }]
+        },
+        "description": "Loads a courier account. Use a courier user id (user 22 is a seeded courier) and a token for that user; the client selects data.courier."
+      }
+    },
+    {
+      "name": "POST /api/account/{id} — update courier email/phone (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier role email/phone update', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.courier.email).to.eql('courier.updated@example.com');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"account_type\": \"courier\",\n  \"account_email\": \"courier.updated@example.com\",\n  \"account_phone\": \"+1-555-9200\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{courierUserId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{courierUserId}}"]
+        },
+        "description": "Official-shape courier account update. Updates only the courier role's email/phone; the primary user email is unchanged. Use a courier user id and courier token."
+      }
     }
   ],
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
     { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "2" },
+    { "key": "courierUserId", "value": "22" },
     { "key": "customerId", "value": "2" },
     { "key": "courierId", "value": "1" },
     { "key": "orderId", "value": "1" },

@@ -220,6 +220,8 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/orders?type=courier&id={id}` | Load the authenticated courier's assigned orders |
 | `PUT` | `/api/orders/{id}` | Update an order; courier progression echoes `restaurant_id`, `customer_id`, and the current `restaurant_rating`, changing only `order_status_id` (`2`\|`3`) |
 | `PUT` | `/api/order/{id}/courier` | Assign a courier to an order; body `{ "courier_id": {id} }` |
+| `GET` | `/api/account/{userId}?type={role}` | Load the account (primary email + nested role details); `type` is accepted and ignored, client selects the active role |
+| `POST` | `/api/account/{userId}` | Update the active role's email/phone; body `{ "account_type", "account_email", "account_phone" }` (primary email never changed) |
 
 ## Backend Compatibility and Minimum-Change Policy
 
@@ -233,6 +235,8 @@ A backend adjustment is allowed only when repository/live evidence proves that a
 - Be integrated through the frontend service boundary rather than directly from screen code.
 - Be documented in `ai/M14/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
 
+Before editing backend code, Claude must present the viable minimum-change options with their exact API/file impact, benefits, risks, compatibility/grading implications, and verification cost. The user selects the option; Claude must not make that product/contract decision independently.
+
 Each documented backend adjustment must identify the source discrepancy, why a frontend-only adapter was unsafe or insufficient, the exact method/path/body/response, changed server and client files, compatibility impact, tests, Postman/database evidence, and any remaining manual verification.
 
 ### Module 14 backend adjustment record
@@ -240,6 +244,18 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 | Status | Feature | Verified discrepancy | Minimum authorized resolution |
 |---|---|---|---|
 | Implemented | Courier Delivery status progression | The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` (the order response) did **not** return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client could not read the current rating to round-trip it and would erase it by sending `null`. | Add `restaurant_rating` to the response DTO `ApiOrderDTO` (one field + one mapping line) so the client can read the current rating and echo it back through the **existing** broad `PUT /api/orders/{id}`. No new endpoint, DTO, or service method. |
+| Implemented (user-selected) | Account Details update | The grading sheet labels the account update as **POST `/api/account/{id}`**; the backend implements **PUT `/api/account/{id}?type=`**. A frontend-only PUT works but does not match the official verb/shape. | Add a **POST `/api/account/{id}`** endpoint using the official body shape `{ account_type, account_email, account_phone }` (existing scaffolded `ApiPostAccountDTO`), delegating to the same `updateAccount` service. The existing PUT is retained unchanged. GET stays frontend-only (the official `?type=` query is accepted and ignored). |
+
+**Implemented change (account POST endpoint — user-selected Option 3)**
+
+- **Server change:** `controller/api/UserApiController.java` — added `@PostMapping("/api/account/{id}")` taking `ApiPostAccountDTO { account_type, account_email, account_phone }`, validating `account_type` in `customer|courier|employee`, and delegating to the existing `userService.updateAccount(id, type, new ApiUpdateAccountDTO(email, phone))`. Wires the previously unused `ApiPostAccountDTO`. No service/schema/entity change.
+- **Endpoints:** `POST /api/account/{id}` (new, official body shape) and `PUT /api/account/{id}?type=` (retained, unchanged). `GET /api/account/{id}` is unchanged; the client sends the official `?type={role}` query, which the controller accepts and ignores.
+- **Response:** both update paths return `200 { message:"Success", data: ApiAccountDTO }` (primary email + nested role details); only the selected role's email/phone change. The primary user email is never modified.
+- **Why a frontend-only adapter was insufficient:** functionally the existing PUT is sufficient, but the user chose Option 3 to match the official POST verb and body shape for grading alignment. The change is additive and backward compatible.
+- **Compatibility impact:** additive only — a new POST mapping plus wiring an already-present DTO. PUT/GET and all other endpoints, entities, schema, security, and seeders are unchanged. `testUpdateOrder_Success` and the rest of the suite still pass.
+- **Frontend integration:** `client/services/accountService.js` builds `GET /api/account/{userId}?type={role}` and `POST /api/account/{userId}` with the official body; `client/components/AccountScreen.js` (shared by both role wrappers) owns the form/validation/save; screens never build request bodies.
+- **Tests:** `server/.../user/AccountApiControllerTest.java` (6 tests: GET success + ignored type query, GET 404, POST customer success + primary-email preserved, POST courier success, POST invalid type 400, POST 404). `./mvnw test` → **115 passed, 0 failures** (DB-verified against MySQL).
+- **DBeaver / native:** database before/after inspection for both role tables and on-device Account interaction remain manual checks for the operator with a running device.
 
 **Implemented change (DTO field addition)**
 
