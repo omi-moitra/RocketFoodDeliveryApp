@@ -2,7 +2,9 @@
  * File: RefreshErrorBanner.js
  * Purpose: Shows a non-destructive refresh-failure message with Retry, shared by list screens that
  *          keep existing rows visible when a background refresh fails.
- * Contents: refresh error banner component, banner styles.
+ * Contents:
+ * 1. refresh error banner component
+ * 2. banner styles
  */
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,7 +15,6 @@ import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
  * Renders the shared refresh-failure banner, or nothing when there is no message.
  * Order History and Order Delivery both show this above their list when a non-initial refresh
  * fails but the previously loaded rows are retained on screen.
- * Read aloud: “refresh error banner.”
  * @param {{message: string, onRetry: () => void}} props
  */
 export default function RefreshErrorBanner({ message, onRetry }) {

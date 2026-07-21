@@ -725,4 +725,58 @@ This is the append-only completion record for work selected from `docVault/REFAC
 - **Change:** `mvn dependency:tree` traced `com.vaadin.external.google:android-json` to Spring Boot Test → JSONassert and `org.json:json` to the compile-scoped Twilio SDK. No exclusion or backend file change was made because full provider and MySQL-backed regression evidence is unavailable; RF-37/RF-38 remain deferred per the selected zero-backend-change scope.
 - **Verification:** Focused Maven dependency-tree command completed successfully and identified both paths. A future exclusion requires the full notification/provider tests plus database-backed backend suite.
 
+#### RF-21 — Remove repeated “Read aloud” comment lines
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Pronunciation-only annotations narrated function names but did not explain ownership, invariants, contracts, or grading behavior. Removing them makes the required technical comments easier to scan without reducing useful documentation.
+- **Files affected:** 39 JavaScript files: `client/app/{_layout.js,index.js,selection.js}`, `client/app/courier/{_layout.js,account.js,index.js}`, `client/app/customer/{_layout.js,account.js,order-history.js}`, `client/app/customer/restaurant/{_layout.js,index.js,[restaurantId].js}`, `client/components/{AccountScreen.js,AppHeader.js,AppIcon.js,DeliveryDetailsModal.js,DeliveryRow.js,ErrorBoundary.js,FilterSelect.js,OrderConfirmationModal.js,OrderHistoryModal.js,OrderHistoryRow.js,RefreshErrorBanner.js,RestaurantCard.js,ResultState.js,RoleTabsLayout.js,useProtectedFocusList.js}`, `client/constants/{currency.js,restaurantImages.js}`, `client/contexts/AuthContext.js`, `client/services/{accountService.js,apiClient.js,authService.js,restaurantService.js}`, `client/services/orders/courierDeliveries.js`, `client/storage/authStorage.js`, `client/utils/{orderFormatting.js,restaurantLabels.js,validation.js}`
+- **Change:** Removed exactly 115 lines containing `Read aloud:`. Mandatory headers, JSDoc descriptions/types/throws, caller notes, race/security explanations, and non-obvious mapping/recovery comments remain. No executable code changed.
+- **Verification:** Targeted search returns zero `Read aloud:` matches; the initial zero-context client diff contained exactly 115 removals and no additions; all affected JavaScript still parses. Header normalization completed separately under RF-44.
+
+#### RF-31 — Simplify stale and redundant ignore entries
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** The general `node_modules/` rule already covered `client/node_modules`, while the ignored `ai/M14/features/feature-name.feature.md` path belonged to a removed directory and did not govern the real tracked template.
+- **Files affected:** `.gitignore`
+- **Change:** Removed only those two redundant/stale rules and their now-extra spacing. Secret, environment, dependency, Expo/native output, Java target, IDE/OS, local Spring, and private `.omi` coverage remains unchanged.
+- **Verification:** `git check-ignore --no-index` confirms representative client dependencies, `.omi`, `.env`, Expo state, Java target, and local Spring files remain ignored; the stale M14 template path is no longer ignored.
+
+#### RF-40 — Repair README structure and documentation links
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The README tree and related-document links pointed to removed root paths and omitted the current role routes and design-reference owner. Reviewers could not navigate the documented repository confidently.
+- **Files affected:** `README.md`
+- **Change:** Replaced the obsolete support-material, root Concepts, and root Research entries with `client/docs/`, `Concepts/M13/`, and `docVault/`; corrected both local links; synchronized the route tree with Account Selection, Customer Account, and Courier tabs. No product contract changed.
+- **Verification:** Every local README Markdown link resolves and every documented top-level/current client path exists.
+
+#### RF-41 — Reconcile manual-QA claims with observed evidence
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The README claimed the complete customer journey had passed on iOS and Android, while the canonical specifications still marked native coverage pending. The record now distinguishes the user's actual smoke check from unperformed scenarios.
+- **Files affected:** `README.md`, `ai/features/ui.feature.md`
+- **Change:** Recorded the 2026-07-21 Expo Go smoke check on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL: the app opened and login plus the initial authenticated view succeeded. Full iOS journeys, Android, persistence/restart, customer/courier flows, scrolling, and keyboard scenarios remain explicitly pending.
+- **Verification:** README and UI-spec statements now agree; no Android, physical-device, full-journey, or database result is claimed.
+
+#### RF-42 — Reconcile obsolete support-material paths
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Seven retained M13 feature contracts referenced a support-material directory that Git history shows was intentionally consolidated and removed after its authoritative files were ported. Current specifications now point to reviewable files instead of nonexistent paths.
+- **Files affected:** `ai/features/header-footer.feature.md`, `ai/features/login-page.feature.md`, `ai/features/menu-modal-confirmation.feature.md`, `ai/features/order-history-modal.feature.md`, `ai/features/order-history-page.feature.md`, `ai/features/restaurant-list-page.feature.md`, `ai/features/restaurant-menu-page.feature.md`
+- **Change:** Updated design references to `client/docs/m13/design/`; updated logo, menu-image, and restaurant-image requirements to their verified runtime owners; replaced obsolete copy/delete instructions with final-state preservation language. Git history and byte comparisons—not inference—establish that the current PDFs and runtime assets match the supplied originals.
+- **Verification:** Zero obsolete support-directory path references remain in README/feature specs; all 11 referenced M13 PDFs/assets are readable; focused Git comparisons confirm the design PDFs and representative runtime assets are byte-identical to their original blobs.
+
+#### RF-44 — Synchronize final headers and specification inventory
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The final comment cleanup exposed one route header without a filename and 21 inline, unnumbered Contents summaries. Normalizing them preserves the detailed-comment rubric and makes source ownership consistently scannable after the preceding refactors.
+- **Files affected:** `ai/ai-spec.md`; `client/app/{_layout.js,index.js,selection.js}`, `client/app/courier/{_layout.js,account.js}`, `client/app/customer/{_layout.js,account.js}`, `client/app/customer/restaurant/_layout.js`, `client/components/{AppHeader.js,AppIcon.js,DeliveryRow.js,ErrorBoundary.js,RefreshErrorBanner.js,ResultState.js,RoleTabsLayout.js,useProtectedFocusList.js}`, `client/constants/theme.js`, `client/services/authService.js`, `client/storage/authStorage.js`, `client/utils/{orderFormatting.js,restaurantLabels.js,validation.js}`
+- **Change:** Added the missing `_layout.js` filename/purpose/numbered Contents header, converted 21 inline Contents summaries into numbered lists without changing their wording/order, and added the existing `Concepts/M13/` owner to the global canonical tree. RF-43 remains deliberately deferred: the inactive template is still tracked while full native/final completion criteria remain pending.
+- **Verification:** All 40 changed client JavaScript files parse and retain `File`, `Purpose`, and numbered `Contents` fields; the canonical paths in the global tree exist. No template file was deleted and no backend/runtime code changed.
+
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

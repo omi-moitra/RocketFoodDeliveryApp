@@ -2,7 +2,10 @@
  * File: _layout.js
  * Purpose: Defines the root stack and protects the login, account-selection, and role
  *          (customer/courier) routes from stale or mismatched sessions.
- * Contents: loading state, protected root navigator, providers.
+ * Contents:
+ * 1. loading state
+ * 2. protected root navigator
+ * 3. providers
  */
 
 import { useEffect } from 'react';
@@ -23,7 +26,6 @@ import { ROLES } from '../storage/authStorage';
 /**
  * Chooses the public or authenticated route tree after fonts and session storage resolve.
  * Used by RootLayout so protected screens never flash before startup checks finish.
- * Read aloud: “root navigator.”
  */
 function RootNavigator() {
   const { isSessionLoading, session } = useAuth();
@@ -89,7 +91,6 @@ function RootNavigator() {
 /**
  * Installs the safe-area and authentication providers around the application's navigator.
  * Expo Router calls this component as the root layout for every route.
- * Read aloud: “root layout.”
  */
 export default function RootLayout() {
   return (

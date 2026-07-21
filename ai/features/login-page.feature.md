@@ -73,7 +73,7 @@ The Login page must closely match the supplied wireframe and exact project color
 - Passing a token, password, customer object, or customer ID in route parameters.
 - Hard-coded ngrok domains, localhost URLs, credentials, tokens, or secrets.
 - Treating ngrok as a direct mobile-to-database connection. The app calls the Java REST API; the Java server remains responsible for its localhost MySQL connection.
-- Editing the original files under `support_materials_13/`.
+- Editing the supplied references under `client/docs/m13/` or the verified branding assets under `client/assets/`.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
@@ -82,8 +82,8 @@ The Login page must closely match the supplied wireframe and exact project color
 ### Requirement A — Login Screen Structure
 
 - Implement Login as the root unauthenticated route in `client/app/index.js`.
-- Follow the Login composition, spacing, typography, input treatment, button placement, and proportions shown in `support_materials_13/Design/Wireframe.pdf`.
-- Use the supplied Rocket Food Delivery branding shown by the wireframe. Copy an approved source logo from `support_materials_13/Images/` into a runtime client asset path rather than importing from support materials.
+- Follow the Login composition, spacing, typography, input treatment, button placement, and proportions shown in `client/docs/m13/design/Wireframe.pdf`.
+- Use the supplied Rocket Food Delivery branding shown by the wireframe through the verified runtime asset `client/assets/login-logo.png` (the byte-identical port of supplied `AppLogoV2.png`).
 - Use only centralized project palette values from the supplied color scheme:
   - Orange-red: `#DA583B`.
   - Charcoal: `#222126`.
@@ -378,8 +378,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 
 ## Visual and Accessibility Contract
 
-- Match the Login page shown in `support_materials_13/Design/Wireframe.pdf`; the grading criterion is visual agreement, not a generic form.
-- Use `support_materials_13/Design/ColorScheme.pdf` and centralized values in `client/constants/theme.js`; do not approximate colors.
+- Match the Login page shown in `client/docs/m13/design/Wireframe.pdf`; the grading criterion is visual agreement, not a generic form.
+- Use `client/docs/m13/design/ColorScheme.pdf` and centralized values in `client/constants/theme.js`; do not approximate colors.
 - Use Oswald where shown in the wireframe and the approved Arial/platform-safe body fallback elsewhere.
 - Do not display the authenticated header or footer.
 - Preserve the selected supplied logo's aspect ratio and accessible meaning.

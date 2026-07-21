@@ -236,7 +236,7 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 
 ### Wireframe Composition
 
-- Treat the `Order History Details` page in `support_materials_13/Design/Wireframe.pdf` as the visual source.
+- Treat the `Order History Details` page in `client/docs/m13/design/Wireframe.pdf` as the visual source.
 - The modal is a centered white rounded panel over the dimmed Order History table; the shared header and footer remain visible but inert behind the backdrop.
 - Panel hierarchy:
   1. Charcoal header block: restaurant name in orange-red Oswald, then white `Order Date:`, `Status:`, and `Courier:` lines, with the white X close control top-right.

@@ -30,7 +30,6 @@ const ORDER_HISTORY_MESSAGES = Object.freeze({
 /**
  * Loads the customer's orders on focus and renders the ORDER/STATUS/VIEW table with one modal.
  * Expo Router renders it for the Order History footer tab inside the customer layout.
- * Read aloud: “order history screen.”
  */
 export default function OrderHistoryScreen() {
   const { handleUnauthorized, session } = useAuth();
@@ -56,7 +55,6 @@ export default function OrderHistoryScreen() {
    * Opens the detail modal with the exact validated order object from the pressed row.
    * The guard makes rapid or repeated View taps a no-op while one modal is already selected,
    * so modals can never stack or switch to the wrong order mid-open.
-   * Read aloud: “handle view order.”
    */
   function handleViewOrder(order) {
     if (selectedOrder) {

@@ -1,7 +1,10 @@
 /**
  * File: _layout.js
  * Purpose: Configures the shared authenticated tab shell for the Courier role.
- * Contents: imports, initial-route setting, courier tabs layout.
+ * Contents:
+ * 1. imports
+ * 2. initial-route setting
+ * 3. courier tabs layout
  */
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,7 +36,6 @@ const COURIER_TAB_SCREENS = [
  * Defines the authenticated Order Delivery and Account tabs.
  * Expo Router loads it for every route inside the courier folder; the shared header, tab-bar
  * styling, and active-icon presentation live in the reusable `RoleTabsLayout`.
- * Read aloud: “courier tabs layout.”
  */
 export default function CourierTabsLayout() {
   const { session } = useAuth();

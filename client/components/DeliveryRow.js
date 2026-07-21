@@ -1,7 +1,10 @@
 /**
  * File: DeliveryRow.js
  * Purpose: Renders one courier delivery with its clickable status control and View action.
- * Contents: imports, delivery row component, styles.
+ * Contents:
+ * 1. imports
+ * 2. delivery row component
+ * 3. styles
  */
 
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -22,7 +25,6 @@ const ADVANCE_LABELS = Object.freeze({
  * IN PROGRESS order (mark delivered); DELIVERED is a locked, non-actionable green indicator. While
  * a mutation is pending the control shows `Updating…` and is disabled. A partial acceptance
  * (status persisted, assignment failed) shows a Retry action instead of a false final status.
- * Read aloud: “delivery row.”
  */
 export default function DeliveryRow({
   delivery,
@@ -42,7 +44,6 @@ export default function DeliveryRow({
 
   /**
    * Renders the status control appropriate to the current status and mutation phase.
-   * Read aloud: “render status control.”
    */
   function renderStatusControl() {
     // Partial acceptance: the order is at IN PROGRESS but unassigned; offer a safe retry, not a

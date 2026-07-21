@@ -1,7 +1,10 @@
 /**
  * File: index.js
  * Purpose: Authenticates customers from the unauthenticated root route.
- * Contents: imports and validation, Login screen behavior, wireframe styles.
+ * Contents:
+ * 1. imports and validation
+ * 2. Login screen behavior
+ * 3. wireframe styles
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -38,7 +41,6 @@ const FORM_MESSAGES = Object.freeze({
 /**
  * Returns the first client-side credential problem, or null when submission may continue.
  * LoginScreen calls it before touching the network so the user gets immediate field feedback.
- * Read aloud: “validate credentials.”
  */
 function validateCredentials(email, password) {
   if (!email) {
@@ -59,7 +61,6 @@ function validateCredentials(email, password) {
 /**
  * Renders the login form and coordinates validation, authentication, and session persistence.
  * Expo Router uses it as the unauthenticated root route.
- * Read aloud: “login screen.”
  */
 export default function LoginScreen() {
   const { completeSignIn } = useAuth();
@@ -90,7 +91,6 @@ export default function LoginScreen() {
   /**
    * Moves keyboard focus to the field named by a validation result.
    * handleLogin uses it after local validation fails.
-   * Read aloud: “focus invalid field.”
    */
   function focusInvalidField(field) {
     const inputRef = field === 'email' ? emailInputRef : passwordInputRef;
@@ -100,7 +100,6 @@ export default function LoginScreen() {
   /**
    * Runs one complete login attempt while preventing duplicate or post-unmount updates.
    * The form button and password submit action both call this handler.
-   * Read aloud: “handle login.”
    */
   async function handleLogin() {
     // The ref closes the small gap before React applies the submitting state.

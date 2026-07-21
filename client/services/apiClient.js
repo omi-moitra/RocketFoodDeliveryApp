@@ -19,12 +19,10 @@ const REQUEST_TIMEOUT_MS = 15000;
 /**
  * Carries a stable client error code plus an optional HTTP status across service boundaries.
  * Feature services throw it so screens can display safe messages without inspecting raw failures.
- * Read aloud: “A-P-I request error.”
  */
 export class ApiRequestError extends Error {
   /**
    * Creates one classifiable request failure for transport and feature-service handling.
-   * Read aloud: “constructor,” the standard JavaScript class initializer.
    */
   constructor(code, message, status = null) {
     super(message);
@@ -42,7 +40,6 @@ let cachedApiBaseUrl = null;
  * Validates and normalizes the public environment URL without exposing a hard-coded server.
  * buildApiUrl calls it for every outgoing request; only a valid result is cached so a
  * misconfigured environment keeps producing the clear configuration error.
- * Read aloud: “get A-P-I base U-R-L.”
  */
 function getApiBaseUrl() {
   if (cachedApiBaseUrl) {
@@ -78,7 +75,6 @@ function getApiBaseUrl() {
 /**
  * Joins one API path to the validated base URL with exactly one path separator.
  * requestJson uses it immediately before fetch.
- * Read aloud: “build A-P-I U-R-L.”
  */
 export function buildApiUrl(path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -88,7 +84,6 @@ export function buildApiUrl(path) {
 /**
  * Performs a cancellable, time-bounded request and returns both parsed data and response metadata.
  * Feature services use it to share transport behavior while classifying domain failures themselves.
- * Read aloud: “request J-S-O-N.”
  */
 export async function requestJson(path, options = {}) {
   const { signal, timeoutMs = REQUEST_TIMEOUT_MS, ...fetchOptions } = options;
@@ -167,7 +162,6 @@ export async function requestJson(path, options = {}) {
  *
  * Feature services call this once per protected request, before their own remaining checks, instead
  * of each repeating this same two-branch ladder with only its error messages changed.
- * Read aloud: “classify protected failure.”
  * @param {Response} response The fetch Response from a protected request.
  * @param {{token: string, service: string}} messages Domain-specific safe messages for each case.
  * @throws {ApiRequestError} Code `unauthorized` for 401/403, or `service` for 5xx.
@@ -186,7 +180,6 @@ export function classifyProtectedFailure(response, messages) {
  * Validates a `{ message: "Success", data: [...] }` list envelope and returns the raw array.
  * Every domain service still owns its own per-row normalization/validation on the returned array;
  * this only removes the repeated envelope-shape check that precedes it in four services.
- * Read aloud: “require success list.”
  * @param {unknown} responseData Parsed JSON body from a protected list request.
  * @param {string} message Domain-specific safe message for a malformed/missing envelope.
  * @returns {Array<unknown>} The envelope's `data` array.
@@ -204,7 +197,6 @@ export function requireSuccessList(responseData, message) {
  * Validates a `{ message: "Success", data: {...} }` single-object envelope and returns the record.
  * Every domain service still owns its own per-field coherence checks on the returned record; this
  * only removes the repeated envelope-shape check that precedes it in three services.
- * Read aloud: “require success object.”
  * @param {unknown} responseData Parsed JSON body from a protected single-object request.
  * @param {string} message Domain-specific safe message for a malformed/missing envelope.
  * @returns {object} The envelope's `data` record.
@@ -232,7 +224,6 @@ export function requireSuccessObject(responseData, message) {
  * (restaurant/product reads); role-specific requests keep their own dedicated precondition helper
  * (`requireCourierSession` in `orderService.js`, `requireAccountSession` in `accountService.js`),
  * since their role/ID checks are not identical to this one and to each other.
- * Read aloud: “require session.”
  * @param {string} tokenMessage Domain-specific safe message for a missing/unusable session.
  * @returns {Promise<object>} The current stored session.
  * @throws {ApiRequestError} Code `unauthorized` when no usable session is stored.

@@ -20,7 +20,6 @@ import { formatOrderDate } from '../utils/orderFormatting';
  * and renders everything from that already-validated list object — the backend provides no
  * per-order detail endpoint, so no request or storage read ever happens here. Only the required
  * wireframe fields appear; no customer/courier personal data beyond the delivery address is shown.
- * Read aloud: “delivery details modal.”
  */
 export default function DeliveryDetailsModal({ delivery, onClose, visible }) {
   const orderDate = delivery ? formatOrderDate(delivery.createdOn) : '';

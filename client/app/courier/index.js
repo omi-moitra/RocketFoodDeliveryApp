@@ -50,7 +50,6 @@ const LIST_STATUS = Object.freeze({
 
 /**
  * Converts a mutation failure into one user-safe message without exposing raw server details.
- * Read aloud: “mutation error message.”
  */
 function mutationErrorMessage(error) {
   if (error instanceof ApiRequestError) {
@@ -63,7 +62,6 @@ function mutationErrorMessage(error) {
 /**
  * Loads the courier's eligible deliveries on focus and drives status progression and details.
  * Expo Router renders it for the Order Delivery tab inside the courier layout.
- * Read aloud: “order delivery screen.”
  */
 export default function OrderDeliveryScreen() {
   const { handleUnauthorized, session } = useAuth();
@@ -107,7 +105,6 @@ export default function OrderDeliveryScreen() {
   /**
    * Applies a persisted mutation result to its row, then reconciles the whole list in the
    * background so eligibility recomputes from server state rather than an optimistic guess.
-   * Read aloud: “apply mutation success.”
    */
   function applyMutationSuccess(updatedDelivery) {
     setDeliveries((currentDeliveries) =>
@@ -124,7 +121,6 @@ export default function OrderDeliveryScreen() {
   /**
    * Runs one status mutation under the single-mutation lock, handling partial and failure states.
    * `runner` receives the abort signal and resolves with the persisted delivery.
-   * Read aloud: “run status mutation.”
    */
   async function runStatusMutation(orderId, runner) {
     // The ref lock closes the gap before React applies the updating state, so no second control
@@ -179,7 +175,6 @@ export default function OrderDeliveryScreen() {
 
   /**
    * Advances a delivery: accept a pending order, or mark the courier's in-progress order delivered.
-   * Read aloud: “handle advance status.”
    */
   function handleAdvanceStatus(delivery) {
     if (delivery.status === DELIVERY_STATUS.PENDING) {
@@ -194,7 +189,6 @@ export default function OrderDeliveryScreen() {
 
   /**
    * Recovers a partial acceptance by assigning the active courier to the already-in-progress order.
-   * Read aloud: “handle retry assignment.”
    */
   function handleRetryAssignment(delivery) {
     runStatusMutation(delivery.id, (signal) =>
@@ -204,7 +198,6 @@ export default function OrderDeliveryScreen() {
 
   /**
    * Opens the details modal with the exact validated delivery object from the pressed row.
-   * Read aloud: “handle view delivery.”
    */
   function handleViewDelivery(delivery) {
     if (selectedDelivery) {

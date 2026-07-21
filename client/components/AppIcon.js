@@ -1,7 +1,9 @@
 /**
  * File: AppIcon.js
  * Purpose: Renders every icon the app uses through the official FontAwesome SVG packages.
- * Contents: icon registry, AppIcon component.
+ * Contents:
+ * 1. icon registry
+ * 2. AppIcon component
  */
 
 import {
@@ -43,7 +45,6 @@ const ICONS_BY_NAME = Object.freeze({
  * Renders one registered FontAwesome icon as an SVG at the given color and size.
  * Screens use it instead of importing an icon library directly, so the icon backend
  * stays swappable in exactly one file.
- * Read aloud: “app icon.”
  */
 export default function AppIcon({ color, name, size }) {
   return <FontAwesomeIcon color={color} icon={ICONS_BY_NAME[name]} size={size} />;

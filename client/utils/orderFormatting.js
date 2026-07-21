@@ -1,7 +1,8 @@
 /**
  * File: orderFormatting.js
  * Purpose: Shares the project-wide order/delivery date display rule used by detail modals.
- * Contents: order-date formatter and its human-readable date formatting helper.
+ * Contents:
+ * 1. order-date formatter and its human-readable date formatting helper
  */
 
 // The project-wide order-date format ("July 15, 2026"). The wireframe leaves its sample date
@@ -16,7 +17,6 @@ export const ORDER_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
  * Formats a normalized ISO `createdOn` value as one documented human-readable date.
  * An unparseable value returns a safe blank so a detail modal never shows `Invalid Date`, `NaN`,
  * or a raw ISO string.
- * Read aloud: “format order date.”
  * @param {string} createdOn ISO date-time string from a normalized order or delivery object.
  * @returns {string} A value such as `July 15, 2026`, or an empty string when unparseable.
  */

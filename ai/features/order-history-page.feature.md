@@ -332,7 +332,7 @@ ready → modal-open → ready
 
 ### Wireframe Composition
 
-- Treat the `Order History` page in `support_materials_13/Design/Wireframe.pdf` as the visual source.
+- Treat the `Order History` page in `client/docs/m13/design/Wireframe.pdf` as the visual source.
 - Preserve this hierarchy inside the shared authenticated frame:
   1. `MY ORDERS` heading.
   2. Charcoal table-header band with white `ORDER`, `STATUS`, and `VIEW` labels.

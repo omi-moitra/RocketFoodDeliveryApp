@@ -36,7 +36,6 @@ const RESULT_MESSAGES = Object.freeze({
  * Renders one accessible opt-in checkbox row built from primitives (no checkbox dependency).
  * The checked state is shown by a filled box plus a check mark, so it is distinct without relying
  * on color alone; the whole row is one touch target that toggles exactly one choice.
- * Read aloud: “notification checkbox.”
  */
 function NotificationCheckbox({ accessibilityLabel, checked, disabled, label, onToggle }) {
   return (
@@ -63,7 +62,6 @@ function NotificationCheckbox({ accessibilityLabel, checked, disabled, label, on
  * Shows the accurate positive-quantity selection and owns one order submission at a time.
  * RestaurantMenuScreen controls `visible` and the selection; the modal reports a confirmed
  * order back through `onOrderCreated` when the customer closes the success state.
- * Read aloud: “order confirmation modal.”
  */
 export default function OrderConfirmationModal({
   onClose,
@@ -119,7 +117,6 @@ export default function OrderConfirmationModal({
   /**
    * Validates preconditions, submits exactly one create-order request, and resolves the state.
    * The Confirm Order button calls it in the idle and error states.
-   * Read aloud: “handle confirm order.”
    */
   async function handleConfirmOrder() {
     // The guard lives in the handler, not only in the disabled prop, so a stale enabled button
@@ -201,7 +198,6 @@ export default function OrderConfirmationModal({
    * Applies the per-state close contract shared by the X control and the Android back action.
    * Closing from success notifies the host so the menu resets quantities; every other state
    * preserves the menu selection, and a pending request is aborted best-effort.
-   * Read aloud: “handle close.”
    */
   function handleClose() {
     const wasOrderCreated = submissionState === SUBMISSION_STATE.SUCCESS;

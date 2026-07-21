@@ -27,7 +27,6 @@ import { normalizeBaseOrderProduct, ORDER_ERROR_MESSAGES } from './orderShared';
 /**
  * Maps a verified backend status spelling to its internal token, or null when unrecognized.
  * Comparison is case- and whitespace-tolerant only for the three allowlisted spellings.
- * Read aloud: “normalize delivery status.”
  */
 function normalizeDeliveryStatus(rawStatus) {
   if (typeof rawStatus !== 'string') {
@@ -45,7 +44,6 @@ function normalizeDeliveryStatus(rawStatus) {
  * Unlike the customer history product, the courier Delivery Details modal shows the per-item
  * `unit_cost`, so this normalizer maps and validates it in addition to the line total.
  * Returns null for a malformed entry so the caller can exclude the whole delivery.
- * Read aloud: “normalize delivery product.”
  */
 function normalizeDeliveryProduct(rawProduct) {
   const base = normalizeBaseOrderProduct(rawProduct);
@@ -68,7 +66,6 @@ function normalizeDeliveryProduct(rawProduct) {
  * The backend has no per-order details endpoint, so the Delivery Details modal renders entirely
  * from this normalized list object. A row with an unsupported status or malformed data returns
  * null so the caller can exclude it rather than render `undefined` or a guessed status.
- * Read aloud: “normalize courier delivery.”
  */
 function normalizeCourierDelivery(rawOrder) {
   if (!rawOrder || typeof rawOrder !== 'object' || Array.isArray(rawOrder)) {
@@ -145,7 +142,6 @@ function normalizeCourierDelivery(rawOrder) {
  * Validates one `{ message: "Success", data: [...] }` list envelope and normalizes its rows.
  * fetchCourierDeliveries calls it for both the pending and courier-scoped responses.
  * A valid empty array is legitimate and returns []; a malformed envelope is a response error.
- * Read aloud: “normalize delivery list.”
  */
 function normalizeDeliveryList(responseData) {
   const rawDeliveries = requireSuccessList(responseData, ORDER_ERROR_MESSAGES.response);
@@ -156,7 +152,6 @@ function normalizeDeliveryList(responseData) {
 /**
  * Performs one authenticated delivery-list GET and classifies its failures for the caller.
  * fetchCourierDeliveries uses it for the pending and courier-scoped endpoints under one session.
- * Read aloud: “request delivery list.”
  */
 async function requestDeliveryList(path, session, signal) {
   const { data, response } = await requestJson(path, {
@@ -180,7 +175,6 @@ async function requestDeliveryList(path, session, signal) {
  * request time, never from props or route parameters, and `courierId` (never `userId`) scopes the
  * courier query. Results are merged, deduplicated by order ID, and ownership-filtered so another
  * courier's assigned order can never render even if stale upstream data reaches the client.
- * Read aloud: “fetch courier deliveries.”
  * @param {{signal?: AbortSignal}} [options]
  * @returns {Promise<Array<object>>} Eligible normalized deliveries; [] when none are available.
  * @throws {ApiRequestError} Codes: `unauthorized`, `service`, `response`, `connection`, `aborted`.
@@ -239,7 +233,6 @@ export async function fetchCourierDeliveries({ signal } = {}) {
 /**
  * Reads a validated active courier session or throws the shared unauthorized failure.
  * The status-mutation functions call it so courier identity stays at the service boundary.
- * Read aloud: “require courier session.”
  */
 async function requireCourierSession() {
   const session = await getStoredSession();
@@ -254,7 +247,6 @@ async function requireCourierSession() {
 
 /**
  * Classifies a non-2xx mutation response into the shared error codes, or returns for success.
- * Read aloud: “throw for mutation failure.”
  */
 function throwForMutationFailure(response) {
   classifyProtectedFailure(response, ORDER_ERROR_MESSAGES);
@@ -271,7 +263,6 @@ function throwForMutationFailure(response) {
 /**
  * Validates the single-object `{ message: "Success", data }` envelope and normalizes the order.
  * Every mutation returns the persisted order, so the screen renders reconciled state, not a guess.
- * Read aloud: “normalize updated delivery.”
  */
 function normalizeUpdatedDelivery(responseData) {
   const rawOrder = requireSuccessObject(responseData, ORDER_ERROR_MESSAGES.response);
@@ -290,7 +281,6 @@ function normalizeUpdatedDelivery(responseData) {
  * delivery's own `restaurantId`, `customerId`, and current `restaurantRating` and changes only the
  * status. The rating is preserved because the order response now exposes it (courier is not part of
  * the broad body, so the assignment is untouched).
- * Read aloud: “put order status update.”
  */
 async function putOrderStatusUpdate(delivery, statusId, session, signal) {
   const { data, response } = await requestJson(
@@ -317,7 +307,6 @@ async function putOrderStatusUpdate(delivery, statusId, session, signal) {
 
 /**
  * Assigns the given courier to the order through the existing assignment endpoint.
- * Read aloud: “put order courier.”
  */
 async function putOrderCourier(orderId, courierId, session, signal) {
   const { data, response } = await requestJson(
@@ -342,7 +331,6 @@ async function putOrderCourier(orderId, courierId, session, signal) {
  * The order is confirmed business sequence (status ID 2, then assignment). If the status update
  * succeeds but assignment fails, a `partial` error carrying `orderId` is thrown so the screen can
  * offer a retry-assignment recovery instead of losing the order or claiming acceptance succeeded.
- * Read aloud: “accept delivery.”
  * @param {{delivery: object, signal?: AbortSignal}} options
  * @returns {Promise<object>} The persisted, assigned in-progress delivery.
  * @throws {ApiRequestError} Codes: `unauthorized`, `invalid`, `notFound`, `service`, `response`,
@@ -384,7 +372,6 @@ export async function acceptDelivery({ delivery, signal }) {
 
 /**
  * Recovery for a partial acceptance: assign the active courier to an order already at status 2.
- * Read aloud: “assign active courier.”
  * @param {{orderId: number, signal?: AbortSignal}} options
  * @returns {Promise<object>} The persisted, now-assigned in-progress delivery.
  */
@@ -403,7 +390,6 @@ export async function assignActiveCourier({ orderId, signal }) {
  * Completes the active courier's in-progress delivery by persisting status DELIVERED (ID 3).
  * Only an in-progress delivery owned by the active courier may advance; the courier is not
  * reassigned because the status-only endpoint leaves the existing assignment untouched.
- * Read aloud: “mark delivered.”
  * @param {{delivery: object, signal?: AbortSignal}} options
  * @returns {Promise<object>} The persisted delivered delivery.
  */

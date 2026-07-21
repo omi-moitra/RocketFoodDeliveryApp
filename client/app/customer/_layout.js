@@ -1,7 +1,10 @@
 /**
  * File: _layout.js
  * Purpose: Configures the shared authenticated tab shell for the Customer role.
- * Contents: imports, initial-route setting, customer tabs layout.
+ * Contents:
+ * 1. imports
+ * 2. initial-route setting
+ * 3. customer tabs layout
  */
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -39,7 +42,6 @@ const CUSTOMER_TAB_SCREENS = [
  * Defines the authenticated Restaurants, Order History, and Account tabs.
  * Expo Router loads it for every route inside the customer folder; the shared header, tab-bar
  * styling, and active-icon presentation live in the reusable `RoleTabsLayout`.
- * Read aloud: “customer tabs layout.”
  */
 export default function CustomerTabsLayout() {
   const { session } = useAuth();

@@ -18,7 +18,6 @@ import { formatOrderDate } from '../utils/orderFormatting';
  * The host page owns `visible` and the selected order; this component is presentation-only and
  * renders everything from that already-validated list object — the backend provides no
  * per-order detail endpoint, so no request or storage read ever happens here.
- * Read aloud: “order history modal.”
  */
 export default function OrderHistoryModal({ onClose, order, visible }) {
   const orderDate = order ? formatOrderDate(order.createdOn) : '';

@@ -55,7 +55,7 @@ Every menu must match the supplied Restaurant Menu wireframe and use the same su
 - Use of the existing API success envelope and exact snake_case response keys.
 - Display of the selected restaurant's name, price range, and rating.
 - Display of every returned product's name, description, formatted price, static menu image, quantity, minus button, and plus button.
-- Copying `support_materials_13/Images/RestaurantMenu.jpg` to the approved runtime client asset path while preserving the support-material original.
+- Using the supplied `RestaurantMenu.jpg` through its verified runtime owner at `client/assets/RestaurantMenu.jpg`.
 - Initial quantity `0` for every product.
 - Button-only quantity changes in integer steps of one.
 - A hard zero floor; quantities can never be negative.
@@ -82,7 +82,7 @@ Every menu must match the supplied Restaurant Menu wireframe and use the same su
 - Product search, sorting, categories, favorites, dietary filters, customizations, notes, inventory, or maximum-stock rules not supplied by the API.
 - Separate product images, remote image URLs, or generated menu images.
 - Passing the access token, customer ID, full restaurant object, product array, or quantity map in route parameters.
-- Deleting `support_materials_13/Images/RestaurantMenu.jpg`; the earlier deletion instruction applies only to the six Restaurant List images.
+- Deleting or replacing `client/assets/RestaurantMenu.jpg`, the byte-identical port of the supplied image.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
@@ -182,9 +182,9 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 ### Requirement F — Static Menu Image Asset
 
 - Use the supplied file named exactly `RestaurantMenu.jpg` for every restaurant menu/product image shown by this feature.
-- Copy it from `support_materials_13/Images/RestaurantMenu.jpg` to `client/assets/RestaurantMenu.jpg` or another approved runtime client path that preserves the exact filename.
-- Verify the destination exists, is readable, and renders before considering the asset migration complete.
-- Preserve `support_materials_13/Images/RestaurantMenu.jpg` unchanged; do not delete it.
+- Keep it at `client/assets/RestaurantMenu.jpg`, the verified byte-identical runtime port that preserves the exact filename.
+- Verify the runtime asset exists, is readable, and renders before considering the asset requirement complete.
+- Do not replace, recompress, rename, or delete `client/assets/RestaurantMenu.jpg`; the former duplicate source directory was intentionally consolidated.
 - Register the runtime image with a static React Native `require(...)`; do not construct a dynamic string path.
 - The source file has a `.jpg` filename even though local inspection reports PNG image data. Do not recompress, rename, or change the extension merely to normalize it; verify Expo bundles and renders the supplied file as-is.
 - Render the same image in every product row, matching the repeated-image treatment in the Restaurant Menu wireframe.
@@ -192,7 +192,7 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 
 ### Requirement G — Menu Layout and Product Rows
 
-- Match the Restaurant Menu / Order Page in `support_materials_13/Design/Wireframe.pdf`.
+- Match the Restaurant Menu / Order Page in `client/docs/m13/design/Wireframe.pdf`.
 - Display the page heading exactly `RESTAURANT MENU`.
 - Display the selected restaurant's name, price range, and rating near the top.
 - Place the Create Order button in the restaurant-summary area as shown by the wireframe.
@@ -489,7 +489,7 @@ ready → confirmation-open → ready
 
 ### Wireframe Composition
 
-- Treat the Restaurant Menu / Order Page in `support_materials_13/Design/Wireframe.pdf` as the visual source.
+- Treat the Restaurant Menu / Order Page in `client/docs/m13/design/Wireframe.pdf` as the visual source.
 - Preserve this hierarchy inside the shared authenticated frame:
   1. `RESTAURANT MENU` heading.
   2. Restaurant name, Price, and Rating summary.
@@ -584,7 +584,7 @@ ready → confirmation-open → ready
 - [x] `RESTAURANT MENU`, restaurant name, price range, and rating display accurately.
 - [x] Every product displays name, safe description, correctly formatted price, image, and controls.
 - [x] `client/assets/RestaurantMenu.jpg` or the approved runtime equivalent exists and renders for every product row.
-- [x] The support original `support_materials_13/Images/RestaurantMenu.jpg` remains unchanged and present.
+- [x] `client/assets/RestaurantMenu.jpg` remains present and byte-identical to the supplied original recorded in Git history.
 - [x] Long product lists and wrapped content remain scrollable between the persistent header/footer.
 
 ### Quantities and Create Order
@@ -643,7 +643,7 @@ This feature is complete only when:
 - Keep quantity state keyed by product ID and use functional updates.
 - Enforce the zero floor inside the handler even when the minus button is visually disabled.
 - Opening Order Confirmation and submitting the order are separate state transitions owned by separate feature specifications.
-- Preserve `support_materials_13/Images/RestaurantMenu.jpg`; the copy-verify-delete override applies only to the six Restaurant List images.
+- Preserve `client/assets/RestaurantMenu.jpg`; Git provenance confirms it is the byte-identical runtime owner of the supplied file.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes an endpoint, field, currency rule, or lifecycle behavior, update this feature spec before continuing.
 

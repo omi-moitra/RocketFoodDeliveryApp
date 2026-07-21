@@ -83,7 +83,7 @@ The shared frame must remain visible across the Restaurant List, Restaurant Menu
 - New backend endpoints, logout endpoints, token revocation, or Java server changes.
 - Additional footer tabs, drawer navigation, a floating navigation bar, or role-specific navigation.
 - A page title, search field, profile menu, avatar, notification control, or any other ungraded header action.
-- Replacing or editing the original files under `support_materials_13/`.
+- Replacing or editing the supplied references under `client/docs/m13/` or verified branding assets under `client/assets/`.
 - Approximate brand colors, unapproved logos, emoji icons, or newly invented branding.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
@@ -94,8 +94,8 @@ The shared frame must remain visible across the Restaurant List, Restaurant Menu
 
 - Render one shared header throughout the authenticated customer area.
 - Display the supplied Rocket Food Delivery logo in the header.
-- Use `support_materials_13/Images/AppLogoV1.png` as the default header source because it is the compact horizontal supplied logo.
-- Copy the approved runtime logo into the client asset location; do not load it at runtime from `support_materials_13/`.
+- Use `client/assets/app-logo.png`, the byte-identical runtime port of supplied `AppLogoV1.png`, as the default header source because it is the compact horizontal logo.
+- Load the logo only from that static runtime asset; the former duplicate support-material directory was intentionally consolidated.
 - Preserve the logo's aspect ratio; do not stretch, crop, recolor, redraw, or replace it with text.
 - Display a visible button with the exact label `Log Out`.
 - Keep the logo and Log Out button usable on narrow screens without overlap or horizontal clipping.
@@ -306,10 +306,9 @@ This feature creates no endpoint and makes no logout request. The supplied backe
 
 ### Supplied Assets
 
-- Original logo files remain unchanged under `support_materials_13/Images/`.
-- The default header source is the supplied compact horizontal `AppLogoV1.png` (`594 × 163`, transparent PNG).
-- Copy the chosen file into the client runtime asset structure and use that copy consistently for the header.
-- `AppLogoV2.png` is a taller supplied variation and must not be substituted casually where it causes the header to grow or content to clip.
+- `client/assets/app-logo.png` remains the byte-identical port of the supplied compact horizontal `AppLogoV1.png` (`594 × 163`, transparent PNG).
+- Use that runtime asset consistently for the header.
+- `client/assets/login-logo.png` is the byte-identical port of the taller supplied `AppLogoV2.png` variation and must not be substituted casually where it causes the header to grow or content to clip.
 - If the approved logo choice changes after direct wireframe/coach review, update this specification and every runtime reference together.
 
 ### Exact Palette
@@ -421,7 +420,7 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 ### Layout, Visual, and Platform Verification
 
 - [x] Header/footer colors use exact centralized values from the supplied palette.
-- [ ] The implementation is compared side by side with `support_materials_13/Design/Wireframe.pdf`.
+- [ ] The implementation is compared side by side with `client/docs/m13/design/Wireframe.pdf`.
 - [x] Top and bottom safe areas are respected on iOS and Android.
 - [x] Header and footer do not cover the first or last page content.
 - [x] Long Restaurant List, Restaurant Menu, and Order History content remains scrollable and reachable.

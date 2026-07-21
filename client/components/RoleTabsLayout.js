@@ -2,7 +2,11 @@
  * File: RoleTabsLayout.js
  * Purpose: Renders the shared authenticated tab shell (header, tab bar styling, active icon
  *          indicator) used identically by the Customer and Courier tab layouts.
- * Contents: imports, tab icon helper, role tabs layout component, shared tab styles.
+ * Contents:
+ * 1. imports
+ * 2. tab icon helper
+ * 3. role tabs layout component
+ * 4. shared tab styles
  */
 
 import { Redirect, Tabs } from 'expo-router';
@@ -15,7 +19,6 @@ import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 /**
  * Renders one footer icon and its highlighted background when its tab is active.
  * RoleTabsLayout uses it for every registered tab screen.
- * Read aloud: “tab icon.”
  */
 function TabIcon({ color, focused, name, size }) {
   return (
@@ -31,7 +34,6 @@ function TabIcon({ color, focused, name, size }) {
  * `isAuthorized` guard and role-specific `screens` descriptor list, then delegates every
  * identical header/style/tab-bar concern here. `unstable_settings`/route names/guard logic stay in
  * each wrapper because Expo Router reads `unstable_settings` from the route file itself.
- * Read aloud: “role tabs layout.”
  * @param {{isAuthorized: boolean, screens: Array<{name: string, title: string, iconName: string, accessibilityLabel: string}>}} props
  */
 export default function RoleTabsLayout({ isAuthorized, screens }) {

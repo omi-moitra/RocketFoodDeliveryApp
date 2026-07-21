@@ -74,7 +74,7 @@ The initial Restaurants view must have neither filter selected and must request 
 - Free-text search, sorting, favorites, pagination, maps, distance calculation, cuisine filtering, or additional filter types.
 - Uploading restaurant images or requiring image URLs from the restaurant API.
 - Passing the JWT, customer ID, complete restaurant object, or image object through route parameters.
-- Importing runtime images directly from `support_materials_13/`, or deleting a source image before its runtime copy has been verified.
+- Reintroducing the obsolete duplicate support-material image directory or deleting a verified runtime image under `client/images/restaurants/`.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
@@ -163,7 +163,7 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 
 ### Requirement H — Restaurant Grid and Card Content
 
-- Match the `Restaurants Page` wireframes in `support_materials_13/Design/Wireframe.pdf`.
+- Match the `Restaurants Page` wireframes in `client/docs/m13/design/Wireframe.pdf`.
 - Display the page heading `NEARBY RESTAURANTS`.
 - Display the subsection heading `RESTAURANTS` below the filter row.
 - Render restaurant cards in a responsive two-column grid at normal phone widths, with consistent gutters and card dimensions.
@@ -178,15 +178,15 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 
 ### Requirement I — Supplied Restaurant Images
 
-- Copy the six supplied images from `support_materials_13/Images/Restaurants/` to the graded runtime path `client/images/restaurants/` before implementation is considered complete:
+- Keep the six supplied, byte-verified images at the graded runtime path `client/images/restaurants/`:
   - `cuisineGreek.jpg`
   - `cuisineJapanese.jpg`
   - `cuisinePasta.jpg`
   - `cuisinePizza.jpg`
   - `cuisineSoutheast.jpg`
   - `cuisineViet.jpg`
-- After all six files have been copied successfully, verify that every destination file exists, is readable, and matches its source filename; then delete the six originals from `support_materials_13/Images/Restaurants/`.
-- Never delete a source image when its destination copy is missing, unreadable, incomplete, or named incorrectly.
+- Git provenance confirms these runtime files are byte-identical to the former supplied originals. Verify every file remains present, readable, and correctly named; do not recreate the intentionally removed duplicate source directory.
+- Never delete a runtime image when its use is still registered in `client/constants/restaurantImages.js`.
 - Use static local `require(...)` entries or an equivalent React Native-compatible image registry; do not build dynamic string paths for `require`.
 - The source permits any supplied restaurant image to be assigned to a card. Make the assignment stable for a restaurant during the current session/list lifecycle, preferably through a deterministic function of the restaurant ID, so rerenders and filter changes do not cause visible image flicker.
 - Use an image resize mode and card crop consistent with the wireframe without stretching the source image.
@@ -422,7 +422,7 @@ idle → loading → success
 
 ### Wireframe Composition
 
-- Treat `support_materials_13/Design/Wireframe.pdf`, Restaurants Page without filter and with filter, as the visual source.
+- Treat `client/docs/m13/design/Wireframe.pdf`, Restaurants Page without filter and with filter, as the visual source.
 - Preserve this top-to-bottom hierarchy inside the shared authenticated frame:
   1. `NEARBY RESTAURANTS` heading.
   2. Side-by-side Rating and Price controls.
@@ -485,7 +485,7 @@ idle → loading → success
 - Use React Native components; do not render browser-only React Bootstrap DOM components in the native screen.
 - Use `FlatList` or an equivalent virtualized native list for the two-column grid.
 - Use centralized theme values and supplied assets only.
-- Copy the six restaurant images to `client/images/restaurants/`, verify the destination files, and then delete their originals from `support_materials_13/Images/Restaurants/`; do not delete first or remove other support materials.
+- Retain and verify the six byte-identical restaurant images under `client/images/restaurants/`; do not recreate their deliberately removed duplicate source directory.
 - Keep screen, service, image-registry, and component responsibilities separate enough to test without introducing an unrequested state library or architecture layer.
 - Follow Requirement M and the global file-header, per-file TOC, naming, comment, logging, secret, and error-handling rules.
 - Do not modify `server/` for this Module 13 feature.
@@ -517,7 +517,7 @@ idle → loading → success
 
 - [x] Results render in a responsive two-column, scrollable grid implementing the supplied Restaurants wireframe structure.
 - [x] Each card displays a stable supplied image, restaurant name, correct price symbols, and correct rating/unrated presentation.
-- [x] All six supplied restaurant images exist and are readable under `client/images/restaurants/`, and their six originals are absent from `support_materials_13/Images/Restaurants/` after the verified move.
+- [x] All six supplied restaurant images exist and are readable under `client/images/restaurants/`; Git provenance confirms they match the former originals byte-for-byte.
 - [x] The restaurant image is an accessible press target.
 - [x] Pressing an image opens exactly one Menu route for that restaurant's API `id`.
 - [x] No token, customer ID, array index, or full restaurant object is passed as the Menu route identifier.

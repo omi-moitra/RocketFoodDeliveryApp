@@ -30,7 +30,6 @@ export const ACCOUNT_ERROR_MESSAGES = Object.freeze({
  * Reads a validated account session for the expected role, or throws the shared unauthorized error.
  * Returns the session plus the resolved `userId` (path scope) and matching `roleId` (ownership).
  * The account path always uses `userId`; the role ID only validates nested ownership.
- * Read aloud: “require account session.”
  */
 async function requireAccountSession(expectedRole) {
   const session = await getStoredSession();
@@ -54,7 +53,6 @@ async function requireAccountSession(expectedRole) {
 
 /**
  * Classifies a non-2xx account response into the shared error codes, or returns for success.
- * Read aloud: “throw for account failure.”
  */
 function throwForAccountFailure(response) {
   classifyProtectedFailure(response, ACCOUNT_ERROR_MESSAGES);
@@ -76,7 +74,6 @@ function throwForAccountFailure(response) {
  * Validates the `{ message: "Success", data: ApiAccountDTO }` envelope and selects the active role.
  * Confirms the top-level user ID and the nested role ID match the session before exposing data, so
  * a mismatched or malformed response fails closed rather than leaking another role's values.
- * Read aloud: “normalize account.”
  */
 function normalizeAccount(responseData, userId, role, roleId) {
   const account = requireSuccessObject(responseData, ACCOUNT_ERROR_MESSAGES.response);
@@ -105,7 +102,6 @@ function normalizeAccount(responseData, userId, role, roleId) {
  * Loads the authenticated user's account and returns only the active role's editable details.
  * The path is scoped by the stored `userId` with the official `type` query; the token and identity
  * are read from the shared session boundary at request time, never from props or route parameters.
- * Read aloud: “fetch account.”
  * @param {{expectedRole: 'customer'|'courier', signal?: AbortSignal}} options
  * @returns {Promise<{userId:number, primaryEmail:string, role:string, roleId:number, roleEmail:string, rolePhone:string}>}
  * @throws {ApiRequestError} Codes: `unauthorized`, `notFound`, `service`, `response`, `connection`, `aborted`.
@@ -131,7 +127,6 @@ export async function fetchAccount({ expectedRole, signal }) {
  * shape ({ account_type, account_email, account_phone }). The primary user email is never sent.
  * Returns the authoritative normalized account from the response, so drafts are never trusted as
  * proof of persistence.
- * Read aloud: “update account.”
  * @param {{expectedRole:'customer'|'courier', email:string, phone:string, signal?:AbortSignal}} options
  * @returns {Promise<object>} The persisted normalized account.
  * @throws {ApiRequestError} Codes: `unauthorized`, `invalid`, `notFound`, `service`, `response`, `connection`, `aborted`.

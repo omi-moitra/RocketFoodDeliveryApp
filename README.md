@@ -70,10 +70,11 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   ├── components/             # Reusable interface components and modals
 │   ├── constants/              # Theme, assets, labels, and currency rules
 │   ├── contexts/               # Authentication/session context
+│   ├── docs/                   # Supplied M13/M14 design references
 │   ├── images/restaurants/     # Six bundled restaurant images
 │   ├── services/               # API requests and response validation
 │   ├── storage/                # AsyncStorage session boundary
-│   ├── utils/                  # Menu, label, and validation helpers
+│   ├── utils/                  # Pure helpers and focused client unit tests
 │   ├── .env.example            # Safe client environment template
 │   ├── app.json                # Expo application configuration
 │   ├── package.json            # Client scripts and dependencies
@@ -85,11 +86,11 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   └── pom.xml                 # Java and Spring dependencies
 ├── scripts/ngrok-phone.sh           # Physical-phone API tunnel helper
 ├── ai/                              # Project rules and feature specifications
-├── support_materials_13/            # Supplied wireframes, palette, and images
+├── Concepts/M13/                    # Module 13 concepts and code references
+├── docVault/                        # Research and implementation audit documents
 ├── LeetCode-Challenges/              # Required SQL challenge solution screenshots
 ├── PostmanCollection.json           # Importable mobile API request collection
-├── CONCEPTS.md                      # Three project concepts and code references
-└── RESEARCH.md                      # Required mobile-development research
+└── README.md                        # Setup, API, verification, and project overview
 ```
 
 The mobile route hierarchy is:
@@ -97,12 +98,17 @@ The mobile route hierarchy is:
 ```text
 Root Stack
 ├── Login
-└── Customer Tabs
-    ├── Restaurants
-    │   └── Restaurant Stack
-    │       ├── Restaurant List
-    │       └── Restaurant Menu
-    └── Order History
+├── Account Selection
+├── Customer Tabs
+│   ├── Restaurants
+│   │   └── Restaurant Stack
+│   │       ├── Restaurant List
+│   │       └── Restaurant Menu
+│   ├── Order History
+│   └── Account
+└── Courier Tabs
+    ├── Order Delivery
+    └── Account
 ```
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
@@ -410,14 +416,14 @@ npx expo-doctor
 npm install
 ```
 
-The completed manual QA covers the customer journey on iOS and Android: login and persistence, navigation, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, keyboard behavior, and restart behavior.
+Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL, and login plus the initial authenticated app view succeeded. The complete customer/courier journeys, Android, persistence/restart, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, and keyboard behavior remain pending manual verification.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Related documentation
 
-- [CONCEPTS.md](CONCEPTS.md) explains mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
-- [RESEARCH.md](RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
+- [Module 13 concepts](Concepts/M13/CONCEPTS.md) explain mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
+- [Research](docVault/RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
 - [ai/ai-spec.md](ai/ai-spec.md) records repository-wide implementation rules and decisions.
 - [`ai/features/`](ai/features/) contains the feature-level behavior contracts.
 

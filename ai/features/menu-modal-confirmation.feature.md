@@ -344,7 +344,7 @@ idle → processing → success
 
 ### Wireframe Composition
 
-- Treat the `Order Confirmation`, `Order Confirmation (processing)`, `Order Confirmation (success)`, and `Order Confirmation (failure)` pages in `support_materials_13/Design/Wireframe.pdf` as the visual source for all four states.
+- Treat the `Order Confirmation`, `Order Confirmation (processing)`, `Order Confirmation (success)`, and `Order Confirmation (failure)` pages in `client/docs/m13/design/Wireframe.pdf` as the visual source for all four states.
 - The modal is a centered white rounded panel over a dimmed Restaurant Menu; the shared header and footer remain visible but inert behind the backdrop.
 - Panel hierarchy:
   1. Charcoal header band with the `Order Confirmation` title (white, Oswald) and a white X close control on the right.

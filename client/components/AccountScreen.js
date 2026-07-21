@@ -58,7 +58,6 @@ const SAVE_STATUS = Object.freeze({
  * Renders the shared Account Settings experience for one validated active role.
  * The Customer and Courier route wrappers pass their `expectedRole`; the service verifies it
  * against the active session and returns only that role's editable email and phone.
- * Read aloud: “account screen.”
  * @param {{expectedRole: 'customer'|'courier'}} props
  */
 export default function AccountScreen({ expectedRole }) {
@@ -196,7 +195,6 @@ export default function AccountScreen({ expectedRole }) {
   /**
    * Validates locally, then saves the active role's email/phone and reloads authoritative values.
    * Duplicate saves are blocked; drafts are preserved on a retryable failure.
-   * Read aloud: “handle save.”
    */
   async function handleSave() {
     if (saveLockRef.current || !isDirty) {

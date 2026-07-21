@@ -1,7 +1,10 @@
 /**
  * File: selection.js
  * Purpose: Lets a dual-role user choose Customer or Courier before any role app opens.
- * Contents: imports, Account Selection screen behavior, wireframe styles.
+ * Contents:
+ * 1. imports
+ * 2. Account Selection screen behavior
+ * 3. wireframe styles
  */
 
 import { useRef, useState } from 'react';
@@ -28,7 +31,6 @@ const SELECTION_ERROR = 'Your selection could not be saved. Please try again.';
 /**
  * Renders the Customer/Courier choice and persists exactly one before its role app appears.
  * Expo Router exposes it only while a dual-role session has no active role selected.
- * Read aloud: “account selection screen.”
  */
 export default function AccountSelectionScreen() {
   const { selectRole, session } = useAuth();
@@ -49,7 +51,6 @@ export default function AccountSelectionScreen() {
   /**
    * Persists one role choice, ignoring duplicate taps while a write is in flight.
    * Both role buttons call it; the root guard swaps to the chosen tree once storage succeeds.
-   * Read aloud: “handle select role.”
    */
   async function handleSelectRole(role) {
     if (submissionLockRef.current) {

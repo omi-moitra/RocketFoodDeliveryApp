@@ -1,7 +1,11 @@
 /**
  * File: theme.js
  * Purpose: Centralizes the exact shared palette, typography, spacing, and layout values.
- * Contents: colors, font families, spacing scale, shared layout dimensions.
+ * Contents:
+ * 1. colors
+ * 2. font families
+ * 3. spacing scale
+ * 4. shared layout dimensions
  */
 
 import { Platform } from 'react-native';

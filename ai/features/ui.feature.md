@@ -475,7 +475,7 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 - [x] `npm ls --depth=0` reports no invalid dependency.
 - [x] `npx expo config --type public` succeeds without secrets.
 - [x] Android and iOS Expo exports succeed and generated output is removed.
-- [ ] Representative iOS/Android manual checks are recorded honestly.
+- [ ] Representative iOS/Android manual checks are recorded honestly. (2026-07-21 partial evidence: Expo Go on an iPhone 17 Pro Max iOS Simulator, using the ngrok-backed API URL, opened successfully and completed login plus the initial authenticated app view. Full iOS journeys and Android remain pending.)
 - [ ] Final diff contains no unselected dependency/asset, backend edit, secret/live URL, private log, generated output, or unrelated change.
 
 Claude must leave criteria unchecked until current evidence supports them. Static inspection/export cannot prove visual fidelity, native scrolling, keyboard behavior, accessibility, or cross-platform font rendering.

@@ -2,7 +2,8 @@
  * File: useProtectedFocusList.js
  * Purpose: Owns the shared focus-driven load/refresh lifecycle used identically by the Customer
  *          Order History and Courier Order Delivery list screens.
- * Contents: protected focus-list hook.
+ * Contents:
+ * 1. protected focus-list hook
  */
 
 import { useCallback, useRef, useState } from 'react';
@@ -15,7 +16,6 @@ import { ApiRequestError } from '../services/apiClient';
  * Both list screens instantiate this with their own `fetchItems` call; a screen's own additional
  * state (for example Courier's in-flight mutation tracking) stays entirely in the screen and is
  * composed with this hook's returned `setItems`/`retry`, never merged into this shared lifecycle.
- * Read aloud: “use protected focus list.”
  * @param {{fetchItems: (options: {signal: AbortSignal}) => Promise<Array<object>>, handleUnauthorized: () => Promise<void>, session: object|null, messages: {connection: string, refresh: string, response: string}}} options
  * @returns {{items: Array<object>, setItems: Function, requestStatus: string, errorMessage: string, refreshErrorMessage: string, isRefreshing: boolean, hasRows: boolean, retry: () => void}}
  */
