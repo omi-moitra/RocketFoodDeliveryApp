@@ -245,6 +245,19 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 |---|---|---|---|
 | Implemented | Courier Delivery status progression | The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` (the order response) did **not** return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client could not read the current rating to round-trip it and would erase it by sending `null`. | Add `restaurant_rating` to the response DTO `ApiOrderDTO` (one field + one mapping line) so the client can read the current rating and echo it back through the **existing** broad `PUT /api/orders/{id}`. No new endpoint, DTO, or service method. |
 | Implemented (user-selected) | Account Details update | The grading sheet labels the account update as **POST `/api/account/{id}`**; the backend implements **PUT `/api/account/{id}?type=`**. A frontend-only PUT works but does not match the official verb/shape. | Add a **POST `/api/account/{id}`** endpoint using the official body shape `{ account_type, account_email, account_phone }` (existing scaffolded `ApiPostAccountDTO`), delegating to the same `updateAccount` service. The existing PUT is retained unchanged. GET stays frontend-only (the official `?type=` query is accepted and ignored). |
+| Implemented (user-selected, revised) | Order Confirmation notifications | The grading sheet requires **`sendSMS`/`sendEmail`**, while the original DTO exposed **`send_sms`/`send_email`**. | Make the official camelCase spellings canonical: Jackson derives `sendEmail` from the Java field and `@JsonProperty("sendSMS")` preserves the grading sheet's capitalized acronym for `sendSms`. Legacy snake-case notification keys are intentionally no longer accepted. |
+
+**Implemented change (canonical camelCase notification contract — user-selected revision)**
+
+- **Server change:** `dtos/order/ApiCreateOrderDTO.java` — `sendEmail` uses Jackson's default Java property name; `sendSms` carries `@JsonProperty("sendSMS")`. The previous snake-case `@JsonProperty` and camelCase `@JsonAlias` annotations were removed.
+- **Endpoint used:** the existing `POST /api/orders` (unchanged). The client sends the official camelCase `sendSMS`/`sendEmail` inside the one order-creation request; there is no separate notification request.
+- **Behavior:** request deserialization and DTO serialization both use `sendEmail` and `sendSMS`; both flags still default to `false` when absent.
+- **Why the earlier alias approach was revised:** aliases accepted the official input but kept snake case as the primary serialized contract. The revised mapping makes the grading-sheet names the API's actual canonical names instead of compatibility aliases.
+- **Compatibility impact:** callers using `send_email` or `send_sms` must migrate to camelCase. The database columns remain `send_email`/`send_sms`; this change affects only the HTTP JSON contract. No endpoint, schema, entity, service, or frontend change was required.
+- **Frontend integration:** UI state stays camelCase `sendSMS`/`sendEmail` in `OrderConfirmationModal`; `orderService.createOrder` transmits them with a strict `=== true` check so a non-boolean can never become an unintended opt-in. Both booleans travel in the order POST for all four combinations.
+- **Tests:** `order/ApiCreateOrderDTODeserializationTest` verifies camelCase input/output, ignored legacy snake-case input, and missing → false; `order/OrderApiControllerTest.testCreateOrder_AcceptsCamelCaseNotificationKeys` covers the controller request.
+- **Postman:** `PostmanCollection.json` has all four create-order combinations (neither, SMS only, email only, both) with camelCase keys.
+- **DBeaver / native:** persistence of both booleans and native checkbox interaction remain operator manual checks.
 
 **Implemented change (account POST endpoint — user-selected Option 3)**
 
@@ -302,7 +315,7 @@ The screen keeps the selected filter values in component state, shows a delibera
 
 ### Create an order
 
-After the customer chooses menu quantities and confirms the modal, the client sends the backend's snake-case request contract:
+After the customer chooses menu quantities and confirms the modal, the client sends the backend's mixed contract: existing order identifiers remain snake case, while the grading-sheet notification fields are canonical camelCase:
 
 ```json
 {
@@ -314,8 +327,8 @@ After the customer chooses menu quantities and confirms the modal, the client se
       "quantity": 2
     }
   ],
-  "send_email": false,
-  "send_sms": false
+  "sendEmail": false,
+  "sendSMS": false
 }
 ```
 

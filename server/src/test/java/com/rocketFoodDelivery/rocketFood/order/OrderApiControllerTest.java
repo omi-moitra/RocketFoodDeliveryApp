@@ -73,6 +73,22 @@ public class OrderApiControllerTest {
     }
 
     @Test
+    public void testCreateOrder_AcceptsCamelCaseNotificationKeys() throws Exception {
+        // The client sends the official camelCase notification keys; the endpoint must accept them
+        // (via @JsonAlias) and still create the order. False flags keep providers uninvoked.
+        String body = "{\"restaurant_id\":1,\"customer_id\":1,"
+                + "\"products\":[{\"id\":1,\"quantity\":1}],"
+                + "\"sendSMS\":false,\"sendEmail\":false}";
+
+        mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.id").exists())
+                .andExpect(jsonPath("$.data.status").value("pending"));
+    }
+
+    @Test
     public void testCreateOrder_Failure_InvalidData() throws Exception {
         ApiCreateOrderDTO request = new ApiCreateOrderDTO();
         request.setRestaurantId(999999);
