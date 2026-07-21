@@ -4,6 +4,14 @@
 
 <!-- Purpose: Explains native and cross-platform apps and compares React with React Native. Contents: two research topics and sources. -->
 
+## Table of Contents
+
+- [Native vs. Cross-Platform Mobile Applications](#native-vs-cross-platform-mobile-applications)
+- [React Native vs. React](#react-native-vs-react)
+- [Sources](#sources)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Native vs. Cross-Platform Mobile Applications
 
 A native mobile app is made for one specific operating system. For example, an iOS app can be built with Swift, while an Android app can be built with Kotlin or Java. If a company wants the same app on both iOS and Android, it usually needs two separate versions of the code.

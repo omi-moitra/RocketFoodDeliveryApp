@@ -15,6 +15,21 @@ The active Module 14 feature specifications are:
 
 Use one of those current-state specifications to understand project behavior. If another feature is introduced later, copy the structure below into a new descriptively named file and replace every prompt before treating it as an active contract.
 
+## Table of Contents
+
+- [Feature identity](#feature-identity)
+- [Goal](#goal)
+- [Implemented scope](#implemented-scope)
+- [Functional contract](#functional-contract)
+- [User flow](#user-flow)
+- [Interfaces](#interfaces)
+- [Data and validation](#data-and-validation)
+- [Decision record](#decision-record)
+- [Acceptance criteria](#acceptance-criteria)
+- [Verification boundary](#verification-boundary)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature identity
 
 - **Feature:**

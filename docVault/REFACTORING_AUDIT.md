@@ -7,6 +7,19 @@
 **Scope:** Tracked first-party client, M14-touched backend/API tests, configuration, and repository documentation  
 **Purpose:** Identify every evidence-backed refactoring opportunity currently visible without weakening a grading requirement
 
+## Table of Contents
+
+- [Executive conclusion](#executive-conclusion)
+- [Non-negotiable grading safeguards](#non-negotiable-grading-safeguards)
+- [Findings register](#findings-register)
+- [Areas that should remain unchanged](#areas-that-should-remain-unchanged)
+- [Suggested implementation batches](#suggested-implementation-batches)
+- [Test coverage to add before or alongside structural refactors](#test-coverage-to-add-before-or-alongside-structural-refactors)
+- [Audit evidence collected](#audit-evidence-collected)
+- [Definition of done for any selected refactor set](#definition-of-done-for-any-selected-refactor-set)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Executive conclusion
 
 The application is already organized around sensible boundaries: Expo routes, reusable components, domain services, one API client, centralized authentication/storage, shared theme/currency/validation utilities, and conventional Spring packages. The most valuable remaining work is not a rewrite. It is a focused cleanup of repeated role/list/modal/request code, inconsistent validation and unauthorized handling, stale comments/documentation, unused exports/dependencies, and missing automated client coverage.
