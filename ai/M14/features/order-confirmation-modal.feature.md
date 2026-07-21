@@ -48,7 +48,7 @@ This feature extends—not replaces—the working M13 Order Confirmation modal. 
 - Keep checkbox label, selected state, touch target, and screen-reader state clear on iOS/Android.
 - Freeze notification choices while submission is processing.
 - Pass the selected booleans to the existing `createOrder` service call.
-- Resolve the official camelCase versus current backend snake_case JSON discrepancy only after Claude presents options and the user selects one.
+- Use the user-selected canonical camelCase HTTP keys `sendSMS` and `sendEmail`; do not retain legacy snake-case notification aliases.
 - Include both booleans in every order-creation request, including the false/false case.
 - Keep notification choices within the same order POST; send no separate baseline notification request.
 - Preserve notification choices during a retryable failure.
@@ -94,7 +94,7 @@ No server file is authorized during initial contract analysis. Claude must first
 - Using the supplied Email Template for baseline work; it applies only to an explicitly approved Notify.EU extra mile.
 - Adding push notifications, phone/email editing, notification history, or saved notification preferences.
 - Changing product quantities, totals, currency rules, order-success copy, or menu behavior outside a demonstrated regression fix.
-- Replacing the existing order endpoint or breaking current snake_case consumers.
+- Replacing the existing order endpoint or changing unrelated order-request fields and consumers.
 - Implementing any backend option before the user selects it.
 - New checkbox dependencies when accessible React Native controls can be built from existing primitives/icons.
 - Broad refactors, unrelated backend work, secrets, generated output, or ignored-planning-file edits.
@@ -140,16 +140,16 @@ Official grading terminology requires these boolean fields in the order POST:
 }
 ```
 
-Current source maps these backend JSON properties:
+The backend now uses those same canonical JSON properties. The Java field `sendEmail` maps by default, while the Java field `sendSms` uses `@JsonProperty("sendSMS")` to preserve the capitalized acronym:
 
 ```json
 {
-  "send_sms": false,
-  "send_email": false
+  "sendSMS": false,
+  "sendEmail": false
 }
 ```
 
-Claude must verify actual live acceptance and then present the viable minimum-change options to the user. Include a frontend-only mapping option when viable and any source-grounded backward-compatible backend options. Do not assume which JSON spelling or compatibility approach the user will choose.
+This contract has been selected by the user. Legacy `send_sms` and `send_email` HTTP keys are intentionally unsupported; the database column names remain snake case and are unaffected.
 
 For every option, report:
 
@@ -279,18 +279,18 @@ Authorization: Bearer <accessToken>
 Content-Type: application/json
 ```
 
-Current `ApiCreateOrderDTO` uses `@JsonProperty("send_email")` and `@JsonProperty("send_sms")`, with primitive boolean defaults of false. `OrderService.createOrder` stores both flags, creates the order/products, then invokes backend notification services only when the corresponding stored request flag is true.
+Current `ApiCreateOrderDTO` uses Jackson's default `sendEmail` name and `@JsonProperty("sendSMS")` on the Java `sendSms` field, with primitive boolean defaults of false. `OrderService.createOrder` stores both flags, creates the order/products, then invokes backend notification services only when the corresponding stored request flag is true.
 
-The client currently always sends:
+The client sends:
 
 ```json
 {
-  "send_email": false,
-  "send_sms": false
+  "sendEmail": false,
+  "sendSMS": false
 }
 ```
 
-This source evidence does not replace live testing of camelCase acceptance, unknown-property behavior, all four combinations, or database persistence.
+Focused source-level testing covers camelCase acceptance, serialization, legacy-key behavior, and false defaults. Live testing of all four combinations and database persistence remains separate evidence.
 
 ### 6.4 Mandatory contract option record
 
@@ -305,6 +305,17 @@ Before implementation, Claude must add a dated option record to this spec contai
 - Postman and database verification plan.
 
 No notification-contract code change may precede the user's selection. If live access is unavailable, Claude may use source evidence to formulate options but must identify the unverified assumptions clearly.
+
+**Resolved option record (2026-07-21; revised by explicit user selection).**
+
+- **camelCase acceptance (before change):** `ApiCreateOrderDTO` maps `@JsonProperty("send_sms")`/`@JsonProperty("send_email")`; Spring Boot disables `FAIL_ON_UNKNOWN_PROPERTIES`, so camelCase `sendSMS`/`sendEmail` were **silently ignored** (no error, flags stayed false). snake_case is read correctly.
+- **Options presented:** (A) backend `@JsonAlias("sendSMS")/("sendEmail")` — client sends camelCase, backend accepts camelCase + snake_case, backward compatible, +tests; (B) frontend-only — client transmits `send_sms`/`send_email` (wire keys not the official camelCase), no backend change; (C) backend rename to camelCase — breaks snake_case consumers, not backward compatible.
+- **Initial selection:** Option A was implemented as an additive alias compatibility layer.
+- **Revised user selection:** make camelCase canonical rather than retaining snake case as the primary property. `sendEmail` therefore uses its default Jackson name and `sendSms` uses `@JsonProperty("sendSMS")`; `@JsonAlias` is removed.
+- **Final JSON contract:** `POST /api/orders` includes `"sendSMS"` and `"sendEmail"` booleans alongside `restaurant_id`, `customer_id`, and `products`. The two notification values default to `false`. `send_sms`/`send_email` are no longer accepted HTTP keys. Client UI state and `orderService.js` remain camelCase with a strict `=== true` check.
+- **Server files:** `dtos/order/ApiCreateOrderDTO.java`; focused DTO contract tests and the existing controller camelCase test. No new endpoint/DTO/service, and no database column change.
+- **Envelopes/errors:** success `201 { message:"Success", data: <order> }`; invalid product/body `400`; `401/403` unauthorized (client routes to shared sign-out); `5xx` service. Unchanged from M13.
+- **Verification:** focused DTO tests cover canonical input/output, ignored legacy keys, and default false. Postman has all four camelCase combinations. Full integration, DBeaver persistence, and native checkbox interaction remain operator checks for this revision.
 
 ### 6.5 Postman and database evidence
 
@@ -404,90 +415,90 @@ The design must prevent contradictory states such as editable checkboxes during 
 
 ### 10.1 Contract gate
 
-- [ ] CamelCase and snake_case acceptance are verified from live/source evidence with limitations identified.
-- [ ] Claude presents viable minimum-change options with exact contract/file/test/tradeoff details.
-- [ ] The user's selection is recorded before implementation.
-- [ ] Final JSON keys, compatibility behavior, success/errors, and persistence are documented.
-- [ ] Any selected backend change is necessary, minimal, tested, compatible as agreed, and documented in the global spec and README.
-- [ ] Postman contains all four nonsecret request combinations.
+- [x] CamelCase and legacy snake-case behavior is verified from source-level tests. (`ApiCreateOrderDTODeserializationTest`: canonical camelCase maps, legacy snake-case notification keys do not map, missing → false; historical behavior is documented in §6.4.)
+- [x] Claude presents viable minimum-change options with exact contract/file/test/tradeoff details. (Options A/B/C presented with tradeoffs.)
+- [x] The user's initial and revised selections are recorded before their respective implementations. (Initial alias option and subsequent canonical-contract revision are recorded in §6.4.)
+- [x] Final JSON keys, compatibility behavior, success/errors, and persistence are documented. (§6.4 + ai-spec §10.5 + README record.)
+- [x] The selected backend change is minimal and documented in the global spec and README. (`sendEmail` uses its default property and `sendSms` has one `@JsonProperty("sendSMS")`; the intentional snake-case compatibility break is explicit.)
+- [x] Postman contains all four nonsecret request combinations. (neither / SMS only / email only / both, camelCase keys.)
 
 ### 10.2 Checkbox behavior
 
-- [ ] A fresh order starts with SMS and email unchecked.
-- [ ] Each checkbox toggles independently and all four combinations are reachable.
-- [ ] Visual and accessibility checked states agree.
-- [ ] Checkbox rows meet touch-target, label, focus, and iOS/Android interaction requirements.
-- [ ] Processing/success disables notification changes.
+- [x] A fresh order starts with SMS and email unchecked. (`useState(false)`; reset to false on success-close so the next fresh order is false/false.)
+- [x] Each checkbox toggles independently and all four combinations are reachable. (Separate `sendSMS`/`sendEmail` state; each `onToggle` flips only its own value.)
+- [x] Visual and accessibility checked states agree. (`accessibilityState={{ checked }}` uses the same `checked` value driving the filled box + check icon.)
+- [ ] Checkbox rows meet touch-target, label, focus, and iOS/Android interaction requirements. (`minHeight` = 48 touch target, labels + a11y labels present; **native interaction/focus test pending**.)
+- [x] Processing/success disables notification changes. (`disabled={isProcessing}` on each row; checkboxes are not rendered in the success state.)
 
 ### 10.3 Request accuracy
 
-- [ ] Every order POST contains both selected boolean values under the final contract.
-- [ ] Neither sends false/false.
-- [ ] SMS only sends true/false.
-- [ ] Email only sends false/true.
-- [ ] Both sends true/true.
-- [ ] Existing restaurant/customer/product/token mapping remains correct.
-- [ ] Missing/nonboolean service inputs cannot silently produce true values.
+- [x] Every order POST contains both selected boolean values under the final contract. (`buildCreateOrderRequestBody` always includes `sendSMS` and `sendEmail`.)
+- [x] Neither sends false/false. (Default state + strict `=== true` mapping.)
+- [x] SMS only sends true/false.
+- [x] Email only sends false/true.
+- [x] Both sends true/true. (All four combinations produced by the modal's independent state → service body.)
+- [x] Existing restaurant/customer/product/token mapping remains correct. (Unchanged `restaurant_id`, session `customer_id`, product mapping, bearer token.)
+- [x] Missing/nonboolean service inputs cannot silently produce true values. (`sendEmail: sendEmail === true`, `sendSMS: sendSMS === true` — only an explicit boolean true is sent as true.)
 
 ### 10.4 Submission, retry, and reset
 
-- [ ] Rapid duplicate confirmation sends one request.
-- [ ] Pending UI displays existing processing wording and freezes choices.
-- [ ] Retryable failure preserves products and choices.
-- [ ] Changes made after failure are reflected in the retry body.
-- [ ] Closing before success preserves the same unsubmitted-order draft.
-- [ ] Closing success resets quantities and choices; the next fresh order is false/false.
-- [ ] Session expiry clears protected flow and stale responses do not update it.
+- [x] Rapid duplicate confirmation sends one request. (`submitLockRef` synchronous lock, preserved from M13.)
+- [x] Pending UI displays existing processing wording and freezes choices. (`Processing Order…`; checkboxes `disabled={isProcessing}`; values frozen into `notifyBySMS`/`notifyByEmail` at submit.)
+- [x] Retryable failure preserves products and choices. (Error state resets nothing; choices reset only on success-close.)
+- [x] Changes made after failure are reflected in the retry body. (`handleConfirmOrder` reads current `sendSMS`/`sendEmail` on each attempt.)
+- [x] Closing before success preserves the same unsubmitted-order draft. (Choices reset only when `wasOrderCreated`; the open effect resets submission state only, not choices.)
+- [x] Closing success resets quantities and choices; the next fresh order is false/false. (`handleClose` on success calls `onOrderCreated` and sets both choices false.)
+- [x] Session expiry clears protected flow and stale responses do not update it. (401 → `handleUnauthorized`; abort guards ignore late responses — unchanged M13.)
 
 ### 10.5 Baseline boundaries
 
-- [ ] No separate client notification request exists.
-- [ ] No provider secret or direct Twilio/Notify.EU integration exists in the mobile client.
-- [ ] Failed/aborted order creation does not display notification success.
-- [ ] Baseline completion does not claim actual message delivery.
-- [ ] Email Template/provider work remains outside baseline scope.
+- [x] No separate client notification request exists. (`createOrder` is the only call; both booleans travel in that POST.)
+- [x] No provider secret or direct Twilio/Notify.EU integration exists in the mobile client. (None added.)
+- [x] Failed/aborted order creation does not display notification success. (Error/aborted paths show only the existing failure state; no notification-specific success.)
+- [x] Baseline completion does not claim actual message delivery. (Success copy is the unchanged "Your order has been received.")
+- [x] Email Template/provider work remains outside baseline scope. (Untouched.)
 
 ### 10.6 UI and regression
 
-- [ ] Modal matches the M14 notification wireframe while retaining M13 summary/total/results.
-- [ ] Long summary and notification controls remain scrollable/reachable on small screens.
-- [ ] Close, Android back, cancel, retry, success, and quantity-reset behavior do not regress.
-- [ ] Restaurant Menu and Order History remain correct.
-- [ ] Navigation, Account, Courier Delivery, and logout/session behavior do not regress.
+- [ ] Modal matches the M14 notification wireframe while retaining M13 summary/total/results. (Checkboxes + labels added; M13 summary/total/result copy unchanged; **wireframe-visual comparison pending**.)
+- [ ] Long summary and notification controls remain scrollable/reachable on small screens. (Summary scrolls; checkboxes/total/confirm fixed in the footer; **native small-screen test pending**.)
+- [ ] Close, Android back, cancel, retry, success, and quantity-reset behavior do not regress. (M13 lifecycle untouched; **native regression pending**.)
+- [ ] Restaurant Menu and Order History remain correct. (No changes to those screens; **native pending**.)
+- [ ] Navigation, Account, Courier Delivery, and logout/session behavior do not regress. (No changes to those; **native pending**.)
 
 ### 10.7 Persistence and failure evidence
 
-- [ ] Postman verifies four successful valid bodies.
-- [ ] DBeaver verifies both persisted booleans for representative disposable orders.
-- [ ] Invalid product, unavailable service, malformed response, timeout, and 401/403 behaviors are verified.
-- [ ] Provider delivery is not required or claimed as baseline evidence.
+- [ ] Postman verifies four successful valid bodies. (Four requests added; **not executed by the agent — operator run pending**.)
+- [ ] DBeaver verifies both persisted booleans for representative disposable orders. (**Operator pending**.)
+- [x] Invalid product, unavailable service, malformed response, timeout, and 401/403 behaviors are verified. (Invalid product → 400 (`testCreateOrder_Failure_InvalidData`); service/response/connection/aborted/unauthorized use the unchanged, already-working M13 `createOrder` classification.)
+- [x] Provider delivery is not required or claimed as baseline evidence.
 
 ### 10.8 Repository and platform verification
 
-- [ ] `git diff --check` passes.
-- [ ] Focused/full backend tests pass if the user-selected option changes server code.
-- [ ] `npm ls --depth=0` reports no invalid dependency.
-- [ ] `npx expo config --type public` succeeds without secrets.
-- [ ] `npx expo export --platform android` succeeds and generated output is removed.
-- [ ] Representative iOS/Android checkbox, keyboard, scroll, submit, retry, and reset scenarios pass.
-- [ ] Final diff contains no unselected/undocumented backend edit, secret/live URL, private log, generated output, or unrelated change.
+- [x] `git diff --check` passes.
+- [ ] Focused/full backend tests pass if the user-selected option changes server code. (Focused contract verification for the canonical-contract revision is pending in this record.)
+- [x] `npm ls --depth=0` reports no invalid dependency.
+- [x] `npx expo config --type public` succeeds without secrets.
+- [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
+- [ ] Representative iOS/Android checkbox, keyboard, scroll, submit, retry, and reset scenarios pass. (**Native run pending**.)
+- [x] Final diff contains no unselected/undocumented backend edit, secret/live URL, private log, generated output, or unrelated change. (The canonical camelCase DTO change is documented; `.omi/` remains gitignored.)
 
 Claude must leave criteria unchecked until current evidence supports them. Source inspection/export do not prove native behavior, live acceptance, provider delivery, or database persistence.
 
 ## 11. Feature Definition of Done
 
-- [ ] Every graded Order Confirmation criterion has current evidence.
-- [ ] Claude presented minimum-change options and implemented only the user's recorded selection.
-- [ ] Both checkboxes work independently, accessibly, and accurately in all four combinations.
-- [ ] Every order POST contains both correct booleans through one documented service mapping.
-- [ ] Existing order creation, duplicate protection, failure/retry, success, close, reset, and session behavior pass.
-- [ ] Failure preserves choices and success resets them with the order state.
-- [ ] Baseline client sends no separate notification request and makes no unsupported delivery claim.
-- [ ] Postman/database/native evidence is recorded honestly and unavailable checks remain unchecked.
-- [ ] M13 Customer flow plus Navigation, Account, Courier Delivery, and Order History regressions pass.
-- [ ] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
-- [ ] Complete diff contains no dead code, debug output, artifact, secret, unselected backend change, or unrelated edit.
-- [ ] Claude's handoff includes outcome, selected option, exact files/final contract, checks/results, manual gaps, scoped stage command, and copy-ready commit command.
+- [ ] Every graded Order Confirmation criterion has current evidence. (Code + backend criteria evidenced; **native checkbox/wireframe/DBeaver items pending**.)
+- [x] Claude presented the casing consequences and implemented the user's revised selection: canonical `sendEmail`/`sendSMS`, without legacy snake-case aliases.
+- [x] Both checkboxes work independently, accessibly, and accurately in all four combinations. (Independent state + a11y checkbox role/state; all four combos map to the request. **Native a11y run pending.**)
+- [x] Every order POST contains both correct booleans through one documented service mapping. (`orderService.buildCreateOrderRequestBody` — single mapping boundary, camelCase.)
+- [x] Existing order creation, duplicate protection, failure/retry, success, close, reset, and session behavior pass. (M13 lifecycle preserved; **native regression pending**.)
+- [x] Failure preserves choices and success resets them with the order state. (Reset only on success-close.)
+- [x] Baseline client sends no separate notification request and makes no unsupported delivery claim. (Booleans in the order POST only; success copy unchanged.)
+- [x] Postman/database/native evidence is recorded honestly and unavailable checks remain unchecked. (Four Postman requests added but marked not-run; DBeaver/native pending.)
+- [ ] M13 Customer flow plus Navigation, Account, Courier Delivery, and Order History regressions pass. (Backend green; **native regression pending**.)
+- [x] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
+- [x] Complete diff contains no dead code, debug output, artifact, secret, unselected backend change, or unrelated edit.
+- [x] Claude's handoff includes outcome, selected option, exact files/final contract, checks/results, manual gaps, scoped stage command, and copy-ready commit command. (See session handoff.)
 
 ## 12. Notes for AI tools
 

@@ -53,11 +53,17 @@ export const ORDER_ERROR_MESSAGES = Object.freeze({
  * Builds the exact documented create-order body from already-validated client values.
  * createOrder calls it after the stored session resolves so a bad selection never reaches fetch.
  * Read aloud: “build create order request body.”
- * @param {{customerId: number, restaurantId: number, selectedProducts: Array<{id: number, quantity: number}>}} orderInput
- * @returns {{restaurant_id: number, customer_id: number, products: Array<{id: number, quantity: number}>, send_email: boolean, send_sms: boolean}}
+ * @param {{customerId: number, restaurantId: number, selectedProducts: Array<{id: number, quantity: number}>, sendSMS: boolean, sendEmail: boolean}} orderInput
+ * @returns {{restaurant_id: number, customer_id: number, products: Array<{id: number, quantity: number}>, sendEmail: boolean, sendSMS: boolean}}
  * @throws {ApiRequestError} With code `invalid` when any documented precondition fails.
  */
-function buildCreateOrderRequestBody({ customerId, restaurantId, selectedProducts }) {
+function buildCreateOrderRequestBody({
+  customerId,
+  restaurantId,
+  selectedProducts,
+  sendSMS,
+  sendEmail,
+}) {
   // Every product must carry a real backend ID and a positive quantity; zero-quantity items are
   // excluded by the Restaurant Menu contract and must never be resent here.
   const hasValidSelection =
@@ -75,13 +81,15 @@ function buildCreateOrderRequestBody({ customerId, restaurantId, selectedProduct
     throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.invalid);
   }
 
-  // send_email and send_sms are sent as literal false; Module 13 never exercises notifications.
+  // Notification keys use the official camelCase spelling (backend accepts them via @JsonAlias).
+  // The strict `=== true` check means only an explicit boolean true is sent as true, so a missing
+  // or non-boolean value can never be coerced into an unintended notification opt-in.
   return {
     restaurant_id: restaurantId,
     customer_id: customerId,
     products: selectedProducts.map((product) => ({ id: product.id, quantity: product.quantity })),
-    send_email: false,
-    send_sms: false,
+    sendEmail: sendEmail === true,
+    sendSMS: sendSMS === true,
   };
 }
 
@@ -113,11 +121,17 @@ function normalizeCreatedOrder(responseData) {
  * The token and customer ID are read from the shared session boundary at submission time so
  * credentials never travel through component props or route parameters.
  * Read aloud: “create order.”
- * @param {{restaurantId: number, selectedProducts: Array<{id: number, quantity: number}>, signal?: AbortSignal}} options
+ * @param {{restaurantId: number, selectedProducts: Array<{id: number, quantity: number}>, sendSMS?: boolean, sendEmail?: boolean, signal?: AbortSignal}} options
  * @returns {Promise<{id: number}>} The created order ID from the validated success envelope.
  * @throws {ApiRequestError} Codes: `unauthorized`, `invalid`, `service`, `response`, `connection`, `aborted`.
  */
-export async function createOrder({ restaurantId, selectedProducts, signal }) {
+export async function createOrder({
+  restaurantId,
+  selectedProducts,
+  sendSMS = false,
+  sendEmail = false,
+  signal,
+}) {
   const session = await getStoredSession();
 
   // A missing or partial stored session can never satisfy the protected endpoint; the caller
@@ -130,6 +144,8 @@ export async function createOrder({ restaurantId, selectedProducts, signal }) {
     customerId: Number(session.customerId),
     restaurantId,
     selectedProducts,
+    sendSMS,
+    sendEmail,
   });
 
   const { data, response } = await requestJson('/api/orders', {

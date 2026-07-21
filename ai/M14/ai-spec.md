@@ -54,7 +54,7 @@ The following conflicts are explicit implementation gates. Claude must prefer a 
 
 - The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query.
 - The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`.
-- The grading sheet names order fields `sendSMS` and `sendEmail`. The current Java DTO explicitly maps snake-case JSON fields `send_sms` and `send_email`.
+- The grading sheet names order fields `sendSMS` and `sendEmail`, while the original Java DTO mapped `send_sms` and `send_email`. **Resolved and subsequently revised by the user:** the official camelCase spellings are now canonical for both deserialization and serialization. `sendEmail` uses Jackson's default property name and `sendSms` uses `@JsonProperty("sendSMS")`; legacy snake-case notification keys are no longer accepted. See §10.5 and the README backend-adjustment record.
 - The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation. **Resolved:** `restaurant_rating` was added to the response DTO `ApiOrderDTO` (minimum-change policy) so the client can echo the current rating back through the existing broad `PUT /api/orders/{id}` without erasing it; no new endpoint. See §10.4 and the README backend-adjustment record.
 
 The grading checklist also contains a generic instruction to create a new private repository, while the M14 business brief and coach walkthrough explicitly describe this module as a continuation of the M13 repository. The confirmed project decision is to continue in the existing M13 repository and not create a second repository.
@@ -473,8 +473,10 @@ Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED
 
 The user-facing choices are independent SMS and email checkboxes. The feature spec must preserve both names:
 
-- Official grading names: `sendSMS`, `sendEmail`.
-- Current backend JSON names: `send_sms`, `send_email`.
+- Official grading and client names: `sendSMS`, `sendEmail`.
+- Current backend JSON names: `sendSMS`, `sendEmail`.
+
+**Resolved (user-selected canonical-contract revision, 2026-07-21).** `ApiCreateOrderDTO` now treats the grading names as the primary JSON contract: the Java `sendEmail` field needs no annotation, while `sendSms` uses `@JsonProperty("sendSMS")` because Jackson would otherwise derive `sendSms`. Both names apply to request deserialization and DTO serialization. The earlier `@JsonAlias` compatibility mapping is superseded, and `send_email`/`send_sms` are intentionally no longer accepted HTTP keys. Database column names remain unchanged. The client already transmits camelCase inside the existing `POST /api/orders`, so no frontend mapping change is needed. Focused tests cover camelCase input/output, ignored legacy keys, and false defaults; no endpoint, schema, entity, or service changed.
 
 Claude must resolve the request shape before implementation and record the chosen mapping in the feature spec. Both values default to false. Only selected products are sent. Both notification booleans travel inside the order-creation POST; the baseline client makes no separate post-success notification request. The backend may act on selected options only when order creation succeeds, and a failed order must not display or imply a successful notification.
 

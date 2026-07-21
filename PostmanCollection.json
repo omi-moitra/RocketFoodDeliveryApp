@@ -264,14 +264,125 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"send_email\": false,\n  \"send_sms\": false\n}"
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendEmail\": false,\n  \"sendSMS\": false\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/orders",
           "host": ["{{baseUrl}}"],
           "path": ["api", "orders"]
         },
-        "description": "Creates one order for the authenticated customer using seeded restaurant 1 and its seeded product 1. Expects HTTP 201 with { message: 'Success', data: <created order DTO> }."
+        "description": "Creates one order with NEITHER notification (sendSMS/sendEmail both false). These official camelCase notification keys are the backend's canonical HTTP contract. Expects HTTP 201 with { message: 'Success', data: <created order DTO> }."
+      }
+    },
+    {
+      "name": "POST /api/orders — SMS only (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order created with SMS-only notification', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendSMS\": true,\n  \"sendEmail\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order with SMS only (sendSMS true, sendEmail false). The backend acts on the SMS option only after the order is created."
+      }
+    },
+    {
+      "name": "POST /api/orders — email only (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order created with email-only notification', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendSMS\": false,\n  \"sendEmail\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order with email only (sendSMS false, sendEmail true)."
+      }
+    },
+    {
+      "name": "POST /api/orders — SMS and email (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order created with both notifications', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendSMS\": true,\n  \"sendEmail\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order with both notifications (sendSMS true, sendEmail true)."
       }
     },
     {
@@ -301,7 +412,7 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": 999999,\n      \"quantity\": 2\n    }\n  ],\n  \"send_email\": false,\n  \"send_sms\": false\n}"
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": 999999,\n      \"quantity\": 2\n    }\n  ],\n  \"sendEmail\": false,\n  \"sendSMS\": false\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/orders",
