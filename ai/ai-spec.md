@@ -298,6 +298,7 @@ Delivery status uses red Pending, orange In Progress, and green Delivered with v
 - Comments explain non-obvious invariants, ownership, race protection, or compatibility decisions; they do not narrate obvious syntax.
 - Feature specs describe current contracts and distinguish automated evidence from manual/native verification.
 - Material API decisions are documented here, in the owning feature spec, README/Postman when applicable, and the private implementation record.
+- Every implemented item from `docVault/REFACTORING_AUDIT.md` is appended to the Refactoring Implementation Record in this specification after the change is complete and verified.
 
 ## 15. Verification strategy
 
@@ -325,7 +326,30 @@ Static inspection and export do not prove native interaction, visual fidelity, d
 
 During the 2026-07-21 specification reconciliation, the backend compiled and discovered 120 tests, but the local MySQL instance was unavailable; 116 Spring-context errors followed with zero assertion failures. The four database-independent order-notification DTO tests passed. Earlier successful DB-backed implementation evidence remains recorded in the relevant feature specs without being represented as a fresh full-suite pass.
 
-## 16. Global Definition of Done
+## 16. Refactoring Implementation Record
+
+This section is the append-only completion record for work selected from `docVault/REFACTORING_AUDIT.md`. Add an entry immediately after an audit refactor is implemented and its available verification is complete. A proposal, user selection, partial edit, or unverified change must not be recorded as completed.
+
+Each entry must identify the audit ID and title, priority, local completion date and time with time zone, reason and practical benefit, every affected file, and a concise description of the implemented change. Include verification evidence so the record distinguishes a completed refactor from an untested edit. Closely coupled audit items may share one entry only when they were implemented and verified as one inseparable change; list every included audit ID and priority.
+
+Use this format:
+
+```markdown
+### RF-XX — Refactor title
+
+- **Completed:** YYYY-MM-DD HH:mm America/New_York
+- **Priority:** P0 | P1 | P2 | P3
+- **Reason and benefit:** Why the refactor was selected and what it improves.
+- **Files affected:** `path/to/file`, `path/to/other-file`
+- **Change:** The exact behavior-preserving implementation, including anything deliberately retained for grading or compatibility.
+- **Verification:** Focused checks, builds, tests, manual coverage, and any honest remaining gap.
+```
+
+Entries are chronological and are never rewritten to make later work appear completed earlier. If a completed refactor is later revised or reverted, append a new dated entry that references the earlier audit ID and explains the new change; preserve the original history.
+
+**Completed audit refactors:** None yet. Creating the audit and this record does not count as implementing one of its proposed refactors.
+
+## 17. Global Definition of Done
 
 - [x] One canonical global AI specification describes the combined M13/M14 product.
 - [x] One canonical Navigation Structure feature describes the hierarchy introduced in M13 and extended in M14.
