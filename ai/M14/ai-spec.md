@@ -420,6 +420,13 @@ Before Claude edits Account client behavior, the Account feature spec must recor
 
 The current repository suggests a read-only base email plus role-specific nested data, and a PUT update using body fields `email` and `phone`; this is implementation evidence, not permission to override the official contract without resolution. If live evidence differs, Claude must update the spec first and identify the evidence in its handoff.
 
+**Resolved (implemented, DB-verified).** The account contract discrepancy was reconciled under the minimum-change gate; the user selected the POST-with-official-body option.
+
+- **Retrieval — frontend-only, no backend change.** `GET /api/account/{userId}?type={customer|courier}`. The controller declares no `type` param, so the query is accepted and ignored; the response is `200 { message:"Success", data: ApiAccountDTO }` where `ApiAccountDTO = { id, name, email, customer?, courier?, employee? }` and each role = `{ id, phone, email, address }` (omitted when null). The client sends the official URL, validates `data.id === userId`, selects only `data[activeRole]`, verifies its `id` equals the stored role ID, and never exposes another role.
+- **Update — user-selected minimum backend change (Option 3).** New `POST /api/account/{userId}` with official body `{ account_type, account_email, account_phone }` (wires the previously unused `ApiPostAccountDTO`), delegating to the same `updateAccount` service; `account_type ∈ {customer, courier, employee}` else 400; 404 for missing user/role; returns the full `ApiAccountDTO`. The existing `PUT /api/account/{userId}?type=` is retained unchanged. Only the selected role's email/phone change; the primary user email is never modified.
+- **Server files:** `controller/api/UserApiController.java` (new `@PostMapping`), plus `test/.../user/AccountApiControllerTest.java` (6 tests). No service/entity/schema change. `./mvnw test` → 115 passed. See the README backend-adjustment record.
+- **Client:** `services/accountService.js` (GET + POST, envelope/role normalization, identity checks), `components/AccountScreen.js` (shared form), thin `app/customer/account.js` and `app/courier/account.js` wrappers.
+
 ### 10.3 Courier delivery retrieval
 
 Required visible set:

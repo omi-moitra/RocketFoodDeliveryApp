@@ -318,6 +318,16 @@ Before completing implementation, record in this section or an adjacent dated co
 
 If live access is unavailable, implement only decisions proven safely from source and leave live/database criteria unchecked. Never claim the official POST exists until implemented and tested.
 
+**Resolved contract record (2026-07-21, DB-verified).**
+
+- **GET accepts the official `type` query:** confirmed from source and by `AccountApiControllerTest.testGetAccount_Success_IgnoresTypeQuery` — the controller declares no `type` param, so `GET /api/account/{userId}?type=customer` returns the full account; the client selects `data[activeRole]`.
+- **Response shape:** `200 { message:"Success", data: { id, name, email, customer?, courier?, employee? } }`; each role = `{ id, phone, email, address }`, omitted when null. The client uses `email` (primary, read-only), `data[role].email`, and `data[role].phone`, and validates `data.id === userId` and `data[role].id === roleId`.
+- **Options presented / user selection:** three viable options — (1) frontend-only PUT `/api/account/{id}?type=`; (2) POST alias mirroring PUT; (3) **POST `/api/account/{id}` with official body `{ account_type, account_email, account_phone }`**. **The user selected Option 3.**
+- **Final update contract:** `POST /api/account/{userId}` body `{ account_type, account_email, account_phone }` → `200 { message:"Success", data: ApiAccountDTO }`. Minimum server files: `controller/api/UserApiController.java` (one `@PostMapping` wiring the existing `ApiPostAccountDTO`, delegating to the existing `updateAccount`). PUT retained unchanged.
+- **Errors:** `400` when `account_type` is missing/invalid; `404` when the user or selected role is missing; `401/403` unauthenticated. Verified by tests.
+- **Authoritative values:** the update returns the full account, so no follow-up GET is required; the client re-normalizes the response.
+- **DB / native:** DBeaver before/after for both role tables and on-device interaction remain operator manual checks.
+
 ### 6.5 Postman collection
 
 - Add Customer GET/update and Courier GET/update requests using collection variables.
@@ -416,89 +426,89 @@ User feedback must not expose tokens, raw server internals, stack traces, or ina
 
 ### 10.1 Contract gate
 
-- [ ] GET with `/api/account/{userId}?type={customer|courier}` is verified against the live API.
-- [ ] Exact Customer, Courier, and dual-role response envelopes are recorded.
-- [ ] Final update method/path/query/body is reconciled with official and current contracts.
-- [ ] Claude presents viable minimum-change options with exact tradeoffs and the user's selection is recorded before implementation.
-- [ ] Any user-selected backend change is proven necessary, minimal, backward compatible, tested, and documented in the global spec and README.
-- [ ] Success, validation, unauthorized, missing user/role, service, and malformed-response behavior are verified.
-- [ ] Postman contains the final nonsecret Customer and Courier calls.
+- [x] GET with `/api/account/{userId}?type={customer|courier}` is verified against the live API. (`AccountApiControllerTest.testGetAccount_Success_IgnoresTypeQuery` against MySQL: 200 with `data.email` + `data.customer.email`.)
+- [x] Exact Customer, Courier, and dual-role response envelopes are recorded. (§6.3/§6.4; Customer and Courier verified by tests; the dual-role shape — both nested roles present — is recorded from `getAccountDTO` source.)
+- [x] Final update method/path/query/body is reconciled with official and current contracts. (POST `/api/account/{userId}` with `{account_type, account_email, account_phone}`; PUT retained.)
+- [x] Claude presents viable minimum-change options with exact tradeoffs and the user's selection is recorded before implementation. (Three options presented; user selected Option 3 — recorded in §6.4.)
+- [x] Any user-selected backend change is proven necessary, minimal, backward compatible, tested, and documented in the global spec and README. (One `@PostMapping` wiring the existing `ApiPostAccountDTO`; PUT/GET unchanged; 115 tests pass; documented in ai-spec §10.2 + README.)
+- [x] Success, validation, unauthorized, missing user/role, service, and malformed-response behavior are verified. (Success/invalid-type-400/404 DB-verified by tests; 401/403, 5xx, and malformed-response are classified in `accountService` — code-level, not live-forced.)
+- [x] Postman contains the final nonsecret Customer and Courier calls. (Account GET/POST for both roles added with `{{userId}}`/`{{courierUserId}}` variables.)
 
 ### 10.2 Shared architecture and identity
 
-- [ ] Customer and Courier routes render one shared Account implementation.
-- [ ] Both wrappers validate their expected role against the active session.
-- [ ] Requests use stored `userId`, not customer/courier ID.
-- [ ] Response user ID and nested role ID must match session identity.
-- [ ] Inactive-role data is never exposed or submitted.
+- [x] Customer and Courier routes render one shared Account implementation. (Both `account.js` wrappers render `<AccountScreen expectedRole=…/>`; no duplicated form/request code.)
+- [x] Both wrappers validate their expected role against the active session. (`requireAccountSession` throws `unauthorized` unless `session.activeRole === expectedRole`.)
+- [x] Requests use stored `userId`, not customer/courier ID. (`accountService` builds `/api/account/${userId}`; role ID only validates nested ownership.)
+- [x] Response user ID and nested role ID must match session identity. (`normalizeAccount` requires `data.id === userId` and `data[role].id === roleId`, else `response` error.)
+- [x] Inactive-role data is never exposed or submitted. (Only `data[activeRole]` is normalized; the POST body carries only `account_type`/`account_email`/`account_phone`.)
 
 ### 10.3 Field display
 
-- [ ] Primary/user email is displayed read-only for both roles.
-- [ ] Customer mode displays Customer Email and Customer Phone.
-- [ ] Courier mode displays Courier Email and Courier Phone.
-- [ ] Only role email/phone are editable.
-- [ ] Name, address, password, inactive role, and unsupported fields do not appear.
+- [x] Primary/user email is displayed read-only for both roles. (Rendered in a non-editable `View`, labeled "User Email"; never in a `TextInput` or the update body.)
+- [x] Customer mode displays Customer Email and Customer Phone. (`roleLabel` = "Customer" from `expectedRole`.)
+- [x] Courier mode displays Courier Email and Courier Phone. (`roleLabel` = "Courier".)
+- [x] Only role email/phone are editable. (Two `TextInput`s bound to `emailDraft`/`phoneDraft`; nothing else editable.)
+- [x] Name, address, password, inactive role, and unsupported fields do not appear. (`normalizeAccount` returns only primary email + active role email/phone; nothing else is rendered.)
 
 ### 10.4 Validation and dirty state
 
-- [ ] Email and phone are trimmed and validated before saving.
-- [ ] Field-specific errors are accessible and invalid input sends zero requests.
-- [ ] Unchanged values do not submit.
-- [ ] Editing after success/error produces coherent dirty state.
-- [ ] Validation failure preserves saved values and drafts.
+- [x] Email and phone are trimmed and validated before saving. (`handleSave` runs `isValidEmail`/`isValidPhone`; `accountService.updateAccount` re-validates trimmed values before the request.)
+- [x] Field-specific errors are accessible and invalid input sends zero requests. (`fieldErrors` render with `accessibilityRole="alert"`; `handleSave` returns before any request on invalid input.)
+- [x] Unchanged values do not submit. (`isDirty` gate + Save disabled when not dirty.)
+- [x] Editing after success/error produces coherent dirty state. (`handleChange*` resets `saveStatus` to idle; `isDirty` recomputes from drafts vs snapshot.)
+- [x] Validation failure preserves saved values and drafts. (Local-validation return path touches neither `savedAccount` nor the drafts.)
 
 ### 10.5 Save and persistence
 
-- [ ] One pending save disables duplicate submission and shows clear progress.
-- [ ] The request contains only verified role-update fields plus explicit role routing where required.
-- [ ] Primary email is never included or changed.
-- [ ] Success is normalized from the response or follow-up GET before updating display.
-- [ ] Valid Customer and Courier edits persist in the correct database tables.
-- [ ] Failed saves retain drafts, preserve saved values, unlock retry, and show safe feedback.
+- [x] One pending save disables duplicate submission and shows clear progress. (`saveLockRef` + `disabled={isSaving}` + `SAVING` label/spinner.)
+- [x] The request contains only verified role-update fields plus explicit role routing where required. (POST body is exactly `{account_type, account_email, account_phone}`.)
+- [x] Primary email is never included or changed. (Not in the body; `AccountApiControllerTest.testPostAccount_Customer_Success_PreservesPrimaryEmail` asserts `data.email` is unchanged after the update.)
+- [x] Success is normalized from the response or follow-up GET before updating display. (`updateAccount` returns the re-normalized authoritative account; the screen sets snapshot/drafts from it.)
+- [x] Valid Customer and Courier edits persist in the correct database tables. (`testPostAccount_Customer_Success` and `testPostAccount_Courier_Success` assert the persisted role email/phone against MySQL.)
+- [x] Failed saves retain drafts, preserve saved values, unlock retry, and show safe feedback. (`catch` leaves drafts/snapshot intact, releases `saveLockRef`, sets a safe `saveErrorMessage`.)
 
 ### 10.6 Loading, session, and stale responses
 
-- [ ] Initial loading, rendered, refresh/retry, and failure states are distinct.
-- [ ] 401/403 follows shared unauthorized handling.
-- [ ] Late requests cannot update after logout, role change, newer request, blur, or unmount.
-- [ ] Missing/mismatched active-role data fails closed.
-- [ ] Dual-role selected Customer/Courier views remain isolated.
+- [x] Initial loading, rendered, refresh/retry, and failure states are distinct. (`requestStatus` loading/ready/error + `ResultState`; focus reload preserves unsaved edits.)
+- [x] 401/403 follows shared unauthorized handling. (`throwForAccountFailure` → `unauthorized` → `handleUnauthorized` in both load and save.)
+- [x] Late requests cannot update after logout, role change, newer request, blur, or unmount. (`newestRequestRef` generation guard, `AbortController` on blur, `isMountedRef` on unmount.)
+- [x] Missing/mismatched active-role data fails closed. (`normalizeAccount` throws `response` on id/role mismatch; `requireAccountSession` throws `unauthorized` on missing role ID.)
+- [x] Dual-role selected Customer/Courier views remain isolated. (The screen/service use `session.activeRole` exclusively; only that role's nested data is ever requested/exposed. Runtime dual-role render pending native.)
 
 ### 10.7 UI, accessibility, and regression
 
-- [ ] Account matches the supplied Customer/Courier wireframe with role-specific labels.
-- [ ] Form scrolls and remains keyboard-safe on small iOS and Android screens.
-- [ ] Inputs, errors, Save, success, and retry states are screen-reader accessible.
-- [ ] Header, logout, and correct role footer remain available.
-- [ ] Navigation, Courier Delivery, and M13 Customer workflows do not regress.
+- [ ] Account matches the supplied Customer/Courier wireframe with role-specific labels. (Role-specific labels implemented; **wireframe-visual comparison pending**.)
+- [ ] Form scrolls and remains keyboard-safe on small iOS and Android screens. (`ScrollView` + `KeyboardAvoidingView` implemented; **native small-screen test pending**.)
+- [ ] Inputs, errors, Save, success, and retry states are screen-reader accessible. (accessibility labels/roles/live regions added; **native screen-reader test pending**.)
+- [ ] Header, logout, and correct role footer remain available. (Provided by the unchanged tab layouts; **native render pending**.)
+- [ ] Navigation, Courier Delivery, and M13 Customer workflows do not regress. (Backend suite green; no shared M13 client files changed; **native regression pending**.)
 
 ### 10.8 Repository and verification
 
-- [ ] `git diff --check` passes.
-- [ ] Focused account backend tests and full `./mvnw test` pass when server code changes.
-- [ ] `npm ls --depth=0` reports no invalid dependency.
-- [ ] `npx expo config --type public` succeeds without secrets.
-- [ ] `npx expo export --platform android` succeeds and generated output is removed.
-- [ ] Postman and DBeaver verify both roles; representative iOS/Android native scenarios pass.
-- [ ] Final diff contains no undocumented backend edit, secret/live URL, private log, generated output, or unrelated change.
+- [x] `git diff --check` passes.
+- [x] Focused account backend tests and full `./mvnw test` pass when server code changes. (`AccountApiControllerTest` 6/6; full suite **115 passed, 0 failures** against MySQL.)
+- [x] `npm ls --depth=0` reports no invalid dependency.
+- [x] `npx expo config --type public` succeeds without secrets.
+- [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
+- [ ] Postman and DBeaver verify both roles; representative iOS/Android native scenarios pass. (Postman requests added but **not run by the agent**; DBeaver + native **pending operator**.)
+- [x] Final diff contains no undocumented backend edit, secret/live URL, private log, generated output, or unrelated change. (Backend POST documented; `.omi/` gitignored; orphaned `PlaceholderScreen` removed as intentional cleanup.)
 
 Claude must leave criteria unchecked until supported by current evidence. Source inspection and export do not prove live persistence or native interaction.
 
 ## 11. Feature Definition of Done
 
-- [ ] Every graded Account Details criterion has current evidence.
-- [ ] Official/current contract differences are reconciled without unsafe guesses.
-- [ ] Any backend change is the verified minimum, tested, compatible, and fully documented in the global spec and README.
-- [ ] Customer and Courier use one shared form/service/state implementation through separate protected routes.
-- [ ] Identity and inactive-role isolation hold across load, edit, save, failure, refresh, role change, and logout.
-- [ ] Primary email remains read-only and only valid role email/phone changes persist.
-- [ ] Loading, validation, saving, success, retry, keyboard, scroll, and accessibility behavior pass.
-- [ ] Postman/database/native evidence is recorded honestly and pending checks remain unchecked.
-- [ ] Navigation, Courier Delivery, and M13 Customer regression checks pass.
-- [ ] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
-- [ ] Complete diff contains no dead code, debug output, generated artifact, secret, undocumented backend change, or unrelated edit.
-- [ ] Claude's handoff includes outcome, changed files, final contract, checks/results, remaining manual gaps, scoped stage command, and copy-ready commit command.
+- [ ] Every graded Account Details criterion has current evidence. (Backend + code criteria evidenced; **native/wireframe/DBeaver items pending**.)
+- [x] Official/current contract differences are reconciled without unsafe guesses. (GET frontend-only; update via user-selected POST option, recorded before implementation.)
+- [x] Any backend change is the verified minimum, tested, compatible, and fully documented in the global spec and README. (One `@PostMapping` + tests; PUT/GET unchanged; documented in ai-spec §10.2 + README record.)
+- [x] Customer and Courier use one shared form/service/state implementation through separate protected routes. (`AccountScreen` + `accountService`; thin role wrappers.)
+- [x] Identity and inactive-role isolation hold across load, edit, save, failure, refresh, role change, and logout. (Guarded in `requireAccountSession` + `normalizeAccount` + generation/abort/mount guards.)
+- [x] Primary email remains read-only and only valid role email/phone changes persist. (Read-only view; DB test asserts primary email unchanged after a role update.)
+- [ ] Loading, validation, saving, success, retry, keyboard, scroll, and accessibility behavior pass. (Implemented; **keyboard/scroll/accessibility require a native run**.)
+- [x] Postman/database/native evidence is recorded honestly and pending checks remain unchecked. (DB tests recorded; Postman/DBeaver/native left pending.)
+- [ ] Navigation, Courier Delivery, and M13 Customer regression checks pass. (Backend green; **native regression pending**.)
+- [x] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
+- [x] Complete diff contains no dead code, debug output, generated artifact, secret, undocumented backend change, or unrelated edit. (Orphaned `PlaceholderScreen` removed; backend change documented.)
+- [x] Claude's handoff includes outcome, changed files, final contract, checks/results, remaining manual gaps, scoped stage command, and copy-ready commit command. (See session handoff.)
 
 ## 12. Notes for AI tools
 

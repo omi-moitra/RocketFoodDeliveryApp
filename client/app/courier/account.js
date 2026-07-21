@@ -1,21 +1,16 @@
 /**
  * File: account.js
- * Purpose: Hosts the Courier Account tab until the Account Details feature ships.
- * Contents: placeholder Courier Account route.
+ * Purpose: Courier Account tab — a thin wrapper around the shared Account screen.
+ * Contents: Courier Account route.
  */
 
-import PlaceholderScreen from '../../components/PlaceholderScreen';
+import AccountScreen from '../../components/AccountScreen';
 
 /**
- * Renders the Courier Account placeholder inside the courier tab chrome.
- * Expo Router loads it for the courier Account tab; the Account Details feature replaces its body.
+ * Renders the shared Account Settings form configured for the Courier role.
+ * Expo Router loads it for the courier Account tab; all form/request logic lives in AccountScreen.
  * Read aloud: “courier account screen.”
  */
 export default function CourierAccountScreen() {
-  return (
-    <PlaceholderScreen
-      description="Manage your courier contact details from here."
-      title="Account"
-    />
-  );
+  return <AccountScreen expectedRole="courier" />;
 }

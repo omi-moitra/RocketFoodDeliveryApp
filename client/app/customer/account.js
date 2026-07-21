@@ -1,21 +1,16 @@
 /**
  * File: account.js
- * Purpose: Hosts the Customer Account tab until the Account Details feature ships.
- * Contents: placeholder Customer Account route.
+ * Purpose: Customer Account tab — a thin wrapper around the shared Account screen.
+ * Contents: Customer Account route.
  */
 
-import PlaceholderScreen from '../../components/PlaceholderScreen';
+import AccountScreen from '../../components/AccountScreen';
 
 /**
- * Renders the Customer Account placeholder inside the customer tab chrome.
- * Expo Router loads it for the customer Account tab; the Account Details feature replaces its body.
+ * Renders the shared Account Settings form configured for the Customer role.
+ * Expo Router loads it for the customer Account tab; all form/request logic lives in AccountScreen.
  * Read aloud: “customer account screen.”
  */
 export default function CustomerAccountScreen() {
-  return (
-    <PlaceholderScreen
-      description="Manage your customer contact details from here."
-      title="Account"
-    />
-  );
+  return <AccountScreen expectedRole="customer" />;
 }
