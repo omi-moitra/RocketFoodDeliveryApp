@@ -25,10 +25,12 @@ export const DELIVERY_STATUS_COLORS = Object.freeze({
   PENDING: COLORS.darkRed,
 });
 
-// FONT_FAMILIES names both supplied headings and the platform-safe body-font fallback.
+// FONT_FAMILIES names both supplied headings and the body-font policy. iOS uses its native Arial;
+// Android has no Arial, so it uses the bundled Arimo (a metric-compatible Arial equivalent loaded
+// in app/_layout.js) rather than falsely labeling a different system font as Arial.
 export const FONT_FAMILIES = Object.freeze({
   body: Platform.select({
-    android: 'sans-serif',
+    android: 'Arimo_400Regular',
     default: 'Arial',
     ios: 'Arial',
   }),

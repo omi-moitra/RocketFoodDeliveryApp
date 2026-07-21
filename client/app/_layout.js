@@ -6,6 +6,7 @@
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Arimo_400Regular } from '@expo-google-fonts/arimo/400Regular';
 import { Oswald_400Regular } from '@expo-google-fonts/oswald/400Regular';
 import { Oswald_600SemiBold } from '@expo-google-fonts/oswald/600SemiBold';
 import { useFonts } from 'expo-font';
@@ -23,7 +24,10 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
  */
 function RootNavigator() {
   const { isSessionLoading, session } = useAuth();
+  // Arimo is an Arial-metric-compatible face used only as the Android body font (iOS keeps its
+  // native Arial); see FONT_FAMILIES.body. Oswald supplies display text on every platform.
   const [areFontsLoaded, fontError] = useFonts({
+    Arimo_400Regular,
     Oswald_400Regular,
     Oswald_600SemiBold,
   });
