@@ -378,70 +378,70 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 
 ### 10.1 Audit and decision gates
 
-- [ ] Every route/modal/state in scope appears in a completed audit matrix.
-- [ ] Each edit maps to a demonstrated failed criterion.
-- [ ] Genuine minimum-change choices are presented with exact tradeoffs.
-- [ ] The user's selection is recorded before decision-dependent edits.
-- [ ] Passing UI/business behavior is not rewritten.
+- [x] Every route/modal/state in scope appears in a completed audit matrix. (Code-level audit recorded in the implementation log; palette/fonts/tabs/chrome/DOM/emoji/text-scaling covered.)
+- [x] Each edit maps to a demonstrated failed criterion. (The only code change — the Android body font — maps to Requirement B's Android-Arial gap; nothing else was edited.)
+- [x] Genuine minimum-change choices are presented with exact tradeoffs. (Three font options presented, plus an Option 2-vs-3 clarification.)
+- [x] The user's selection is recorded before decision-dependent edits. (Option 3 — Arimo on Android only — recorded before editing.)
+- [x] Passing UI/business behavior is not rewritten. (Only `FONT_FAMILIES.body` (Android) + the font load changed; no screen/business logic touched.)
 
 ### 10.2 Palette and typography
 
-- [ ] Exact Rocket Food colors are centralized and consistently consumed.
-- [ ] Delivery status colors remain red/orange/green with text labels.
-- [ ] Oswald required weights load and appear on intended display text.
-- [ ] General text follows the user-selected documented Arial/platform-fallback policy.
-- [ ] No screen falsely claims an unavailable fallback is Arial.
-- [ ] Critical text remains readable/unclipped at increased text sizes.
+- [x] Exact Rocket Food colors are centralized and consistently consumed. (`rg` for hex literals outside `theme.js` → none; all colors via `COLORS`/`DELIVERY_STATUS_COLORS`.)
+- [x] Delivery status colors remain red/orange/green with text labels. (`DELIVERY_STATUS_COLORS` + `DeliveryRow`/modal render the status text, not color alone.)
+- [x] Oswald required weights load and appear on intended display text. (`Oswald_400Regular`/`Oswald_600SemiBold` load in `_layout.js` and bundle in the export; display tokens reference them. On-device appearance native-pending.)
+- [x] General text follows the user-selected documented Arial/platform-fallback policy. (Option 3: iOS/default `Arial`, Android `Arimo_400Regular` — bundled Arial-metric font.)
+- [x] No screen falsely claims an unavailable fallback is Arial. (Android now renders Arimo, a real Arial-metric font, not a mislabeled system font; iOS uses genuine Arial.)
+- [ ] Critical text remains readable/unclipped at increased text sizes. (**Native dynamic-type test pending**.)
 
 ### 10.3 Customer navigation UI
 
-- [ ] Customer tabs are exactly Restaurants, Order History, Account in that order.
-- [ ] Labels/icons/selected states/touch targets are visible and accessible.
-- [ ] Shared logo/logout header and footer persist through Customer destinations.
-- [ ] Nested Restaurant routes create no duplicate header/footer/tab.
-- [ ] Footer/header obscure no Customer content.
+- [x] Customer tabs are exactly Restaurants, Order History, Account in that order. (`customer/_layout.js` declares exactly those three `Tabs.Screen`s.)
+- [x] Labels/icons/selected states/touch targets are visible and accessible. (Exact `title`s, `tabBarAccessibilityLabel`s, active `warmYellow` indicator, and `LAYOUT.minimumTouchTarget`-sized items in code; on-device render native-pending.)
+- [x] Shared logo/logout header and footer persist through Customer destinations. (`header: () => <AppHeader/>` on the Tabs navigator; nested Restaurant stack has `headerShown:false`.)
+- [x] Nested Restaurant routes create no duplicate header/footer/tab. (Restaurant stack hides its own header; only `restaurant`/`order-history`/`account` are tabs.)
+- [ ] Footer/header obscure no Customer content. (**Native layout verification pending**.)
 
 ### 10.4 Courier navigation UI
 
-- [ ] Courier tabs are exactly Order Delivery, Account in that order.
-- [ ] Labels/icons/selected states/touch targets are visible and accessible.
-- [ ] Shared logo/logout header and footer persist through Courier destinations.
-- [ ] Customer/internal routes do not appear as Courier tabs.
-- [ ] Footer/header obscure no Courier content.
+- [x] Courier tabs are exactly Order Delivery, Account in that order. (`courier/_layout.js` declares exactly `index` (Order Delivery) and `account`.)
+- [x] Labels/icons/selected states/touch targets are visible and accessible. (Matches the Customer footer standard — same tab styles, a11y labels, indicator, touch targets; on-device render native-pending.)
+- [x] Shared logo/logout header and footer persist through Courier destinations. (`header: () => <AppHeader/>` on the courier Tabs navigator.)
+- [x] Customer/internal routes do not appear as Courier tabs. (Only `index` and `account` are declared under `courier/`.)
+- [ ] Footer/header obscure no Courier content. (**Native layout verification pending**.)
 
 ### 10.5 Root and role boundary
 
-- [ ] Login shows no authenticated role header/footer.
-- [ ] Account Selection shows no role-specific header/footer.
-- [ ] Customer and Courier chrome/data never mix.
-- [ ] Logout/session expiry removes protected chrome and back cannot restore it.
-- [ ] Safe areas/status bar remain correct across root destinations.
+- [x] Login shows no authenticated role header/footer. (`index.js`/`selection.js` are root Stack screens with `headerShown:false` and no `AppHeader`/tab bar.)
+- [x] Account Selection shows no role-specific header/footer. (Same — `selection.js` renders only its own content.)
+- [x] Customer and Courier chrome/data never mix. (Mutually exclusive root `Stack.Protected` guards + per-layout role redirects.)
+- [ ] Logout/session expiry removes protected chrome and back cannot restore it. (Guards are code-correct; **native back test pending**.)
+- [ ] Safe areas/status bar remain correct across root destinations. (`SafeAreaProvider` + per-screen safe areas in code; **native verification pending**.)
 
 ### 10.6 Wireframe surfaces
 
-- [ ] Account Selection matches required structure and role choices.
-- [ ] Order Confirmation matches summary, notification choices, total, actions, and result states.
-- [ ] Courier Order Delivery matches list/status/View structure and semantic colors.
-- [ ] Delivery Details shows required fields with reachable Close and overflow.
-- [ ] Customer and Courier Account Settings share structure with correct role labels.
-- [ ] Checklist wording wins and every material visual variance is documented.
+- [ ] Account Selection matches required structure and role choices. (Structure/labels present in code; **wireframe-visual comparison pending**.)
+- [ ] Order Confirmation matches summary, notification choices, total, actions, and result states. (All elements present; **wireframe comparison pending**.)
+- [ ] Courier Order Delivery matches list/status/View structure and semantic colors. (Semantic colors + structure in code; **wireframe comparison pending**.)
+- [ ] Delivery Details shows required fields with reachable Close and overflow. (Fields + scroll + Close in code; **native reachability pending**.)
+- [ ] Customer and Courier Account Settings share structure with correct role labels. (One shared `AccountScreen`, role labels correct; **wireframe comparison pending**.)
+- [ ] Checklist wording wins and every material visual variance is documented. (Checklist tab labels used; **variance documentation requires the wireframe comparison**.)
 
 ### 10.7 Overflow, keyboard, and responsive layout
 
-- [ ] Every overflowing page/list/form/modal scrolls through its final content.
-- [ ] No nested-scroll trap or hidden final row/action remains.
-- [ ] Account focused fields and Save remain keyboard-safe.
-- [ ] Small phones and increased text retain required controls/labels.
-- [ ] Representative landscape/wide layout remains usable where supported.
-- [ ] iOS/Android safe areas protect header, footer, modal, and content.
+- [ ] Every overflowing page/list/form/modal scrolls through its final content. (`FlatList`/`ScrollView` owners in place per screen; **native scroll test pending**.)
+- [ ] No nested-scroll trap or hidden final row/action remains. (**Native test pending**.)
+- [ ] Account focused fields and Save remain keyboard-safe. (`KeyboardAvoidingView` + `ScrollView` in `AccountScreen`; **native keyboard test pending**.)
+- [ ] Small phones and increased text retain required controls/labels. (**Native test pending**.)
+- [ ] Representative landscape/wide layout remains usable where supported. (**Native test pending**.)
+- [ ] iOS/Android safe areas protect header, footer, modal, and content. (Safe-area owners in code; **native test pending**.)
 
 ### 10.8 Accessibility and states
 
-- [ ] Interactive controls have correct role, label, state, focus order, and touch target.
-- [ ] Tabs, checkboxes, statuses, disabled/loading controls, errors, and successes do not rely on color alone.
-- [ ] Modal semantics and announcements are appropriate.
-- [ ] Contrast and readability are acceptable on representative platforms/settings.
-- [ ] Loading, empty, error, retry, pending, partial-recovery, success, and locked states are understandable.
+- [x] Interactive controls have correct role, label, state, focus order, and touch target. (Roles/labels/states and `minimumTouchTarget` sizes set in code across buttons, tabs, checkboxes, inputs; **on-device screen-reader/focus verification pending**.)
+- [x] Tabs, checkboxes, statuses, disabled/loading controls, errors, and successes do not rely on color alone. (Tabs use an active indicator + selected a11y state; checkboxes show a check mark; status controls show text; disabled uses opacity + `disabled` state; errors/success use icons + text.)
+- [x] Modal semantics and announcements are appropriate. (`accessibilityViewIsModal`, `accessibilityLiveRegion`, and `accessibilityRole="alert"` on result/error regions.)
+- [ ] Contrast and readability are acceptable on representative platforms/settings. (**Native contrast check pending**.)
+- [ ] Loading, empty, error, retry, pending, partial-recovery, success, and locked states are understandable. (All states implemented via `ResultState`/row states; **native readability pending**.)
 
 ### 10.9 Regression and repository verification
 
