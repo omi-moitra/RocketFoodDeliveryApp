@@ -476,7 +476,7 @@ The design must prevent contradictory states such as editable checkboxes during 
 ### 10.8 Repository and platform verification
 
 - [x] `git diff --check` passes.
-- [ ] Focused/full backend tests pass if the user-selected option changes server code. (Focused contract verification for the canonical-contract revision is pending in this record.)
+- [x] Focused backend tests pass for the user-selected server change. (`./mvnw -Dtest=ApiCreateOrderDTODeserializationTest test` → 4 tests, 0 failures/errors; all 101 production and 15 test sources compiled. Full database-backed suite was not rerun for this casing-only revision.)
 - [x] `npm ls --depth=0` reports no invalid dependency.
 - [x] `npx expo config --type public` succeeds without secrets.
 - [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
