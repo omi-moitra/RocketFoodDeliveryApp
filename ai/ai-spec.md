@@ -60,6 +60,8 @@ Out of scope are registration, password recovery, employee/restaurant-owner mobi
 
 `ai/features/feature-name.feature.md` is an ignored inactive template, not a product feature. The former M14 navigation specification was merged into the original Navigation Structure feature.
 
+At project completion, when no features remain to be implemented, delete the inactive `ai/features/feature-name.feature.md` template.
+
 ## 5. User journeys
 
 ### Authentication
