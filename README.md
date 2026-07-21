@@ -233,7 +233,7 @@ A backend adjustment is allowed only when repository/live evidence proves that a
 - Avoid unrelated cleanup, renaming, schema changes, broad refactors, or speculative redesign.
 - Include focused backend tests and updated Postman requests when API-facing.
 - Be integrated through the frontend service boundary rather than directly from screen code.
-- Be documented in `ai/M14/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
+- Be documented in `ai/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
 
 Before editing backend code, Claude must present the viable minimum-change options with their exact API/file impact, benefits, risks, compatibility/grading implications, and verification cost. The user selects the option; Claude must not make that product/contract decision independently.
 
