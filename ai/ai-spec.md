@@ -302,25 +302,52 @@ Delivery status uses red Pending, orange In Progress, and green Delivered with v
 
 ## 15. Verification strategy
 
-### Automated and static
+### Token-efficient implementation policy
+
+Verification during implementation must be proportional to the changed code and economical in tool output. Prefer source inspection, caller searches, `git diff --check`, JSON parsing, focused unit tests, and narrowly scoped build or compile checks. Capture or summarize only the result needed to establish success or diagnose a failure; do not stream large routine logs into the working context.
+
+Codex must not automatically launch an iOS Simulator, Android Emulator, physical-device session, GUI application, interactive Expo session, or full native walkthrough. It must also defer other high-output or high-duration checks—including repeated full Expo exports, repeated `expo-doctor` runs, the full database-backed Maven suite, verbose dependency trees, and broad diagnostic commands—unless:
+
+- The user explicitly asks for that test during the implementation; or
+- A focused lower-cost check cannot resolve a concrete blocker or material regression risk, in which case Codex explains why the larger check is necessary before running it.
+
+Skipping a resource-intensive test never permits Codex to report it as passed. The affected refactoring record and final handoff must mark it as deferred or pending.
+
+### Checks during each implementation
 
 - `git diff --check`
+- Targeted import, export, caller, route, and contract searches for changed owners
+- Focused unit or service tests that exercise the changed behavior without requiring a simulator or full application context
+- JSON parsing when JSON files change
+- Secret/generated-output review for the changed paths
+- A narrow compile/configuration check only when the edit can reasonably affect compilation or configuration
+
+### Consolidated end-of-implementation test list
+
+At the end of an implementation batch, Codex gives the user one deduplicated checklist of relevant tests that were not run. The checklist must identify the affected feature, exact action or command, expected result, and whether the test is automated, simulator/emulator, physical-device, Postman, DBeaver, accessibility, or visual. It should group shared coverage so the user does not repeat the same startup, login, navigation, or logout flow for every refactor.
+
+The complete candidate end-of-batch checks are:
+
 - `npm ls --depth=0`
+- `npx expo install --check`
 - `npx expo config --type public`
-- `npx expo export --platform android`, with generated output removed
+- One final `npx expo export --platform android`, with generated output kept outside the repository or removed
 - Focused backend tests for changed DTO/controller/service behavior
-- Full `./mvnw test` when the configured MySQL test database is available
+- One full `./mvnw test` when the configured MySQL test database is available
 - JSON parsing and secret review of `PostmanCollection.json`
+- Customer-only, Courier-only, and both dual-role navigation choices
+- Startup restoration, logout, session expiry, back navigation, restart, and relevant deep links
+- Affected Customer and Courier journeys, combined into the fewest complete walkthroughs
+- Small-screen scrolling, keyboard, safe areas, dynamic text, landscape, and wide layouts for changed surfaces
+- Screen-reader focus/order, announcements, selected/checked states, and contrast for changed controls
+- Wireframe comparison for changed M13/M14 surfaces
+- Postman and DBeaver confirmation when an affected feature requires persistence/API evidence
+
+Codex does not run simulator/emulator, physical-device, or other deferred high-cost checks merely because they appear in this list. The user can run them from the supplied checklist or explicitly ask Codex to run an available automated check.
 
 ### Manual/native
 
-- Customer-only, Courier-only, and both dual-role choices
-- Startup restoration, logout, session expiry, back, restart, and deep-link behavior
-- Complete Customer and Courier journeys
-- Small-screen scrolling, keyboard, safe areas, dynamic text, landscape, and wide layouts
-- Screen-reader focus/order, announcements, selected/checked states, and contrast
-- Wireframe comparison for all required M14 surfaces
-- DBeaver/Postman confirmation of persistence where required
+Manual/native evidence remains required wherever the grading or feature specifications require it, but it is batched into the consolidated end-of-implementation checklist rather than repeatedly performed during individual refactors.
 
 Static inspection and export do not prove native interaction, visual fidelity, device safe areas, keyboard behavior, or screen-reader output.
 
