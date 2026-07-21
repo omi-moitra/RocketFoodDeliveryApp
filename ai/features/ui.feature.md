@@ -6,7 +6,7 @@
 
 - **Feature:** Module 14 UI System and Cross-Platform Audit
 - **Area:** All mobile routes, shared components, tabs, modals, theme, fonts, safe areas
-- **Visual reference:** `support_materials_14/Wireframe.pdf` plus retained M13 contracts
+- **Visual reference:** `client/docs/m14/Wireframe.pdf` plus retained M13 contracts
 - **Graded labels:** Customer—Restaurants, Order History, Account; Courier—Order Delivery, Account
 
 ## 2. Goal
@@ -130,16 +130,18 @@ Native verification is still required for small screens, large text, keyboard-op
 
 ## 9. Design decision record
 
-The audit found the palette, status colors, Oswald setup, exact tabs, role chrome, scroll owners, and accessibility semantics already aligned with the implemented design. The one demonstrated platform gap was Android body typography.
+The audit found the palette, status colors, Oswald setup, exact tabs, role chrome, scroll owners, and accessibility semantics aligned with the implemented design. The first demonstrated platform gap was Android body typography.
 
-Claude presented three font strategies and clarified the tradeoff between a generic platform fallback and an Arial-compatible bundled face. The user chose Arimo on Android only. Accordingly, `@expo-google-fonts/arimo` is installed, `Arimo_400Regular` loads at root, and `FONT_FAMILIES.body` resolves to Arimo on Android and native Arial on iOS/default. No screen layout or business logic was redesigned during this UI pass.
+Claude presented three font strategies and clarified the tradeoff between a generic platform fallback and an Arial-compatible bundled face. The user chose Arimo on Android only. Accordingly, `@expo-google-fonts/arimo` is installed, `Arimo_400Regular` loads at root, and `FONT_FAMILIES.body` resolves to Arimo on Android and native Arial on iOS/default.
+
+A subsequent wireframe verification found presentation drift without business-logic defects. The user directed implementation of the visual corrections. Account Selection now uses Customer/Courier role cards, Account uses the supplied hierarchy and copy, Courier Delivery uses the Order ID/Address/Status/View table, Delivery Details uses the supplied title and field order, and notification choices use the supplied question and Email/Phone grouping. These changes reuse existing primitives, icons, state, and request boundaries.
 
 ## 10. Acceptance criteria
 
 ### Verified from code and automated checks
 
 - [x] Exact Rocket Food colors and delivery-status mappings are centralized.
-- [x] No repeated project palette hex literals exist outside the theme owner.
+- [x] Reusable UI styles consume theme tokens; required static app-configuration colors remain in `app.json`.
 - [x] Oswald weights are bundled and referenced through shared tokens.
 - [x] Body typography uses the user-selected Arial/Arimo platform policy.
 - [x] Customer and Courier tabs have exact labels/order, icons, active state, and shared header.
@@ -147,12 +149,14 @@ Claude presented three font strategies and clarified the tradeoff between a gene
 - [x] Root/role guards prevent Customer and Courier chrome/data from mixing.
 - [x] Scroll/list/keyboard owners exist for content that can overflow.
 - [x] Interactive controls use explicit accessible semantics and non-color-only feedback.
-- [x] `npm ls --depth=0`, public Expo config, Android Expo export, and `git diff --check` passed for the Arimo change; generated export output was removed.
-- [x] The final UI implementation adds only the selected Arimo dependency and font wiring.
+- [x] The four-page M14 wireframe was reviewed and required surface structure was reconciled in code.
+- [x] Account Selection, Account, Courier Delivery, Delivery Details, and notification-choice structure match the supplied hierarchy and labels.
+- [x] `npm ls --depth=0`, public Expo config, Android/iOS Expo exports, and `git diff --check` pass; generated export output is removed.
+- [x] No new UI dependency was added for the visual corrections; the existing selected Arimo dependency remains the only UI-audit dependency addition.
 
 ### Manual verification still required
 
-- [ ] Compare every M14 surface visually with the supplied wireframe.
+- [ ] Confirm the reconciled surfaces through native screenshots against the supplied wireframe.
 - [ ] Verify critical text at increased system font sizes.
 - [ ] Verify header/footer and final content do not overlap on representative iOS/Android devices.
 - [ ] Verify Account keyboard behavior, modal/list overflow, small phones, landscape, and wide layouts.

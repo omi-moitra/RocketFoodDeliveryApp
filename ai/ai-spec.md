@@ -24,7 +24,7 @@ When an established decision is material, the feature specification records the 
 - **Supported mobile roles:** Customer and Courier
 - **Platforms:** iOS and Android
 - **API configuration:** `EXPO_PUBLIC_API_URL`
-- **Visual sources:** `Support_Materials/support_materials_13/` and `Support_Materials/support_materials_14/`
+- **Visual sources:** `client/docs/m13/` and `client/docs/m14/`
 
 ## 3. Product goal and scope
 
@@ -57,6 +57,7 @@ Out of scope are registration, password recovery, employee/restaurant-owner mobi
 3. `ai/features/account-details.feature.md`
 4. `ai/features/order-confirmation-modal.feature.md`
 5. `ai/features/ui.feature.md`
+6. `ai/features/code-quality.feature.md`
 
 `ai/features/feature-name.feature.md` is an ignored inactive template, not a product feature. The former M14 navigation specification was merged into the original Navigation Structure feature.
 
