@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLES } from '../storage/authStorage';
+import AppIcon from '../components/AppIcon';
 
 // A single user-safe message covers any storage failure without leaking internal detail.
 const SELECTION_ERROR = 'Your selection could not be saved. Please try again.';
@@ -98,36 +99,39 @@ export default function AccountSelectionScreen() {
           ) : null}
         </View>
 
-        <Pressable
-          accessibilityLabel="Continue as Customer"
-          accessibilityRole="button"
-          accessibilityState={{ busy: isSelecting, disabled: isSelecting }}
-          disabled={isSelecting}
-          onPress={() => handleSelectRole(ROLES.customer)}
-          style={({ pressed }) => [
-            styles.choiceButton,
-            isSelecting && styles.choiceButtonDisabled,
-            pressed && !isSelecting && styles.choiceButtonPressed,
-          ]}
-        >
-          <Text style={styles.choiceButtonText}>CUSTOMER</Text>
-        </Pressable>
+        <View style={styles.choiceGrid}>
+          <Pressable
+            accessibilityLabel="Continue as Customer"
+            accessibilityRole="button"
+            accessibilityState={{ busy: isSelecting, disabled: isSelecting }}
+            disabled={isSelecting}
+            onPress={() => handleSelectRole(ROLES.customer)}
+            style={({ pressed }) => [
+              styles.choiceCard,
+              isSelecting && styles.choiceButtonDisabled,
+              pressed && !isSelecting && styles.choiceButtonPressed,
+            ]}
+          >
+            <AppIcon color={COLORS.orangeRed} name="user" size={72} />
+            <Text style={styles.choiceButtonText}>Customer</Text>
+          </Pressable>
 
-        <Pressable
-          accessibilityLabel="Continue as Courier"
-          accessibilityRole="button"
-          accessibilityState={{ busy: isSelecting, disabled: isSelecting }}
-          disabled={isSelecting}
-          onPress={() => handleSelectRole(ROLES.courier)}
-          style={({ pressed }) => [
-            styles.choiceButton,
-            styles.courierButton,
-            isSelecting && styles.choiceButtonDisabled,
-            pressed && !isSelecting && styles.choiceButtonPressed,
-          ]}
-        >
-          <Text style={styles.choiceButtonText}>COURIER</Text>
-        </Pressable>
+          <Pressable
+            accessibilityLabel="Continue as Courier"
+            accessibilityRole="button"
+            accessibilityState={{ busy: isSelecting, disabled: isSelecting }}
+            disabled={isSelecting}
+            onPress={() => handleSelectRole(ROLES.courier)}
+            style={({ pressed }) => [
+              styles.choiceCard,
+              isSelecting && styles.choiceButtonDisabled,
+              pressed && !isSelecting && styles.choiceButtonPressed,
+            ]}
+          >
+            <AppIcon color={COLORS.charcoal} name="car" size={72} />
+            <Text style={styles.choiceButtonText}>Courier</Text>
+          </Pressable>
+        </View>
 
         {isSelecting ? (
           <ActivityIndicator
@@ -183,31 +187,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  choiceButton: {
-    alignItems: 'center',
-    backgroundColor: COLORS.orangeRed,
-    borderRadius: 8,
-    justifyContent: 'center',
+  choiceGrid: {
+    flexDirection: 'row',
+    gap: SPACING.md,
     maxWidth: 480,
-    minHeight: LAYOUT.minimumTouchTarget,
-    paddingHorizontal: SPACING.md,
     width: '100%',
   },
-  courierButton: {
-    backgroundColor: COLORS.mutedGreen,
-    marginTop: SPACING.md,
+  choiceCard: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.charcoal,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    flex: 1,
+    gap: SPACING.md,
+    justifyContent: 'center',
+    minHeight: 180,
+    padding: SPACING.md,
   },
   choiceButtonDisabled: {
     opacity: 0.75,
   },
   choiceButtonPressed: {
-    opacity: 0.88,
+    backgroundColor: COLORS.warmYellow,
   },
   choiceButtonText: {
-    color: COLORS.white,
-    fontFamily: FONT_FAMILIES.oswaldRegular,
-    fontSize: 20,
-    letterSpacing: 0.5,
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 19,
   },
   progress: {
     marginTop: SPACING.lg,

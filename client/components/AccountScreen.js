@@ -283,86 +283,97 @@ export default function AccountScreen({ expectedRole }) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <Text accessibilityRole="header" style={styles.title}>
-            ACCOUNT
-          </Text>
+          <View style={styles.formContainer}>
+            <Text accessibilityRole="header" style={styles.title}>
+              MY ACCOUNT
+            </Text>
 
-          <Text style={styles.inputLabel}>User Email</Text>
-          <View style={styles.readOnlyField}>
-            <Text
-              accessibilityLabel={`User email ${savedAccount.primaryEmail}, read only`}
-              style={styles.readOnlyText}
+            <Text style={styles.roleContext}>Logged In As: {roleLabel}</Text>
+
+            <Text style={styles.inputLabel}>Primary Email (Read Only)</Text>
+            <View style={styles.readOnlyField}>
+              <Text
+                accessibilityLabel={`User email ${savedAccount.primaryEmail}, read only`}
+                style={styles.readOnlyText}
+              >
+                {savedAccount.primaryEmail}
+              </Text>
+            </View>
+            <Text style={styles.helperText}>Email used to log in to the application.</Text>
+
+            <Text style={styles.inputLabel}>{roleLabel} Email</Text>
+            <TextInput
+              accessibilityLabel={`${roleLabel} email`}
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect={false}
+              editable={!isSaving}
+              keyboardType="email-address"
+              onChangeText={handleChangeEmail}
+              placeholder="Enter role email"
+              placeholderTextColor={COLORS.charcoal}
+              style={[styles.input, fieldErrors.email && styles.inputError]}
+              value={emailDraft}
+            />
+            {fieldErrors.email ? (
+              <Text accessibilityRole="alert" style={styles.fieldError}>
+                {fieldErrors.email}
+              </Text>
+            ) : (
+              <Text style={styles.helperText}>Email used for your {roleLabel} account.</Text>
+            )}
+
+            <Text style={styles.inputLabel}>{roleLabel} Phone</Text>
+            <TextInput
+              accessibilityLabel={`${roleLabel} phone`}
+              autoComplete="tel"
+              editable={!isSaving}
+              keyboardType="phone-pad"
+              onChangeText={handleChangePhone}
+              placeholder="Enter role phone"
+              placeholderTextColor={COLORS.charcoal}
+              style={[styles.input, fieldErrors.phone && styles.inputError]}
+              value={phoneDraft}
+            />
+            {fieldErrors.phone ? (
+              <Text accessibilityRole="alert" style={styles.fieldError}>
+                {fieldErrors.phone}
+              </Text>
+            ) : (
+              <Text style={styles.helperText}>Phone number for your {roleLabel} account.</Text>
+            )}
+
+            <View style={styles.messageRegion}>
+              {saveErrorMessage ? (
+                <Text accessibilityLiveRegion="assertive" accessibilityRole="alert" style={styles.saveError}>
+                  {saveErrorMessage}
+                </Text>
+              ) : null}
+              {showSuccess ? (
+                <Text accessibilityLiveRegion="polite" style={styles.saveSuccess}>
+                  {ACCOUNT_MESSAGES.saved}
+                </Text>
+              ) : null}
+            </View>
+
+            <Pressable
+              accessibilityLabel="Update account details"
+              accessibilityRole="button"
+              accessibilityState={{ busy: isSaving, disabled: isSaving || !isDirty }}
+              disabled={isSaving || !isDirty}
+              onPress={handleSave}
+              style={({ pressed }) => [
+                styles.saveButton,
+                (isSaving || !isDirty) && styles.saveButtonDisabled,
+                pressed && isDirty && !isSaving && styles.saveButtonPressed,
+              ]}
             >
-              {savedAccount.primaryEmail}
-            </Text>
-          </View>
-
-          <Text style={styles.inputLabel}>{roleLabel} Email</Text>
-          <TextInput
-            accessibilityLabel={`${roleLabel} email`}
-            autoCapitalize="none"
-            autoComplete="email"
-            autoCorrect={false}
-            editable={!isSaving}
-            keyboardType="email-address"
-            onChangeText={handleChangeEmail}
-            placeholder="Enter role email"
-            placeholderTextColor={COLORS.charcoal}
-            style={[styles.input, fieldErrors.email && styles.inputError]}
-            value={emailDraft}
-          />
-          {fieldErrors.email ? (
-            <Text accessibilityRole="alert" style={styles.fieldError}>
-              {fieldErrors.email}
-            </Text>
-          ) : null}
-
-          <Text style={styles.inputLabel}>{roleLabel} Phone</Text>
-          <TextInput
-            accessibilityLabel={`${roleLabel} phone`}
-            autoComplete="tel"
-            editable={!isSaving}
-            keyboardType="phone-pad"
-            onChangeText={handleChangePhone}
-            placeholder="Enter role phone"
-            placeholderTextColor={COLORS.charcoal}
-            style={[styles.input, fieldErrors.phone && styles.inputError]}
-            value={phoneDraft}
-          />
-          {fieldErrors.phone ? (
-            <Text accessibilityRole="alert" style={styles.fieldError}>
-              {fieldErrors.phone}
-            </Text>
-          ) : null}
-
-          <View style={styles.messageRegion}>
-            {saveErrorMessage ? (
-              <Text accessibilityLiveRegion="assertive" accessibilityRole="alert" style={styles.saveError}>
-                {saveErrorMessage}
+              {isSaving ? <ActivityIndicator color={COLORS.white} style={styles.saveProgress} /> : null}
+              <Text style={styles.saveButtonText}>
+                {isSaving ? 'UPDATING ACCOUNT' : 'UPDATE ACCOUNT'}
               </Text>
-            ) : null}
-            {showSuccess ? (
-              <Text accessibilityLiveRegion="polite" style={styles.saveSuccess}>
-                {ACCOUNT_MESSAGES.saved}
-              </Text>
-            ) : null}
+            </Pressable>
           </View>
-
-          <Pressable
-            accessibilityLabel="Save account details"
-            accessibilityRole="button"
-            accessibilityState={{ busy: isSaving, disabled: isSaving || !isDirty }}
-            disabled={isSaving || !isDirty}
-            onPress={handleSave}
-            style={({ pressed }) => [
-              styles.saveButton,
-              (isSaving || !isDirty) && styles.saveButtonDisabled,
-              pressed && isDirty && !isSaving && styles.saveButtonPressed,
-            ]}
-          >
-            {isSaving ? <ActivityIndicator color={COLORS.white} style={styles.saveProgress} /> : null}
-            <Text style={styles.saveButtonText}>{isSaving ? 'SAVING' : 'SAVE'}</Text>
-          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -381,10 +392,21 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: SPACING.lg,
   },
+  formContainer: {
+    alignSelf: 'center',
+    maxWidth: 680,
+    width: '100%',
+  },
   title: {
     color: COLORS.charcoal,
     fontFamily: FONT_FAMILIES.oswaldRegular,
     fontSize: 28,
+    marginBottom: SPACING.md,
+  },
+  roleContext: {
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 16,
     marginBottom: SPACING.lg,
   },
   inputLabel: {
@@ -394,10 +416,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   readOnlyField: {
-    backgroundColor: COLORS.warmYellow,
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.charcoal,
     borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xs,
     minHeight: 56,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
@@ -419,6 +443,13 @@ const styles = StyleSheet.create({
     minHeight: 56,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
+  },
+  helperText: {
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 12,
+    marginBottom: SPACING.lg,
+    opacity: 0.65,
   },
   inputError: {
     borderColor: COLORS.darkRed,

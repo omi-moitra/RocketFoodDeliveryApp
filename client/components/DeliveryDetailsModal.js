@@ -83,7 +83,7 @@ export default function DeliveryDetailsModal({ delivery, onClose, visible }) {
               <View style={styles.header}>
                 <View style={styles.headerTopRow}>
                   <Text accessibilityRole="header" style={styles.title}>
-                    {delivery.restaurantName}
+                    DELIVERY DETAILS
                   </Text>
                   <Pressable
                     accessibilityLabel="Close delivery details"
@@ -108,15 +108,6 @@ export default function DeliveryDetailsModal({ delivery, onClose, visible }) {
                   </View>
                 </View>
 
-                <Text
-                  accessibilityLabel={
-                    orderDate ? `Order date ${orderDate}` : 'Order date unavailable'
-                  }
-                  style={styles.headerDetail}
-                >
-                  Order Date: {orderDate}
-                </Text>
-
                 {/* A missing delivery address stays blank on screen but announces a safe fallback;
                     the strings "undefined" and "null" must never render. */}
                 <Text
@@ -128,6 +119,22 @@ export default function DeliveryDetailsModal({ delivery, onClose, visible }) {
                   style={styles.headerDetail}
                 >
                   Delivery Address: {delivery.deliveryAddress ?? ''}
+                </Text>
+
+                <Text
+                  accessibilityLabel={`Restaurant ${delivery.restaurantName}`}
+                  style={styles.headerDetail}
+                >
+                  Restaurant: {delivery.restaurantName}
+                </Text>
+
+                <Text
+                  accessibilityLabel={
+                    orderDate ? `Order date ${orderDate}` : 'Order date unavailable'
+                  }
+                  style={styles.headerDetail}
+                >
+                  Order Date: {orderDate}
                 </Text>
               </View>
 

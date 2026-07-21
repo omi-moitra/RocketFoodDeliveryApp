@@ -320,7 +320,7 @@ export default function OrderDeliveryScreen() {
       <View style={styles.screen}>
         <View style={styles.titleRow}>
           <Text accessibilityRole="header" style={styles.pageTitle}>
-            ORDER DELIVERY
+            MY DELIVERIES
           </Text>
           {isRefreshing ? <ActivityIndicator color={COLORS.orangeRed} size="small" /> : null}
         </View>
@@ -342,6 +342,16 @@ export default function OrderDeliveryScreen() {
           contentContainerStyle={styles.listContent}
           data={hasRows ? deliveries : []}
           keyExtractor={(delivery) => String(delivery.id)}
+          ListHeaderComponent={
+            hasRows ? (
+              <View accessible accessibilityLabel="Order ID, Address, Status, View" style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderText, styles.orderHeader]}>ORDER{`\n`}ID</Text>
+                <Text style={[styles.tableHeaderText, styles.addressHeader]}>ADDRESS</Text>
+                <Text style={[styles.tableHeaderText, styles.statusHeader]}>STATUS</Text>
+                <Text style={[styles.tableHeaderText, styles.viewHeader]}>VIEW</Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={renderResultState}
           renderItem={renderDeliveryRow}
           showsVerticalScrollIndicator={false}
@@ -360,7 +370,8 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: COLORS.white,
     flex: 1,
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.lg,
   },
   titleRow: {
     alignItems: 'center',
@@ -402,5 +413,31 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
+  },
+  tableHeader: {
+    alignItems: 'center',
+    backgroundColor: COLORS.charcoal,
+    flexDirection: 'row',
+    gap: SPACING.xs,
+    minHeight: 52,
+  },
+  tableHeaderText: {
+    color: COLORS.white,
+    fontFamily: FONT_FAMILIES.oswaldSemiBold,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  orderHeader: {
+    width: 44,
+  },
+  addressHeader: {
+    flex: 1,
+    minWidth: 0,
+  },
+  statusHeader: {
+    minWidth: 104,
+  },
+  viewHeader: {
+    width: LAYOUT.minimumTouchTarget,
   },
 });

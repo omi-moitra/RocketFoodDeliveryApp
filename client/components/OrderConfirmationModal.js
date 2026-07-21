@@ -266,21 +266,25 @@ export default function OrderConfirmationModal({
                 summary → choices → total → confirm. Hidden once the order is consumed on success. */}
             {submissionState !== 'success' ? (
               <View style={styles.notifications}>
-                <Text style={styles.notificationsTitle}>Send me a confirmation:</Text>
-                <NotificationCheckbox
-                  accessibilityLabel="Receive order confirmation by SMS"
-                  checked={sendSMS}
-                  disabled={isProcessing}
-                  label="By Phone (SMS)"
-                  onToggle={() => setSendSMS((current) => !current)}
-                />
-                <NotificationCheckbox
-                  accessibilityLabel="Receive order confirmation by email"
-                  checked={sendEmail}
-                  disabled={isProcessing}
-                  label="By Email"
-                  onToggle={() => setSendEmail((current) => !current)}
-                />
+                <Text style={styles.notificationsTitle}>
+                  Would you like to receive your order confirmation by email and/or text?
+                </Text>
+                <View style={styles.notificationChoices}>
+                  <NotificationCheckbox
+                    accessibilityLabel="Receive order confirmation by email"
+                    checked={sendEmail}
+                    disabled={isProcessing}
+                    label="By Email"
+                    onToggle={() => setSendEmail((current) => !current)}
+                  />
+                  <NotificationCheckbox
+                    accessibilityLabel="Receive order confirmation by SMS"
+                    checked={sendSMS}
+                    disabled={isProcessing}
+                    label="By Phone (SMS)"
+                    onToggle={() => setSendSMS((current) => !current)}
+                  />
+                </View>
               </View>
             ) : null}
 
@@ -419,14 +423,24 @@ const styles = StyleSheet.create({
   },
   notificationsTitle: {
     color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 18,
-    marginBottom: SPACING.xs,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 15,
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
+  },
+  notificationChoices: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.md,
+    justifyContent: 'center',
   },
   checkboxRow: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexGrow: 1,
     gap: SPACING.sm,
+    justifyContent: 'center',
+    minWidth: 132,
     minHeight: LAYOUT.minimumTouchTarget,
   },
   checkboxRowPressed: {

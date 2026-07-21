@@ -6,6 +6,7 @@
 
 import {
   faBurger,
+  faCar,
   faCaretDown,
   faCheck,
   faCircleCheck,
@@ -24,6 +25,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 // definitions, so the bundle carries only these icons and adding one means adding one entry here.
 const ICONS_BY_NAME = Object.freeze({
   burger: faBurger,
+  car: faCar,
   'caret-down': faCaretDown,
   check: faCheck,
   'circle-check': faCircleCheck,
