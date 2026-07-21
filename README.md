@@ -233,6 +233,8 @@ A backend adjustment is allowed only when repository/live evidence proves that a
 - Be integrated through the frontend service boundary rather than directly from screen code.
 - Be documented in `ai/M14/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
 
+Before editing backend code, Claude must present the viable minimum-change options with their exact API/file impact, benefits, risks, compatibility/grading implications, and verification cost. The user selects the option; Claude must not make that product/contract decision independently.
+
 Each documented backend adjustment must identify the source discrepancy, why a frontend-only adapter was unsafe or insufficient, the exact method/path/body/response, changed server and client files, compatibility impact, tests, Postman/database evidence, and any remaining manual verification.
 
 ### Module 14 backend adjustment record
