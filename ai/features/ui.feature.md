@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — UI
 
 > Defines the Module 14 visual-system and cross-platform usability audit: Arial/Oswald typography, Rocket Food palette, supplied wireframes, scrolling, safe areas, keyboard behavior, accessibility, and exact role tab labels. Use this document with `ai/ai-spec.md` and every completed feature specification.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Module 14 UI System and Cross-Platform Audit
@@ -31,11 +35,15 @@
 - **Claude deliverable:** A minimal evidence-driven visual/accessibility correction pass across the completed application, not a redesign.
 - **Completion evidence:** Screen-by-screen audit matrix, wireframe comparison, representative iOS/Android checks, text/keyboard/overflow checks, exact tabs/fonts/palette evidence, and final diff.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 2. Feature goal
 
 Make the completed Customer and Courier application visually consistent, usable, accessible, and faithful to the supplied Module 14 wireframes without changing its business behavior.
 
 Claude must first identify what already passes. It may correct demonstrated gaps only. When a requirement has multiple plausible minimum solutions—especially Android Arial availability, wireframe/checklist wording, asset choice, scrolling ownership, or layout behavior—Claude must present the options and tradeoffs, then wait for the user's choice.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -94,6 +102,8 @@ This list is an audit surface, not permission for a broad rewrite. Claude must m
 - Bundling an unlicensed Arial asset or claiming Android uses Arial when it uses a fallback.
 - Choosing between conflicting authoritative/visual/platform requirements without the user's selection.
 - General dead-code/folder/comment cleanup not required by a UI fix; see `code-quality.feature.md`.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -217,6 +227,8 @@ For every option, state:
 
 Claude must stop after presenting options. The user chooses. No font asset, dependency, label compromise, navigation/layout restructuring, or conflicting-wireframe interpretation may be selected by Claude independently. Independent fixes with only one contract-preserving implementation may continue if they do not prejudice the pending choice.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. User flow and visual audit logic
 
 ### 5.1 Audit before editing
@@ -263,6 +275,8 @@ Claude must stop after presenting options. The user chooses. No font asset, depe
 3. Courier choice exposes only Courier chrome/data.
 4. Restart/back behavior does not mix role layouts.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 6. Interfaces
 
 ### 6.1 Theme and font boundary
@@ -301,6 +315,8 @@ Claude must stop after presenting options. The user chooses. No font asset, depe
 - Capture or record representative screen comparisons where the environment permits.
 - Do not commit temporary screenshots unless they are an explicitly required deliverable.
 - Record device/platform, viewport/orientation, text size, keyboard state, and data state for manual evidence.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 7. Data, validation, and state
 
@@ -349,6 +365,8 @@ Required state coverage includes initial loading, data, empty, error/retry, muta
 
 Claude may not move a decision-dependent discrepancy from `optionsPresented` to `implemented` without the user's selection.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - Every screen uses the Rocket Food palette and documented Arial/Oswald policy consistently.
@@ -363,6 +381,8 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 - Final wireframe reconciliation preserves business logic while aligning Account Selection role cards, Account hierarchy/copy, Courier Delivery table columns, Delivery Details title/field order, and notification-choice wording/grouping with the committed M14 wireframe.
 - Android body typography uses the user-selected Arimo fallback while iOS/default uses Arial; Oswald remains the display family.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Technical constraints
 
 - Claude must read the global spec, this full spec, all completed M14 specs, relevant M13 visual specs, any applicable committed repository instructions before edits.
@@ -375,6 +395,8 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 - Do not disable text scaling globally to force a visual match.
 - Do not use private `.omi/` files as runtime dependencies.
 - Do not stage, commit, merge, push, or modify external systems without explicit authorization.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -458,6 +480,8 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 
 Claude must leave criteria unchecked until current evidence supports them. Static inspection/export cannot prove visual fidelity, native scrolling, keyboard behavior, accessibility, or cross-platform font rendering.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [ ] Every graded UI criterion has current evidence.
@@ -471,6 +495,8 @@ Claude must leave criteria unchecked until current evidence supports them. Stati
 - [ ] Global spec, this spec, relevant completed specs, and private implementation log match final verified behavior.
 - [ ] Complete diff contains no dead visual workaround, stale style/comment, debug output, artifact, secret, or unrelated edit.
 - [x] Claude's handoff includes outcome, selected options, changed files, screen/state evidence, checks/results, manual gaps, scoped stage command, and copy-ready commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Notes for AI tools
 
@@ -487,3 +513,5 @@ Claude must leave criteria unchecked until current evidence supports them. Stati
 - Append the final dated report to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage it.
 - Do not stage, commit, merge, or push.
 - Finish with outcome, user-selected options, exact files, checks/results, manual gaps, scoped `git add`, and a copy-ready Conventional Commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

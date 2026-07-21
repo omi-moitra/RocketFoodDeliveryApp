@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # Rocket Food Delivery Refactoring Audit
 
 **Audit date:** July 21, 2026  
@@ -21,6 +23,8 @@ The safest implementation order is:
 
 No source refactor was performed as part of this audit.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Non-negotiable grading safeguards
 
 Every implementation should preserve these constraints from `ai/ai-spec.md` and the owning feature specifications:
@@ -39,6 +43,8 @@ Every implementation should preserve these constraints from `ai/ai-spec.md` and 
 - Retain comments that explain grading rules, business invariants, ownership, response races, compatibility, cancellation, or recovery.
 - Do not broaden this pass into unrelated legacy backoffice/backend cleanup.
 - Do not move, rename, delete, consolidate, or change a dependency/public contract/backend surface until the user selects an option, as required by `ai/features/code-quality.feature.md`.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Findings register
 
@@ -519,6 +525,8 @@ Gate meanings:
 - **Grading safety:** Directly required.
 - **Gate:** Direct and mandatory with every selected change.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Areas that should remain unchanged
 
 The following are intentional and should not be “cleaned up” without new evidence:
@@ -534,6 +542,8 @@ The following are intentional and should not be “cleaned up” without new evi
 - Expo Router/config/reserved files, lockfiles, Maven wrapper, Postman collection, tests, and grading documents.
 - Development-only warnings that explain safe invariant failures, once stale wording/log spam is corrected.
 - Unrelated legacy backend `System.out`, `printStackTrace`, backoffice style, broad DTO naming, or controller cleanup; the code-quality feature explicitly excludes widening into legacy backend work.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Suggested implementation batches
 
@@ -595,6 +605,8 @@ Expected risk: medium. Requires explicit dependency/test-infrastructure choices.
 
 Expected risk: low to medium, but RF-43 must be last.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Test coverage to add before or alongside structural refactors
 
 Highest-value client unit cases:
@@ -619,6 +631,8 @@ Highest-value component/integration cases:
 - Pending customer order with no courier.
 - Delivery status progression and locked Delivered state.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Audit evidence collected
 
 - Working tree was clean before this document was added.
@@ -635,6 +649,8 @@ Highest-value component/integration cases:
 - Maven also reported duplicate `org.json.JSONObject` implementations on the test classpath.
 - The Maven run generated only ignored `server/target/` output; the Expo export was directed to `/tmp`.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Definition of done for any selected refactor set
 
 - Every changed JavaScript header and Contents list matches final source order.
@@ -649,3 +665,4 @@ Highest-value component/integration cases:
 - Manual Customer and Courier regression evidence is recorded honestly.
 - The inactive feature template is removed only at genuine final completion.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

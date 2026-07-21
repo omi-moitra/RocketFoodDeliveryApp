@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Account Details
 
 > Defines the shared Customer and Courier Account Settings experience: read-only user email, editable active-role email/phone, verified retrieval/update contracts, validation, persistence, and failure recovery. Use this document with `ai/ai-spec.md`.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Account Details
@@ -29,6 +33,8 @@
 - **Dependencies:** Completed Navigation Structure and Role-Based Navigation provide validated `userId`, role IDs, `activeRole`, protected tabs, and logout/session-expiry handling.
 - **Claude deliverable:** One shared Account implementation rendered through separate Customer and Courier routes, backed by the verified API contract.
 - **Completion evidence:** Current source/Postman contract evidence, Customer and Courier scenarios, validation/failure checks, database persistence, regression checks, and final diff.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 2. Feature goal
 
@@ -42,6 +48,8 @@ Replace both Account placeholders with one reusable Account Settings experience 
 - Prevents role leakage, duplicate saves, stale responses, and accidental primary-email updates.
 
 The two route files remain distinct because they belong to different role-specific tab navigators. Their form, service, validation, loading, saving, success, and failure behavior must be shared.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -110,6 +118,8 @@ No server file is authorized for editing during the initial contract analysis. I
 - Implementing any backend solution before the user selects from Claude's documented minimum-change options.
 - Guessing update methods, role values, body fields, response shapes, or validation rules.
 - New dependencies, unrelated M13 changes, generated output, secrets, or edits to ignored planning files.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -207,6 +217,8 @@ Claude must stop after presenting the options. The user chooses. Only then may C
 - Preserve completed Courier Delivery and the full M13 Customer journey.
 - Append the required implementation-log entry with contract discrepancy, decision, adapters/backend changes, files, verification, manual gaps, and technical-demo cue.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. User flow and account logic
 
 ### 5.1 Open Customer Account
@@ -248,6 +260,8 @@ Claude must stop after presenting the options. The user chooses. Only then may C
 2. An older response is ignored after newer load, logout, role change, blur/unmount, or wrapper mismatch.
 3. A dual-role user sees only the currently selected role's record.
 4. Re-entering Account reloads current persisted values according to the chosen refresh/focus policy.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 6. Interfaces
 
@@ -335,6 +349,8 @@ If live access is unavailable, implement only decisions proven safely from sourc
 - Use `userId`, role type, and bearer token variables; do not confuse role ID with user ID.
 - Do not commit passwords, tokens, reviewer credentials, or live ngrok URLs.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 7. Data, validation, and state
 
 ### 7.1 Normalized account shape
@@ -392,6 +408,8 @@ Impossible combinations—such as saving with invalid fields, success while dirt
 
 User feedback must not expose tokens, raw server internals, stack traces, or inactive-role details.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - Customer and Courier Account routes look and behave consistently through one shared implementation.
@@ -407,6 +425,8 @@ User feedback must not expose tokens, raw server internals, stack traces, or ina
 - Keyboard, scroll, focus, and small-screen behavior keep every field and Save reachable.
 - Navigation, Courier Delivery, and the M13 Customer journey remain functional.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Technical constraints
 
 - Claude must read the global spec, this complete spec, completed navigation specs, any applicable committed repository instructions before edits.
@@ -421,6 +441,8 @@ User feedback must not expose tokens, raw server internals, stack traces, or ina
 - Use abort/generation guards and a synchronous duplicate-save lock where needed.
 - Do not optimistically claim persistence from submitted drafts.
 - Do not stage, commit, merge, push, or mutate external systems without explicit user authorization.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -495,6 +517,8 @@ User feedback must not expose tokens, raw server internals, stack traces, or ina
 
 Claude must leave criteria unchecked until supported by current evidence. Source inspection and export do not prove live persistence or native interaction.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [ ] Every graded Account Details criterion has current evidence. (Backend + code criteria evidenced; **native/wireframe/DBeaver items pending**.)
@@ -509,6 +533,8 @@ Claude must leave criteria unchecked until supported by current evidence. Source
 - [x] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
 - [x] Complete diff contains no dead code, debug output, generated artifact, secret, undocumented backend change, or unrelated edit. (Orphaned `PlaceholderScreen` removed; backend change documented.)
 - [x] Claude's handoff includes outcome, changed files, final contract, checks/results, remaining manual gaps, scoped stage command, and copy-ready commit command. (See session handoff.)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Notes for AI tools
 
@@ -525,3 +551,5 @@ Claude must leave criteria unchecked until supported by current evidence. Source
 - Append the final dated report to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage that file.
 - Do not stage, commit, merge, or push.
 - Finish with outcome, exact files, final contract, minimum-change rationale, checks/results, manual gaps, scoped `git add`, and a copy-ready Conventional Commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Courier Delivery
 
 > Defines the graded Courier Order Delivery list, eligibility rules, status progression, persistence, delivered lock, and Delivery Details modal. Use this document together with `ai/ai-spec.md` and the completed navigation specifications.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Courier Delivery
@@ -29,6 +33,8 @@
 - **Dependencies:** Completed Navigation Structure and Role-Based Navigation features provide the protected Courier tabs and validated active courier session.
 - **Claude deliverable:** A working Courier Order Delivery experience backed only by the verified existing API, with safe visibility filtering and persistent status changes.
 - **Completion evidence:** Postman contract evidence, current code inspection, named native scenarios, database verification, regression checks, and the final diff.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 2. Feature goal
 
@@ -42,6 +48,8 @@ Replace the current Courier Order Delivery placeholder with a reliable delivery 
 - Open the selected order's complete, scrollable Delivery Details modal.
 
 Claude must preserve the completed M13 Customer journey and the role-isolated navigation already in place. Correctness is defined by persisted backend state, not an optimistic label. Backend work is limited to the smallest verified status-contract correction needed to make this frontend feature safe.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -121,6 +129,8 @@ Claude must inspect but should not modify unless a demonstrated feature defect r
 - Restaurant rating, maps, direct SMS/email, or any extra-mile feature.
 - New dependencies, broad architecture rewrites, unrelated M13 changes, or generated artifacts.
 - Editing or committing `.omi/` planning material; the implementation log is the sole required private write.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -207,6 +217,8 @@ Claude must inspect but should not modify unless a demonstrated feature defect r
 - Append the same decision plus partial-failure handling, changed files, evidence, manual gaps, and technical-demo cue to the private implementation log.
 - Do not mark runtime/database criteria complete from code inspection or export alone.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. User flow and delivery logic
 
 ### 5.1 Enter Order Delivery
@@ -263,6 +275,8 @@ Claude must inspect but should not modify unless a demonstrated feature defect r
 2. A malformed row is excluded rather than rendered with unsafe values.
 3. A dirty unassigned status-2/status-3 row is not inferred as eligible and is not automatically repaired by the mobile client.
 4. A foreign assigned order is excluded even if it appears in stale merged input.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 6. Interfaces
 
@@ -348,6 +362,8 @@ The frontend service must isolate backend details from UI code:
 - Use disposable test data and capture the before/after order status and courier ID in DBeaver.
 - Do not use a delivered production/reviewer order as a mutation test fixture.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 7. Data, validation, and state
 
 ### 7.1 Normalized delivery shape
@@ -424,6 +440,8 @@ The UI must not simultaneously claim empty and loading, show a completed new sta
 
 Never show raw server details, tokens, IDs that are not useful to the user, or stack traces.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - A courier sees all valid pending deliveries regardless of assignment and only their own valid assigned non-pending deliveries.
@@ -438,6 +456,8 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 - Every View action opens the selected order and shows all required fields in a scrollable modal.
 - Missing/malformed data produces exclusion or a safe fallback, never a crash or fabricated value.
 - Customer routes, order creation, order history, navigation, and logout continue working.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 9. Technical constraints
 
@@ -454,6 +474,8 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 - Preserve accessibility labels, touch targets, safe areas, Oswald typography, theme conventions, and junior-readable code comments.
 - Do not read the private implementation log as an implementation dependency; append to it only after implementation/handoff reconciliation.
 - Do not stage, commit, merge, push, or modify external systems without explicit user authorization.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -531,6 +553,8 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 
 Claude must leave every native/on-device criterion unchecked until exercised. Backend persistence criteria require a `./mvnw test` run, which was **skipped this pass**; static inspection/export cannot prove native interaction or DB persistence.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [ ] Every graded Courier Delivery criterion has current evidence. (Retrieval/list/details/status-progression implemented; **backend tests written but not executed this pass**; native on-device interaction remains.)
@@ -545,6 +569,8 @@ Claude must leave every native/on-device criterion unchecked until exercised. Ba
 - [x] The private implementation log records the discrepancy, decision, adapter, recovery behavior, evidence, manual gaps, and technical-demo cue. (Feature-3 completion entry appended to `.omi/m14/IMPLEMENTATION_LOG.md`.)
 - [x] The completed feature diff contains no undocumented/non-minimal backend edit, dead code, debug output, generated artifact, secret, or unrelated change. (Backend limited to one documented response-DTO field + mapping line + tests.)
 - [x] Claude's handoff reports outcome, changed files, exact checks/results, remaining manual checks, a narrowly scoped stage command, and a copy-ready Conventional Commit command. (See session handoff.)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Notes for AI tools
 
@@ -562,3 +588,5 @@ Claude must leave every native/on-device criterion unchecked until exercised. Ba
 - If live backend access, safe disposable data, or representative Courier credentials are unavailable, finish only independent work and report the exact blocked criteria.
 - After implementation or any material follow-up, append the dated handoff to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage that private log.
 - Finish with outcome first, changed files, exact checks/results, manual gaps, the scoped staging command, and a copy-ready commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

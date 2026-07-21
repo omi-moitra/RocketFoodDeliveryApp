@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Login Page
 
 > Defines the customer login screen, authentication request, persisted session, and transition into the Rocket Food Delivery mobile application. Use this document together with `ai/ai-spec.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Customer Login Page
@@ -29,11 +33,15 @@
 - **API endpoint:** `POST ${API_BASE_URL}/api/auth`
 - **Implementation branch:** `feature/login-page`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Allow a Rocket Food Delivery customer to authenticate with an email address and password, persist the returned customer session safely, and enter the authenticated application at the Restaurants page.
 
 The Login page must closely match the supplied wireframe and exact project color scheme. Invalid credentials must leave the customer on Login and display an inline error directly above the Login button. The screen must also handle local validation, request progress, network failures, malformed or non-customer success responses, and storage failures without exposing sensitive data.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -66,6 +74,8 @@ The Login page must closely match the supplied wireframe and exact project color
 - Hard-coded ngrok domains, localhost URLs, credentials, tokens, or secrets.
 - Treating ngrok as a direct mobile-to-database connection. The app calls the Java REST API; the Java server remains responsible for its localhost MySQL connection.
 - Editing the original files under `support_materials_13/`.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -186,6 +196,8 @@ EXPO_PUBLIC_API_URL=https://example-subdomain.ngrok-free.app
 - Never commit a personal/temporary ngrok URL or place it directly in source code.
 - Restart/reload the Expo client after the environment value changes.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Login Logic
 
 ### First Launch Without a Session
@@ -238,6 +250,8 @@ EXPO_PUBLIC_API_URL=https://example-subdomain.ngrok-free.app
 2. Session resolution finishes before protected route selection.
 3. Root navigation enters the authenticated customer application rather than rendering Login.
 4. Later protected HTTP 401 handling belongs to the shared authentication/navigation contract and returns the customer to Login after clearing stale session data.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
@@ -312,6 +326,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 - The password and email are not part of the persisted session.
 - Login must not write directly to AsyncStorage.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Data, Validation, and State
 
 ### Form Data
@@ -358,6 +374,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 | HTTP 5xx | Show retryable service message. |
 | AsyncStorage write failure | Show safe session-saving message and remain logged out. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 - Match the Login page shown in `support_materials_13/Design/Wireframe.pdf`; the grading criterion is visual agreement, not a generic form.
@@ -374,6 +392,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 - Do not rely on color alone to communicate an error or disabled state.
 - Verify the screen in portrait layout on both iOS and Android and at a small-phone viewport.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Trigger | Expected Result |
@@ -388,6 +408,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 | Server/response is invalid | Safe generic error appears; app does not crash or expose internals. |
 | Session persistence fails | Customer remains logged out with a retryable error. |
 | Customer presses Login repeatedly while pending | Only one active authentication attempt is processed. |
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Technical Constraints (Feature-Level)
 
@@ -404,6 +426,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 - Do not modify `server/` for Module 13 authentication work.
 - Do not use browser-only React Bootstrap DOM components in this React Native screen.
 - Keep changes limited to login/authentication services, shared client configuration/session integration, tests, and required documentation.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -452,6 +476,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 - [ ] Automated client tests cover local validation, 200 success mapping, 401 handling, missing customer ID, network/server failure, storage failure, and duplicate-submit prevention where the project test setup supports them.
 - [x] `git diff --check` reports no whitespace errors.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is done only when:
@@ -467,6 +493,8 @@ This feature is done only when:
 - [ ] Relevant client tests and manual verification pass, and any environment-only limitation is documented accurately.
 - [x] The feature file remains self-contained enough that an implementer does not need to infer decision-critical behavior from external assignment files.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementing Login.
@@ -479,3 +507,5 @@ This feature is done only when:
 - Do not refactor unrelated navigation, restaurant, menu, order, server, or documentation code.
 - If a visual measurement is unclear, compare against the supplied wireframe rather than inventing a generic design.
 - If an authority conflict cannot be resolved, document the question and ask a coach instead of guessing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

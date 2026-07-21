@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Restaurant List Page
 
 > Defines the authenticated restaurant-browsing screen, rating and price filters, restaurant-card grid, and navigation to the selected restaurant menu. Use this document together with `ai/ai-spec.md`, `ai/features/navigation-structure.feature.md`, and `ai/features/header-footer.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Customer Restaurant List and Filters
@@ -29,11 +33,15 @@
 - **API endpoint:** `GET ${API_BASE_URL}/api/restaurants`
 - **Implementation branch:** `feature/restaurant-list-page`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Allow an authenticated customer to browse every available restaurant in the wireframe's scrollable card grid, optionally narrow the results by exact rating, exact price range, or both, and open the correct Restaurant Menu by pressing a restaurant image.
 
 The initial Restaurants view must have neither filter selected and must request all restaurants. Every filter state must remain understandable, recoverable, and distinguish no matching restaurants from request failure. The page must use the supplied restaurant images and exact project palette while remaining usable on both iOS and Android.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -67,6 +75,8 @@ The initial Restaurants view must have neither filter selected and must request 
 - Uploading restaurant images or requiring image URLs from the restaurant API.
 - Passing the JWT, customer ID, complete restaurant object, or image object through route parameters.
 - Importing runtime images directly from `support_materials_13/`, or deleting a source image before its runtime copy has been verified.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -242,6 +252,8 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 - Do not add a comment to every line, narrate obvious assignments or rendering, leave stale comments, paste prompts, expose credentials/tokens, or use comments to compensate for unclear names and oversized functions.
 - Before completion, review every changed file and update or remove comments and TOC entries that no longer match the final implementation.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Restaurant List Logic
 
 ### Initial Unfiltered Load
@@ -291,6 +303,8 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 3. An HTTP 401 invokes the shared sign-out flow rather than showing a normal list error indefinitely.
 4. Cleared authentication causes root navigation to replace the customer area with Login.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
 ### Frontend Routes and Layouts
@@ -338,6 +352,8 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 - A successful response is HTTP 200 with `{ "message": "Success", "data": [...] }`.
 - An empty successful `data` array is a valid no-results response.
 - This feature does not require `GET /api/restaurants/{id}`; add that call only if a later approved implementation demonstrates a real need.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Data, Validation, and State
 
@@ -400,6 +416,8 @@ idle → loading → success
 | Any authenticated state | HTTP 401 | signed out | Clear session and replace with Login. |
 | `success` | Valid image pressed | navigating | Push Menu route once with selected ID. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Wireframe Composition
@@ -436,6 +454,8 @@ idle → loading → success
 - Loading and result-count/no-result messages should be announced appropriately without repeated noisy announcements on every render.
 - Preserve readable contrast, dynamic text growth where practical, and logical screen-reader traversal order.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Situation | Expected behavior |
@@ -454,6 +474,8 @@ idle → loading → success
 | Back from Menu | Restaurant List returns without losing valid auth state; current mounted filters/list position remain where supported. |
 | Long result set | Cards scroll between the persistent header and footer without clipping. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript only for this feature.
@@ -467,6 +489,8 @@ idle → loading → success
 - Keep screen, service, image-registry, and component responsibilities separate enough to test without introducing an unrequested state library or architecture layer.
 - Follow Requirement M and the global file-header, per-file TOC, naming, comment, logging, secret, and error-handling rules.
 - Do not modify `server/` for this Module 13 feature.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -519,6 +543,8 @@ idle → loading → success
 - [x] Comments explain why the logic exists without narrating obvious syntax, exposing sensitive values, or becoming stale.
 - [x] Reusable helpers with non-obvious parameters, return values, normalized data, or errors use accurate JSDoc where it materially improves the contract.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is complete only when:
@@ -535,6 +561,8 @@ This feature is complete only when:
 - Relevant automated/component/service tests pass, Postman cases pass, lint/static checks pass, and no new warning, secret, temporary log, generated file, or unrelated refactor remains.
 - The implementation branch follows the global feature-branch, review, and merge workflow.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementing.
@@ -549,3 +577,5 @@ This feature is complete only when:
 - Preserve the current working nested navigation, session, header, and footer contracts; do not refactor unrelated features.
 - Do not modify the Java backend or invent another endpoint to simplify the client.
 - If an implementation decision conflicts with the grading sheet, business document, wireframe, or global spec, follow the authority order in `ai/ai-spec.md` and record unresolved questions instead of guessing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

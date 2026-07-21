@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # Rocket Food Delivery Mobile App — Module 14 Global AI Specification
 
 > **Claude implementation contract:** Claude will run and implement the Module 14 feature specifications. Before changing files, Claude must read this entire document, then the exact feature specification under `ai/features/`, then every repository instruction file governing the files it may touch. This specification extends the completed Module 13 customer app; it does not authorize replacing it.
@@ -29,6 +31,8 @@ Treat every statement containing **must**, **must not**, **only**, **exactly**, 
 21. [Documentation and submission rules](#21-documentation-and-submission-rules)
 22. [Rules for AI tools](#22-rules-for-ai-tools)
 23. [Global Definition of Done](#23-global-definition-of-done)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 1. Document authority
 
@@ -74,6 +78,8 @@ For each resolved gate, Claude must update the relevant feature specification wi
 - A pending status request displays `Updating…`, not the ambiguous status label `In Progress`.
 - The two-pass AI/specification workflow remains development guidance from the coach transcript, but iteration evidence is not a grading deliverable.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 2. Project identity
 
 - **Project name:** Rocket Food Delivery Mobile App
@@ -87,6 +93,8 @@ For each resolved gate, Claude must update the relevant feature specification wi
 - **Repository strategy:** Continue the existing repository and extend the existing Expo application
 
 Claude's implementation objective is to preserve the full Module 13 customer journey while adding role-aware login/navigation, a Courier application, shared account management, and customer notification preferences. Existing working behavior is a regression baseline, not disposable starter code.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Goal and scope
 
@@ -123,6 +131,8 @@ Implement a role-aware iOS and Android application by extending the working clie
 - Storing secrets in client code or `EXPO_PUBLIC_*` values.
 - Extra-mile rating or Google Maps work before all baseline requirements pass and receive coach review.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 4. Users and required journeys
 
 ### 4.1 Users
@@ -153,6 +163,8 @@ The Customer Account tab is reachable throughout the authenticated customer area
 `Login` → optional `Account Selection` → `Order Delivery` → `Eligible Deliveries` → `Status Progression` and/or `Delivery Details`
 
 The Courier Account tab is reachable throughout the authenticated courier area.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 5. Required feature specifications
 
@@ -189,6 +201,8 @@ The eight specifications under `ai/features/` remain regression contracts for re
 
 > **Canonical submission paths.** The repository now uses `ai/ai-spec.md` and `ai/features/*.feature.md` as the sole committed specification locations. The former module-nested copies were consolidated into these paths. Do not recreate divergent `ai/M13/` or `ai/M14/` copies.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 6. Technology and constraints
 
 ### 6.1 Current frontend baseline
@@ -224,6 +238,8 @@ The eight specifications under `ai/features/` remain regression contracts for re
 - Currency uses two decimal places.
 - All overflowing pages and modals are scrollable.
 - Shared behavior belongs in reusable components, services, storage helpers, contexts, constants, or utilities rather than duplicated route files.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 7. Repository architecture
 
@@ -292,6 +308,8 @@ This tree reflects the current canonical organization. Claude must verify it wit
 
 Before adding a file, Claude must search for an existing owner with `rg --files` and `rg`. Reuse or extend an existing module when its responsibility already matches; do not force reuse when it would merge unrelated responsibilities.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Navigation architecture
 
 ### 8.1 Root stack
@@ -335,6 +353,8 @@ Before adding a file, Claude must search for an existing owner with `rg --files`
 - Role changes must occur through an authorized selection flow, not arbitrary route parameters.
 - Guards must fail closed: an inconsistent session exposes no role application and is cleared or routed to Login according to the active feature contract.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Authentication, roles, and storage
 
 ### 9.1 Required session values
@@ -376,6 +396,8 @@ Never store the password. Never log the token.
 - Treat corrupt/incomplete data as logged out.
 - On protected-request authentication failure, clear stale session data and return to Login with a safe message.
 - Test restoration for customer-only, courier-only, unselected dual-role, selected dual-role, partial, corrupt, and logged-out states.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Backend API contract
 
@@ -492,6 +514,8 @@ Claude must keep the root `PostmanCollection.json` synchronized with implemented
 
 Preconfigure base URL, token, IDs, types, parameters, paths, and bodies so graders do not edit queries. Claude must run or manually verify each changed request when the environment is available and must identify any unexecuted request honestly.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. UI and design rules
 
 ### 11.1 Palette
@@ -537,6 +561,8 @@ Claude must inspect the supplied wireframe before styling each owned surface and
 - Courier Account Settings.
 
 Preserve the original files under `client/docs/m14/`; Claude may inspect them but must not modify them or import the PDFs directly as runtime assets.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Cross-feature behavior rules
 
@@ -584,6 +610,8 @@ Preserve the original files under `client/docs/m14/`; Claude may inspect them bu
 
 Login validation, restaurant loading/filtering, menu navigation, button-only quantities, non-negative/reset quantity behavior, order totals, order history, order details, logout, currency formatting, and missing-courier handling remain required regression coverage.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 13. Naming and organization conventions
 
 ### 13.1 JavaScript and React Native
@@ -613,6 +641,8 @@ Login validation, restaurant loading/filtering, menu navigation, button-only qua
 - Required API variable: `EXPO_PUBLIC_API_URL`.
 - Never prefix secrets with `EXPO_PUBLIC_`.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 14. File documentation and comments
 
 - Keep Markdown documents navigable with a Table of Contents when they are large.
@@ -622,6 +652,8 @@ Login validation, restaurant loading/filtering, menu navigation, button-only qua
 - Do not narrate imports, obvious assignments, JSX already explained by names, or every line.
 - Remove stale comments, commented-out implementations, debug logs, and unexplained TODOs before completion.
 - Do not add comments to JSON, images, PDFs, generated output, lockfiles, or third-party code.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 15. Error, loading, and state rules
 
@@ -637,6 +669,8 @@ Login validation, restaurant loading/filtering, menu navigation, button-only qua
 - Empty eligible deliveries is a valid empty state, not an exception.
 - Avoid boolean combinations that permit impossible session, modal, or request states.
 - A completed acceptance criterion must identify how its success and at least one meaningful failure state were verified.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 16. Environment variables and secrets
 
@@ -654,6 +688,8 @@ Rules:
 - Restart Expo after changing environment values.
 - Never place database credentials, JWT signing secrets, Twilio credentials, Notify.EU credentials, email-provider credentials, or signing credentials in the mobile client.
 - Appropriate reviewer setup values belong only in the separate, non-committed submission summary.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 17. Specification-driven workflow
 
@@ -675,6 +711,8 @@ Claude must execute every feature in this order:
 14. **Log:** After each implementation (and after any material follow-up change to it), append the handoff report to the private implementation log at `.omi/m14/IMPLEMENTATION_LOG.md` as a dated, indexed section covering outcome, contract decisions, changed files, verification results, and remaining manual checks. For every official-source/backend discrepancy, explicitly record the official contract, existing backend contract, frontend-only analysis, decision, exact frontend and any minimum backend adjustment, affected files, compatibility impact, verification evidence, and a technical-demo cue. Create the log on first use. This log is a write-only record, not a runtime dependency: it lives in the gitignored `.omi/` tree, must never be committed or promoted into a graded deliverable, and implementation must never read it to make decisions.
 
 Claude must not change code first and knowingly leave specifications inaccurate. A spec checkbox remains unchecked until evidence exists; code presence alone is not proof of runtime behavior.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 18. Git and commit workflow
 
@@ -705,6 +743,8 @@ Common types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`, `buil
 - AI handoffs for file-changing work provide the exact staging command first and the copy-ready commit command/message second.
 - AI tools do not stage or commit unless the user explicitly asks.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 19. Development and phone-testing commands
 
 From `client/`:
@@ -734,6 +774,8 @@ Physical-phone flow:
 6. Test customer-only, courier-only, dual-role Customer, dual-role Courier, logout, and session restoration.
 
 Never commit the live tunnel URL.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 20. Testing and verification strategy
 
@@ -797,6 +839,8 @@ From `server/`, run the full backend suite after any authorized minimum backend 
 
 If local services prevent a check, report the exact failure and safest substitute; do not mark it passed.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 21. Documentation and submission rules
 
 Required committed deliverables include:
@@ -831,6 +875,8 @@ Extra miles are optional only after all baseline work passes and a coach reviews
 
 The business brief also presents direct Twilio SMS and Notify.EU email delivery as optional extra miles. They are not guaranteed current grading-checklist credit without explicit coach confirmation. If Notify.EU work is approved, follow the supplied Email Template; neither provider integration belongs to baseline notification opt-in.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 22. Rules for AI tools
 
 Claude is the implementation agent for these specifications. Claude must:
@@ -864,6 +910,8 @@ Claude must not:
 - Rewrite unrelated code, delete user work, or conceal failed/skipped verification.
 - Stage, commit, merge, push, contact coaches, or mutate external systems unless the user explicitly authorizes that action.
 - Continue through a decision gate by choosing undocumented JSON keys, status IDs, routes, libraries, or UI behavior.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 23. Global Definition of Done
 
@@ -946,3 +994,5 @@ Claude must not check these on the student's behalf; they are listed so the huma
 - [ ] The non-committed submission summary (name, module, repo link, video links, reviewer credentials/setup) is complete.
 - [ ] Two progress updates and one pre-Friday coach review are complete.
 - [ ] Submission is made from final `main` by Friday at 11:59 PM.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

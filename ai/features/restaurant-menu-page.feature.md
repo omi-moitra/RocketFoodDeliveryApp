@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Restaurant Menu Page
 
 > Defines the authenticated Restaurant Menu screen, restaurant/product loading, menu presentation, button-only quantity controls, and the transition to Order Confirmation. Use this document together with `ai/ai-spec.md`, `ai/features/navigation-structure.feature.md`, `ai/features/header-footer.feature.md`, `ai/features/restaurant-list-page.feature.md`, and `ai/features/menu-modal-confirmation.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Customer Restaurant Menu and Quantity Selection
@@ -31,11 +35,15 @@
   - `GET ${API_BASE_URL}/api/products?restaurant={restaurantId}`
 - **Implementation branch:** `feature/restaurant-menu-page`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Allow an authenticated customer to inspect the selected restaurant and every product on its menu, choose non-negative integer quantities using only minus and plus buttons, and open the Order Confirmation modal when at least one quantity is greater than zero.
 
 Every menu must match the supplied Restaurant Menu wireframe and use the same supplied `RestaurantMenu.jpg` image. Quantity state belongs to one selected restaurant: every product starts at zero, values never become negative, and changing to a different restaurant resets all quantities to zero. This feature prepares accurate selected-product data for the confirmation feature but does not submit the order itself.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -75,6 +83,8 @@ Every menu must match the supplied Restaurant Menu wireframe and use the same su
 - Separate product images, remote image URLs, or generated menu images.
 - Passing the access token, customer ID, full restaurant object, product array, or quantity map in route parameters.
 - Deleting `support_materials_13/Images/RestaurantMenu.jpg`; the earlier deletion instruction applies only to the six Restaurant List images.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -291,6 +301,8 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 - Add JSDoc where reusable helpers/services have non-obvious parameters, normalized return shapes, currency behavior, or thrown errors.
 - Remove stale comments and update Contents lists before completion.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Restaurant Menu Logic
 
 ### Open a Valid Restaurant Menu
@@ -336,6 +348,8 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 2. A connection/service/response failure shows a retry for the current restaurant.
 3. An invalid or missing restaurant shows a return-to-list action.
 4. HTTP 401 runs the shared unauthorized transition and removes authenticated routes.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
@@ -387,6 +401,8 @@ GET ${API_BASE_URL}/api/products?restaurant={restaurantId}
 
 - This feature makes no `POST /api/orders` request.
 - Postman must include both requests with preconfigured restaurant ID and bearer-token handling.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Data, Validation, and State
 
@@ -467,6 +483,8 @@ ready → confirmation-open → ready
 | `confirmation-open` | Close before submit | `ready` | Preserve current quantities. |
 | Any menu state | Different restaurant ID | `loading` | Clear old state; new products start at zero. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Wireframe Composition
@@ -506,6 +524,8 @@ ready → confirmation-open → ready
 - Announce loading, empty, error, and meaningful quantity changes without producing repeated noisy announcements.
 - Preserve logical screen-reader order: restaurant summary → Create Order → product rows and controls.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Situation | Expected behavior |
@@ -526,6 +546,8 @@ ready → confirmation-open → ready
 | HTTP 401 | Shared sign-out removes authenticated navigation and returns to Login. |
 | Long menu | All products and controls remain reachable by vertical scrolling. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript for only this feature.
@@ -540,6 +562,8 @@ ready → confirmation-open → ready
 - Use centralized palette, typography, spacing, layout, and minimum touch-target values.
 - Follow global naming, file header/Contents, inline-comment, logging, secret, request, error, testing, branch, staging-command, and commit-message rules.
 - Keep Menu rendering/selection separate from Confirmation submission without introducing an unrequested state library or architecture layer.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -588,6 +612,8 @@ ready → confirmation-open → ready
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
 - [x] Postman contains preconfigured successful restaurant-detail and selected-restaurant-products requests plus relevant failure evidence.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is complete only when:
@@ -604,6 +630,8 @@ This feature is complete only when:
 - All changed source files retain accurate Contents headers and detailed comments next to non-obvious logic.
 - The implementation follows `feature/restaurant-menu-page` → `dev` workflow, and the final AI handoff provides the exact scoped staging command before its copy-ready commit message.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
@@ -618,3 +646,5 @@ This feature is complete only when:
 - Preserve `support_materials_13/Images/RestaurantMenu.jpg`; the copy-verify-delete override applies only to the six Restaurant List images.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes an endpoint, field, currency rule, or lifecycle behavior, update this feature spec before continuing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

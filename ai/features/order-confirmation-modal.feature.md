@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Order Confirmation Modal
 
 > Defines the M14 extension to the completed M13 Order Confirmation modal: independent SMS/email opt-ins and accurate notification booleans inside the existing order-creation request. Use this document with `ai/ai-spec.md` and the retained M13 confirmation specification.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Order Confirmation Modal Notifications
@@ -30,11 +34,15 @@
 - **Claude deliverable:** A minimal extension of the existing modal and order service that supports all four notification choices without regressing order creation.
 - **Completion evidence:** Contract option/selection record, four request-body combinations, success/failure/reset checks, Postman evidence, regression checks, and final diff.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 2. Feature goal
 
 Allow a Customer to choose independently whether an order confirmation is requested by SMS, email, both, or neither. Both boolean choices must travel inside the one existing `POST /api/orders` request and accurately reflect the visible checkbox state.
 
 This feature extends—not replaces—the working M13 Order Confirmation modal. Product summary, totals, processing, duplicate protection, success, failure, retry, cancellation, quantity reset, session-expiry handling, and accessibility remain required.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -98,6 +106,8 @@ No server file is authorized during initial contract analysis. Claude must first
 - Implementing any backend option before the user selects it.
 - New checkbox dependencies when accessible React Native controls can be built from existing primitives/icons.
 - Broad refactors, unrelated backend work, secrets, generated output, or ignored-planning-file edits.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -208,6 +218,8 @@ Claude must stop after presenting the options. The user chooses. Only the record
 - Preserve Account, Courier, navigation, order history, and the complete M13 Customer flow.
 - Append the required implementation-log record with options, user selection, final mapping, changed files, evidence, manual gaps, and technical-demo cue.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. User flow and notification logic
 
 ### 5.1 Open a fresh confirmation
@@ -253,6 +265,8 @@ Claude must stop after presenting the options. The user chooses. Only the record
 1. HTTP 401/403 triggers shared unauthorized handling.
 2. Stored Customer session and protected modal state are cleared.
 3. Login replaces protected routes; retry cannot use the stale request.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 6. Interfaces
 
@@ -325,6 +339,8 @@ No notification-contract code change may precede the user's selection. If live a
 - Check `send_sms`/`send_email` persistence or their user-selected final storage mapping in DBeaver.
 - Provider delivery is not required baseline evidence.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 7. Data, validation, and state
 
 ### 7.1 Client notification model
@@ -384,6 +400,8 @@ The design must prevent contradictory states such as editable checkboxes during 
 - Raw backend/provider errors, tokens, credentials, phone numbers, and email addresses must not be logged or shown.
 - Provider warnings/failures are not a separate mobile result state in baseline scope.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - Both notification choices start unchecked for a fresh order.
@@ -398,6 +416,8 @@ The design must prevent contradictory states such as editable checkboxes during 
 - M13 summary, total, result copy, retry, close, quantity reset, and session behavior remain correct.
 - Failed/aborted orders never imply successful notification delivery.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Technical constraints
 
 - Claude must read the global spec, this full spec, retained M13 confirmation spec, any applicable committed repository instructions before edits.
@@ -410,6 +430,8 @@ The design must prevent contradictory states such as editable checkboxes during 
 - Preserve the existing order endpoint and backward compatibility unless the selected option explicitly documents otherwise.
 - Do not expose secrets or add provider configuration to `EXPO_PUBLIC_*`.
 - Do not stage, commit, merge, push, or mutate external systems without explicit user authorization.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -485,6 +507,8 @@ The design must prevent contradictory states such as editable checkboxes during 
 
 Claude must leave criteria unchecked until current evidence supports them. Source inspection/export do not prove native behavior, live acceptance, provider delivery, or database persistence.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [ ] Every graded Order Confirmation criterion has current evidence. (Code + backend criteria evidenced; **native checkbox/wireframe/DBeaver items pending**.)
@@ -499,6 +523,8 @@ Claude must leave criteria unchecked until current evidence supports them. Sourc
 - [x] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
 - [x] Complete diff contains no dead code, debug output, artifact, secret, unselected backend change, or unrelated edit.
 - [x] Claude's handoff includes outcome, selected option, exact files/final contract, checks/results, manual gaps, scoped stage command, and copy-ready commit command. (See session handoff.)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Notes for AI tools
 
@@ -515,3 +541,5 @@ Claude must leave criteria unchecked until current evidence supports them. Sourc
 - Append the final dated report to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage it.
 - Do not stage, commit, merge, or push.
 - Finish with outcome, user-selected option, exact files/contract, checks/results, manual gaps, scoped `git add`, and a copy-ready Conventional Commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

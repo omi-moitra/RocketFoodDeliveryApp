@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Code Quality
 
 > Defines the final Module 14 code-quality audit for reuse, cleanliness, comments, dependencies, and professional folder organization. Use this document with `ai/ai-spec.md` and all implemented feature specifications.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Code Quality
@@ -30,11 +34,15 @@
 - **Claude deliverable:** An evidence-driven cleanup/refactor pass that improves or verifies quality without changing product behavior.
 - **Completion evidence:** Inventory/caller analysis, decision records, focused checks, full diff review, regression results, and an honest list of manual/runtime gaps.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 2. Feature goal
 
 Demonstrate that the final Rocket Food Delivery repository is understandable, reusable, clean, and professionally organized.
 
 This is not permission for a wholesale rewrite. Claude must distinguish genuine duplication/dead code from intentional role separation, defensive validation, compatibility support, development-only diagnostics, and framework-required files. When more than one safe minimum solution exists, Claude presents the options and waits for the user's choice.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -89,6 +97,8 @@ This is an audit boundary, not blanket edit permission. Every modification must 
 - Treating ignored build output, dependencies, caches, local environment files, or `.DS_Store` as tracked product-code defects.
 - Editing `.omi/` planning sources except appending the required private implementation record.
 - Staging, committing, merging, pushing, or mutating external systems without explicit authorization.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -207,6 +217,8 @@ For each option, state exact files/symbols, duplication/problem evidence, benefi
 - Inspect the complete final diff for accidental behavior, secrets, generated output, and unrelated churn.
 - Append the implementation log with audit findings, options, user choices, changes, verification, and manual gaps.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. Audit and cleanup flow
 
 ### 5.1 Establish the baseline
@@ -247,6 +259,8 @@ Classify as verified defect, justified design, ignored/generated artifact, manua
 3. Delete the inactive feature template only after the feature is genuinely complete.
 4. Reconcile `ai/ai-spec.md` and any path/tree/documentation references.
 5. Produce the final handoff without staging or committing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 6. Interfaces and ownership
 
@@ -293,6 +307,8 @@ Claude must recognize non-import usage, including:
 - Assets referenced through constants or application configuration.
 - Postman variables and saved request examples.
 - Grading-required files/screenshots/specifications.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 7. Evidence, validation, and state
 
@@ -344,6 +360,8 @@ Removal requires all applicable evidence:
 
 Keep a comment when deleting it would obscure a non-obvious reason or invariant. Rewrite/remove it when it is false, redundant with names, narrates syntax, references a completed temporary plan, or exposes internal/sensitive details.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - Shared behavior has one clear owner without forcing unrelated features into one abstraction.
@@ -357,6 +375,8 @@ Keep a comment when deleting it would obscure a non-obvious reason or invariant.
 - Functional behavior, API compatibility, UI, accessibility, persistence, and M13/M14 regressions remain unchanged.
 - Claude presents genuine options and never chooses structural tradeoffs for the user.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Technical constraints
 
 - Read `ai/ai-spec.md`, this complete feature spec, all owning feature specs, and current source/tests before edits.
@@ -368,6 +388,8 @@ Keep a comment when deleting it would obscure a non-obvious reason or invariant.
 - Use `apply_patch` for manual file edits and safe, non-destructive cleanup.
 - No backend/API/schema behavior change is expected; any proposed exception requires user-selected options and updated governing documentation first.
 - Do not stage, commit, merge, push, or modify external systems.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -437,6 +459,8 @@ Keep a comment when deleting it would obscure a non-obvious reason or invariant.
 
 Claude must leave criteria unchecked until current evidence supports them. Search results, compilation, or export alone do not prove runtime use, absence of reflection/framework discovery, or complete regression safety.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [ ] Every graded Code Quality requirement has current evidence.
@@ -452,6 +476,8 @@ Claude must leave criteria unchecked until current evidence supports them. Searc
 - [ ] Private implementation log records findings, options, user selections, changed files, verification, retained justifications, and manual gaps.
 - [ ] Claude's handoff includes outcome, selected options, exact files, checks/results, manual gaps, scoped stage command, and copy-ready commit command.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 12. Notes for AI tools
 
 - Claude is the implementation and verification agent for this specification.
@@ -466,6 +492,8 @@ Claude must leave criteria unchecked until current evidence supports them. Searc
 - Append the final dated handoff to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage it.
 - Do not stage, commit, merge, or push.
 - Finish with outcome, user-selected options, exact files, checks/results, retained justifications, manual gaps, scoped `git add`, and a copy-ready Conventional Commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 13. Refactoring Implementation Record
 
@@ -542,3 +570,5 @@ This is the append-only completion record for work selected from `docVault/REFAC
 - **Files affected:** `server/src/test/java/com/rocketFoodDelivery/rocketFood/order/OrderApiControllerTest.java`
 - **Change:** Use the injected `objectMapper` in both create tests; reuse `createFreshOrder` in `testDeleteOrder_Success`. Assertions and endpoint coverage unchanged.
 - **Verification:** `mvnw test` for `OrderApiControllerTest,ApiCreateOrderDTODeserializationTest` (local MySQL) → 15 passed, 0 failures.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

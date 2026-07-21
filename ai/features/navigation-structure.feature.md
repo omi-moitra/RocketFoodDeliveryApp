@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Navigation Structure
 
 > Defines the combined Module 14 Expo Router hierarchy. Use this document together with `ai/ai-spec.md`; it is the canonical navigation specification containing the retained M13 hierarchy and the M14 role-aware extension.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Combined Customer and Courier Navigation Structure
@@ -30,11 +34,15 @@
 - **Claude deliverable:** A verified navigation hierarchy and role-capable session boundary whose Account and Courier destinations are supplied by their completed feature implementations.
 - **Completion evidence:** Current diff, Expo/dependency/export checks, and named manual navigation scenarios. File existence alone is insufficient.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 2. Feature goal
 
 Claude must extend the working M13 customer navigation in place into a protected, role-aware structure. After implementation, exactly one valid root branch is exposed for any resolved session: Login, Account Selection, Customer, or Courier. The existing Restaurant List → Restaurant Menu stack must continue working unchanged from the user's perspective.
 
 The concrete output is route files, navigator ownership, authenticated guards, and role/session persistence. Account Details and Courier Delivery own their destination UI, validation, requests, mutations, and acceptance evidence; this navigation contract owns only their placement and protection.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -82,6 +90,8 @@ Claude may modify or create only these implementation surfaces unless it first r
 - Account, courier-delivery, order-notification, restaurant, order-history, or backend service behavior not required to establish navigation.
 - Dependency upgrades, formatting sweeps, broad comment rewrites, or unrelated refactors.
 - Editing `feature-name.feature.md`, private `.omi/` materials, supplied PDFs, live `.env`, generated output, or unrelated user changes.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -166,6 +176,8 @@ Existing customer-only gates that this feature must inspect and broaden without 
 - A downstream feature must not change the required route hierarchy merely to simplify its screen implementation.
 - Shared business presentation belongs in reusable components rather than duplicated role route files.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. User flow and navigation logic
 
 ### 5.1 Logged-out launch
@@ -221,6 +233,8 @@ Account Selection itself has no role-specific header or footer, matching the sup
 3. Protected root guards close Selection, Customer, and Courier.
 4. Login becomes the only root destination.
 5. Back cannot reopen protected content.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 6. Interfaces
 
@@ -286,6 +300,8 @@ Required successful response values are `accessToken`, `user_id`, optional `cust
 
 Before implementation, Claude must inspect the current `AuthApiController`/success DTO or verify a live response. If the login response does not provide the four values above with the documented optionality, Claude must stop the dependent session change and report the mismatch.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 7. Data, validation, and state
 
 ### 7.1 Session shape
@@ -347,6 +363,8 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 - Route access is derived from AuthContext, not user-controlled URL data.
 - Account Selection receives no token or role object through params; it reads the validated session from context.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - Claude must implement these as observable outcomes, not merely matching code shapes.
@@ -363,6 +381,8 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 - A failed persistence operation cannot leave the UI in one role while storage says another.
 - Restarting the app reconstructs the same valid single-role or selected dual-role destination.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Technical constraints
 
 - Before coding, Claude must read any applicable committed repository instructions, `client/package.json`, and the current root/customer layouts that establish the project navigation conventions.
@@ -377,6 +397,8 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 - Do not add a new navigation or state-management dependency.
 - Preserve JavaScript, existing formatting, purpose headers, semantic naming, accessibility labels, and established theme constants.
 - Use `apply_patch`-style focused edits and preserve unrelated worktree changes.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -443,6 +465,8 @@ Evidence: manual traversal of both Courier tabs and direct Customer navigation w
 
 Claude must record exact commands and exit results. Manual iOS/Android items remain unchecked until actually exercised; a successful export does not prove touch, back, or persistence behavior.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [x] Every in-scope route/layout and session boundary is implemented. (All Section 6.1 interfaces exist; session shape broadened to role-capable in storage/service/context.)
@@ -453,6 +477,8 @@ Claude must record exact commands and exit results. Manual iOS/Android items rem
 - [x] The final diff contains no debug code, dead code, stale comments, or accidental generated files. (Generated `dist/` removed; no debug logs added.)
 - [x] Claude's handoff identifies every changed file, check/result, unresolved manual item, and contract decision. (See handoff in the session response.)
 - [x] Claude provides a narrowly scoped staging command followed by a copy-ready Conventional Commit command, but does not stage or commit without explicit user authorization. (Provided in the session handoff; no staging/commit performed.)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Notes for AI tools
 
@@ -469,3 +495,5 @@ Claude must record exact commands and exit results. Manual iOS/Android items rem
 - If a required edit falls outside Section 3.1, stop and explain the file, reason, and scope impact before expanding the change.
 - If code evidence contradicts this spec, update neither silently: report the contradiction and ask for direction unless the global authority order resolves it.
 - Finish with outcome first; changed files; exact automated/static checks; manual checks completed and remaining; then the scoped stage command and copy-ready commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

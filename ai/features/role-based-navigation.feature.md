@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Role-Based Navigation
 
 > Defines the graded login redirection and Account Selection behavior for customer-only, courier-only, and dual-role users. Use this document together with `ai/ai-spec.md` and `ai/features/navigation-structure.feature.md`.
@@ -19,6 +21,8 @@
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 1. Feature identity
 
 - **Feature name:** Role-Based Login Redirection and Account Selection
@@ -30,6 +34,8 @@
 - **Claude deliverable:** Verified behavior for all three login role combinations and both dual-role choices, with only evidence-driven gap fixes.
 - **Completion evidence:** Login/API contract evidence, stored-session inspection, named manual scenarios, regression checks, and the final diff.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 2. Feature goal
 
 Ensure that a successful login always opens the one correct experience allowed by the authenticated account:
@@ -39,6 +45,8 @@ Ensure that a successful login always opens the one correct experience allowed b
 - A dual-role user goes to Account Selection and enters only the role application they explicitly choose.
 
 Claude must preserve the completed M13 login form, validation, request safety, logout, and Customer journey. This feature owns role decision behavior; it does not own navigator construction, Account data, Courier deliveries, or unrelated screen design.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 3. Feature scope
 
@@ -98,6 +106,8 @@ Claude must inspect but should not modify unless a failing role-isolation criter
 - Password storage, token-in-route behavior, or role derivation from an email/address/hard-coded ID.
 - Dependency changes, broad refactors, formatting sweeps, or unrelated comment changes.
 - Editing private `.omi/` source material, supplied PDFs, the generic feature template, live `.env`, or generated output.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 4. Requirements breakdown
 
@@ -182,6 +192,8 @@ The Navigation Structure feature already introduced role-aware authentication, s
 - Treat current code as evidence, not proof of runtime success.
 - Leave manual criteria unchecked until the corresponding scenario is actually exercised.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 5. User flow and navigation logic
 
 ### 5.1 Customer-only login
@@ -238,6 +250,8 @@ The Navigation Structure feature already introduced role-aware authentication, s
 3. A role-selection storage failure leaves Account Selection and its current dual-role identity intact for retry.
 4. Corrupt restored storage is cleared and resolves to Login.
 5. Logout/session expiry clears the session and returns to Login without a protected back path.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 6. Interfaces
 
@@ -303,6 +317,8 @@ rocketFood.activeRole
 
 Only `authStorage.js` reads or writes these raw keys. Screens and layouts consume the validated session through AuthContext.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 7. Data, validation, and state
 
 ### 7.1 Session shape
@@ -357,6 +373,8 @@ Every other role/ID combination is invalid and fails closed.
 - Do not allow one user's stale role ID or choice to survive a later login.
 - Do not show raw storage, network, stack-trace, or backend errors to the user.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 8. Expected behavior
 
 - Exactly one valid root destination is exposed after session resolution.
@@ -371,6 +389,8 @@ Every other role/ID combination is invalid and fails closed.
 - Existing Customer login, logout, restaurants, menus, order creation, and order history remain functional.
 - The UI never presents a successful navigation state before persistence succeeds.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 9. Technical constraints
 
 - Claude must read `ai/ai-spec.md`, this full specification, any applicable committed repository instructions, and the Navigation Structure spec before changing client files.
@@ -383,6 +403,8 @@ Every other role/ID combination is invalid and fails closed.
 - Preserve unrelated worktree changes and completed M13 behavior.
 - This feature needs no Java backend change: the login contract is verified sufficient (see the re-audit in the implementation log). Per the revised minimum-change backend policy, a backend change would apply only if a verified requirement could not be satisfied safely in the client, which it can.
 - Do not claim native back, restart, or persistence behavior from static inspection/export alone.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 10. Acceptance criteria
 
@@ -468,6 +490,8 @@ Evidence: storage/context code above. Both-role logout, unauthorized-back, and M
 
 Claude must record exact commands and results. Manual/native criteria remain unchecked until exercised; code inspection and export are not substitutes.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 11. Feature Definition of Done
 
 - [ ] Every graded role-based navigation scenario and option has current evidence. (Static/code evidence complete for each; the graded **routing outcomes** still need a native run — see the pending items in 10.2–10.6.)
@@ -480,6 +504,8 @@ Claude must record exact commands and results. Manual/native criteria remain unc
 - [x] The final diff has no dead code, debug output, stale comments, generated artifacts, or unrelated edits. (This feature changed only spec files plus the gitignored log.)
 - [x] Claude's handoff reports changed files, contract decisions, exact verification, manual gaps, and the implementation-log update required by the global spec. (See session handoff.)
 - [x] Claude provides a narrowly scoped staging command followed by a copy-ready Conventional Commit command without staging or committing unless explicitly authorized. (Provided in handoff; nothing staged/committed.)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## 12. Notes for AI tools
 
@@ -495,3 +521,5 @@ Claude must record exact commands and results. Manual/native criteria remain unc
 - If a required fix falls outside Section 3.1, stop and explain the file, evidence, and scope impact before expanding the change.
 - After implementation or a material follow-up, append the required dated handoff to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage that private log.
 - Finish with outcome first, changed files, exact checks/results, manual gaps, the scoped staging command, and a copy-ready commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

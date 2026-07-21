@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Menu Modal Confirmation
 
 > Defines the Order Confirmation modal: the accurate selected-product summary, Confirm Order submission through `POST /api/orders`, and the explicit processing, success, and failure states required by the grading sheet. Use this document together with `ai/ai-spec.md`, `ai/features/navigation-structure.feature.md`, `ai/features/header-footer.feature.md`, `ai/features/restaurant-menu-page.feature.md`, and `ai/features/order-history-page.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Order Confirmation Modal and Order Creation
@@ -30,6 +34,8 @@
 - **API endpoint:** `POST ${API_BASE_URL}/api/orders`
 - **Implementation branch:** `feature/menu-modal-confirmation`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Let an authenticated customer review exactly the products they selected on the Restaurant Menu — accurate names, quantities, and correctly formatted prices with a correct total — and place the order with one Confirm Order press.
@@ -37,6 +43,8 @@ Let an authenticated customer review exactly the products they selected on the R
 While the order request is pending, the action button is disabled and reads `Processing Order…`. On success, the button disappears and a green checkmark with a success message appears. On failure, the Confirm Order button reappears with a red X icon and a useful failure message so the customer can retry. Duplicate submissions must be impossible, and every state must match the supplied Order Confirmation wireframe pages exactly.
 
 The Restaurant Menu feature already opens the modal with only positive-quantity products; this feature owns everything that happens inside the modal, including the actual `POST /api/orders` request.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -72,6 +80,8 @@ The Restaurant Menu feature already opens the modal with only positive-quantity 
 - Modifying Java controllers, DTOs, services, repositories, database schema, or seeded records.
 - Persisting the selection, order draft, or modal state to AsyncStorage.
 - Navigating automatically to Order History after success; the wireframe keeps the customer on the success modal until they close it.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -220,6 +230,8 @@ idle → processing → success
 - Add JSDoc where the order service has non-obvious parameters, normalized return shapes, or thrown errors.
 - Remove stale comments — including the current header note that says no API request is made here — before completion.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Confirmation Logic
 
 ### Review and Confirm an Order
@@ -251,6 +263,8 @@ idle → processing → success
 1. `POST /api/orders` returns HTTP 401/403.
 2. The shared unauthorized transition clears stored session data and replaces authenticated routes with Login.
 3. No retry, duplicate request, or stale modal state survives the transition.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
@@ -284,6 +298,8 @@ idle → processing → success
 - Invalid body: HTTP 400 with `{ "error": "Bad Request", "details": "Invalid or missing parameters" }`.
 - This feature calls no other endpoint.
 - Postman must include a preconfigured successful create-order request and at least one failing request (for example an invalid product ID or missing field) demonstrating the 400 shape.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Data, Validation, and State
 
@@ -322,6 +338,8 @@ idle → processing → success
 | `success` | X or back close | (closed) | `onOrderCreated` fires; menu quantities reset to zero. |
 | `success` | Confirm attempt | `success` | Impossible; no button exists. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Wireframe Composition
@@ -351,6 +369,8 @@ idle → processing → success
 - The X close control is a labeled button meeting the minimum touch target in every state.
 - Long summaries remain scrollable and the action area reachable with large text sizes.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Situation | Expected behavior |
@@ -369,6 +389,8 @@ idle → processing → success
 | Late response after close | No crash, no state update, no duplicate order. |
 | Long selection list | Summary scrolls inside the panel; total and action stay reachable. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript for only this feature.
@@ -382,6 +404,8 @@ idle → processing → success
 - Use centralized palette, typography, spacing, and minimum touch-target values from `client/constants/theme.js`.
 - Follow global naming, file header/Contents, inline-comment, logging, secret, request, error, testing, branch, staging-command, and commit-message rules.
 - Do not add navigation side effects (for example jumping to Order History) that the wireframe does not show.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -424,6 +448,8 @@ idle → processing → success
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc, with stale pre-submission notes removed.
 - [x] Postman contains preconfigured successful and failed `POST /api/orders` requests demonstrating the documented success and 400 shapes.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is complete only when:
@@ -438,6 +464,8 @@ This feature is complete only when:
 - All changed source files retain accurate Contents headers and detailed comments next to non-obvious logic.
 - The implementation follows `feature/menu-modal-confirmation` → `dev` workflow, and the final AI handoff provides the exact scoped staging command before its copy-ready commit message.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
@@ -451,3 +479,5 @@ This feature is complete only when:
 - Reuse `formatProductCost` and its documented `whole-dollars` rule. Live `GET /api/products` evidence gathered during this feature (2026-07-15) confirmed untouched seeded products carry whole-dollar integer costs (10–24); a few locally polluted rows (for example `Updated Burger`, cost `1499`) come from earlier backend test runs, not the seeded contract, so the rule stands.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes an endpoint, field, envelope, or lifecycle behavior, update this feature spec before continuing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
