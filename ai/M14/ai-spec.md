@@ -50,21 +50,21 @@ For each conflict, Claude must quote or identify both conflicting sources, state
 
 ### 1.1 Known contract mismatches requiring verification
 
-The following conflicts are explicit implementation gates. The Java backend is immutable for Module 14. Claude may inspect backend code and run read-only/API verification, but must not implement the dependent frontend request body or mutation until the existing backend contract and the frontend adaptation are recorded in the relevant feature spec:
+The following conflicts are explicit implementation gates. Claude must prefer a frontend service adapter when the existing backend can satisfy the requirement safely. When verified evidence proves that the frontend cannot meet a required behavior without data loss, unsafe guesses, or a missing operation, Claude may make the smallest backend adjustment that closes only that gap. The discrepancy, rejected frontend-only option, exact backend and frontend changes, compatibility impact, and verification must be documented in this file and `README.md` before the change is treated as complete:
 
 - The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query.
 - The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`.
 - The grading sheet names order fields `sendSMS` and `sendEmail`. The current Java DTO explicitly maps snake-case JSON fields `send_sms` and `send_email`.
-- The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation.
+- The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation. **Resolved:** `restaurant_rating` was added to the response DTO `ApiOrderDTO` (minimum-change policy) so the client can echo the current rating back through the existing broad `PUT /api/orders/{id}` without erasing it; no new endpoint. See §10.4 and the README backend-adjustment record.
 
 The grading checklist also contains a generic instruction to create a new private repository, while the M14 business brief and coach walkthrough explicitly describe this module as a continuation of the M13 repository. The confirmed project decision is to continue in the existing M13 repository and not create a second repository.
 
-For each resolved gate, Claude must update the relevant feature specification with the official requirement, verified existing-backend method, path, query, request body, response envelope, error behavior, evidence source, and exact frontend adaptation before client implementation. Claude must configure the frontend service boundary to work with the backend that exists; backend controllers, DTOs, entities, persistence, migrations, and seeders must not be changed for Module 14. Once the current backend contract is verified and the adapter decision is documented, the discrepancy is no longer a blocker to frontend implementation.
+For each resolved gate, Claude must update the relevant feature specification with the official requirement, verified existing-backend method, path, query, request body, response envelope, error behavior, and evidence source. First define the safest frontend-only adaptation. If that is insufficient, record why, identify the minimum backend adjustment and smallest affected file set, update this file and `README.md`, add focused backend tests, then update the frontend service boundary to the resulting verified contract. Do not use this exception for cleanup, renaming, broad refactoring, speculative hardening, or unrelated API redesign.
 
 ### 1.2 Confirmed project decisions
 
 - Continue the existing M13 repository for M14.
-- Treat the existing Java backend as immutable for Module 14. Resolve every official-source/backend discrepancy in the frontend service layer, record the discrepancy and adaptation in the private implementation log, and preserve it as a technical-demo talking point.
+- Prefer frontend service adapters, but permit the minimum backend adjustment when verified frontend requirements cannot otherwise be implemented safely. Every adjustment must be narrowly scoped, tested, and documented in this specification, the relevant feature spec, `README.md`, Postman when API-facing, and the private implementation log.
 - For a pending delivery acceptance, update the order to status ID 2 and then assign the active courier. On the courier's later status action, update the assigned order to status ID 3. Verify the safe HTTP bodies/responses before coding.
 - Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED`.
 - Repair dirty status-2/status-3 rows with null courier IDs by assigning a valid courier; do not expose an unassigned non-pending row as eligible work.
@@ -113,7 +113,7 @@ Implement a role-aware iOS and Android application by extending the working clie
 
 - Replacing or creating a new repository for Module 14.
 - Rebuilding working M13 functionality without a demonstrated need.
-- Unapproved Java backend or database-schema changes.
+- Backend changes that do not pass the minimum-change gate or are not documented and tested as required.
 - Employee or restaurant-owner mobile applications.
 - A default role guess for a dual-role user.
 - Editing the base user email from the mobile Account screen.
@@ -167,7 +167,7 @@ Claude must implement one feature specification at a time, in the order requeste
 
 #### Authoring status
 
-**Feature specifications authored: 2 of 7.** Authored so far: `navigation-structure.feature.md` and `role-based-navigation.feature.md`. The remaining five are planned targets, not existing files, and the Section 7 tree lists them as such. `ai/M14/features/feature-name.feature.md` is the placeholder template to copy when authoring a new spec; it is a scaffold, not a deliverable, and is not counted.
+**Feature specifications authored: 3 of 7.** Authored so far: `navigation-structure.feature.md`, `role-based-navigation.feature.md`, and `courier-delivery.feature.md`. The remaining four are planned targets, not existing files, and the Section 7 tree lists them as such. `ai/M14/features/feature-name.feature.md` is the placeholder template to copy when authoring a new spec; it is a scaffold, not a deliverable, and is not counted.
 
 Whenever Claude authors (or finishes) one of the seven specifications, it must increment this counter and move the file name into the "authored so far" list in the same change, so the count always matches reality. Do not raise the count for a stub; a spec counts as authored only when it satisfies the required contents below and its feature-specific Definition of Done.
 
@@ -211,7 +211,7 @@ The eight specifications under `ai/M13/features/` remain regression contracts fo
 - Spring Security with stateless JWT protection for `/api/**`.
 - MySQL 8.x connector.
 - Maven Wrapper through `server/mvnw`.
-- Existing API is consumed as-is. Module 14 work must adapt the frontend to the verified current backend contract and must not modify the Java backend.
+- Existing API is consumed as-is by default. A backend adjustment is allowed only after verified evidence shows a frontend adapter cannot satisfy a required behavior safely; use the smallest compatible change and document it in this specification and `README.md`.
 
 ### 6.3 General constraints
 
@@ -451,9 +451,18 @@ Before Claude implements a status control, the verified feature spec must docume
 - Persisting `IN PROGRESS` → `DELIVERED`.
 - Proving delivered orders cannot advance again.
 
-Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED`. The confirmed pending-acceptance sequence is: update the order to status ID 2, then assign the active `courier_id`. On the courier's later status action, update the assigned order to status ID 3 without replacing its courier. Verify the exact safe request bodies, responses, and failure recovery in the live API/Postman before implementation.
+Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED`. The confirmed pending-acceptance sequence is: update the order to status ID 2, then assign the active `courier_id`. On the courier's later status action, update the assigned order to status ID 3 without replacing its courier.
 
-Current code includes `PUT /api/order/{id}/courier` for assignment and a broad `PUT /api/orders/{id}` update, but the latter expects additional order fields. Claude must not send guessed values, copy stale entity data into a broad update, or treat an optimistic UI change as persisted until Postman confirms the safe contract and the response succeeds.
+**Resolved (minimum DTO change).** The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` did not return it and `updateOrderFromDTO` overwrites it, so a frontend adapter could not round-trip a status change without erasing rating data. Under the minimum-change policy (README “Backend Compatibility and Minimum-Change Policy”), the smallest fix was to **expose `restaurant_rating` in the response DTO** so the client can read the current rating and echo it back through the existing broad update — no new endpoint, DTO, or service method:
+
+- Server change: `ApiOrderDTO` gains a nullable `Integer restaurant_rating`; `OrderService.mapOrderToDTO` sets it from `order.getRestaurantRating()`. That is the entire production change.
+- Endpoint used: the existing `PUT /api/orders/{id}` (unchanged). Courier progression sends `{ restaurant_id, customer_id, order_status_id: 2|3, restaurant_rating: <current value from the response> }`, changing only the status. Courier is not in the body, so the assignment is preserved.
+- Confirmed sequence: acceptance is broad-update to status 2, then `PUT /api/order/{id}/courier`; completion is broad-update to status 3 without reassigning the courier.
+- Compatibility: additive only — a new response field breaks no existing consumer; broad update, assignment, creation, retrieval, and rating endpoints and all entities/schema/security/seeders are unchanged.
+- Frontend integration: `orderService.js` normalizes `restaurantId`/`customerId`/`restaurantRating` and builds the echoed body in `acceptDelivery` (status 2, then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery). On a partial acceptance (status 2 persisted, assignment failed), the client retains a retry-assignment action rather than refreshing the row away or claiming success. Screens never build the body.
+- Tests: `OrderApiControllerTest` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`; `PostmanCollection.json` updated. Backend test execution and DBeaver/native checks are operator manual steps.
+
+The Courier audit verified that `ApiUpdateOrderDTO` requires `restaurant_rating`, while `ApiOrderDTO` does not return that field; a frontend round trip therefore cannot guarantee rating preservation. If live verification confirms this blocker, Claude is authorized to add the narrowest status-only backend operation that changes only `order_status_id`, reusing existing status-update service/repository behavior where safe. Preserve the existing broad order-update endpoint for compatibility. Before completion, document the final method/path/body/response, exact server files, why the frontend-only approach was unsafe, client adapter changes, compatibility impact, tests, Postman evidence, and database verification here and in `README.md`.
 
 ### 10.5 Order confirmation notifications
 
@@ -650,18 +659,18 @@ Claude must execute every feature in this order:
 
 1. **Preflight:** Read this file, the exact feature spec, applicable `AGENTS.md`/`CLAUDE.md`, retained M13 specs, and the current worktree. Record unrelated changes and preserve them.
 2. **Inventory:** Use `rg --files` and targeted `rg` searches to map existing owners, routes, callers, tests, and dependencies. Do not create duplicate architecture.
-3. **Contract gate:** Verify required API calls in Postman or from authoritative live evidence. Record the official requirement, the existing backend's method, path, query, body, authentication, success envelope, validation, and failures in the feature spec. When they differ, define the exact frontend service-boundary adaptation; never plan a backend change.
-4. **Plan:** Map each acceptance criterion to files and verification. Stop decision-dependent work while the existing backend contract or required frontend adaptation remains unverified or undocumented.
+3. **Contract gate:** Verify required API calls in Postman or from authoritative live evidence. Record the official requirement, the existing backend's method, path, query, body, authentication, success envelope, validation, and failures in the feature spec. When they differ, attempt a safe frontend service-boundary adaptation first. If that cannot meet the requirement safely, document the evidence and proposed minimum backend adjustment in this file and `README.md` before editing server code.
+4. **Plan:** Map each acceptance criterion to files and verification. For an authorized backend adjustment, identify the smallest affected server surface, compatibility behavior, focused tests, Postman update, frontend adapter, documentation, and rollback/recovery considerations. Stop decision-dependent work while any part remains unverified or undocumented.
 5. **Iteration 1 — implement:** Prompt with this global spec and the active feature spec, then make the smallest cohesive change that satisfies the feature. Preserve working M13 behavior and unrelated user changes.
 6. **Iteration 1 — read and verify:** Read the complete generated diff, confirm every line is understood, run targeted checks, exercise success and meaningful failure states, compare owned UI to the wireframe, and re-test affected M13 flows. Do not blindly accept generated code.
 7. **Improve the specification:** Correct every missing requirement, ambiguity, incorrect result, or verification gap in the active feature spec. If iteration one appears correct, do not invent a deficiency.
 8. **Iteration 2 — re-prompt:** Prompt again with this global spec and the improved feature spec. A second AI pass is coach workflow guidance before manual debugging; when iteration one required no correction, use the second pass to review the implementation against every acceptance criterion.
 9. **Iteration 2 — verify:** Read the complete second-pass diff and repeat affected checks.
 10. **Manual debugging:** Only after both AI/specification iterations may Claude or the developer manually debug remaining imperfections. Read, understand, and verify every manual correction.
-11. **Reconcile:** Update the feature spec, this global spec, Postman, tree, and docs only where verified implementation changed their truth.
+11. **Reconcile:** Update the feature spec, this global spec, Postman, tree, and docs only where verified implementation changed their truth. Every backend adjustment must be described accurately in this file and `README.md`, including its reason, contract, files, compatibility impact, and verification.
 12. **Clean:** Remove temporary logs, dead code, unused imports, stale comments, generated output, and accidental secrets; inspect the complete diff.
 13. **Handoff:** Report the outcome first, list changed files, give exact checks/results and manual gaps, then provide narrowly scoped staging and copy-ready commit commands. Two-pass iteration evidence is not required for grading or handoff.
-14. **Log:** After each implementation (and after any material follow-up change to it), append the handoff report to the private implementation log at `.omi/m14/IMPLEMENTATION_LOG.md` as a dated, indexed section covering outcome, contract decisions, changed files, verification results, and remaining manual checks. For every official-source/backend discrepancy, explicitly record the official contract, existing backend contract, immutable-backend decision, frontend adaptation, affected files, verification evidence, and a technical-demo cue. Create the log on first use. This log is a write-only record, not a runtime dependency: it lives in the gitignored `.omi/` tree, must never be committed or promoted into a graded deliverable, and implementation must never read it to make decisions.
+14. **Log:** After each implementation (and after any material follow-up change to it), append the handoff report to the private implementation log at `.omi/m14/IMPLEMENTATION_LOG.md` as a dated, indexed section covering outcome, contract decisions, changed files, verification results, and remaining manual checks. For every official-source/backend discrepancy, explicitly record the official contract, existing backend contract, frontend-only analysis, decision, exact frontend and any minimum backend adjustment, affected files, compatibility impact, verification evidence, and a technical-demo cue. Create the log on first use. This log is a write-only record, not a runtime dependency: it lives in the gitignored `.omi/` tree, must never be committed or promoted into a graded deliverable, and implementation must never read it to make decisions.
 
 Claude must not change code first and knowingly leave specifications inaccurate. A spec checkbox remains unchecked until evidence exists; code presence alone is not proof of runtime behavior.
 
@@ -770,7 +779,7 @@ npx expo config --type public
 npx expo export --platform android
 ```
 
-From `server/`, use read-only verification only; Module 14 work must not modify the backend:
+From `server/`, run the full backend suite after any authorized minimum backend adjustment and otherwise use it for regression verification:
 
 ```bash
 ./mvnw test
@@ -801,7 +810,7 @@ Required Unlisted YouTube videos:
 
 The separate submission summary must include student name, module name, repository link, all required video links, and appropriate reviewer credentials/setup values. It must not be committed to GitHub.
 
-The technical demo must explicitly explain any official-source/backend discrepancy encountered during implementation. For each one, show the official expectation, the verified existing backend behavior, the decision to leave the backend unchanged, and the frontend service adapter that reconciles them. Demonstrate the actual request in Postman and avoid claiming that the backend implements an unsupported method, query, or JSON key.
+The technical demo must explicitly explain any official-source/backend discrepancy encountered during implementation. For each one, show the official expectation, the original verified backend behavior, whether a frontend adapter was sufficient, and any authorized minimum backend adjustment plus its frontend integration. Demonstrate the final actual request in Postman and avoid claiming support for an unimplemented method, query, or JSON key.
 
 Extra miles are optional only after all baseline work passes and a coach reviews it:
 
@@ -821,7 +830,8 @@ Claude is the implementation agent for these specifications. Claude must:
 - Follow Section 1 source authority.
 - Inspect actual routes, services, callers, storage, DTOs, tests, and API responses before changing code.
 - Keep changes within the requested feature scope and preserve unrelated user work.
-- Treat official/current-backend mismatches as frontend contract gates to verify, document, and resolve at the service boundary, not invitations to guess or modify the backend.
+- Treat official/current-backend mismatches as contract gates: verify and try the frontend service boundary first, then use only a documented minimum backend adjustment when the frontend cannot satisfy the requirement safely.
+- Document every backend adjustment in this specification and `README.md` before calling it complete, and update the relevant feature spec, tests, Postman, and private implementation log.
 - Follow the coach's two-pass specification guidance before manual debugging; do not present iteration evidence as a grading requirement.
 - Reuse shared components and services where behavior is genuinely shared.
 - Keep code junior-readable and explain non-obvious role, security, request, and transition logic.
@@ -833,8 +843,8 @@ Claude is the implementation agent for these specifications. Claude must:
 
 Claude must not:
 
-- Modify the Java backend for Module 14, including controllers, DTOs, entities, persistence, migrations, or seeders.
-- Invent endpoints, status IDs, JSON keys, screens, dependencies, or grading rules.
+- Modify the Java backend beyond the verified minimum required for a frontend feature, or make any backend change without the required specification, README, tests, and compatibility documentation.
+- Invent or claim unimplemented endpoints, status IDs, JSON keys, screens, dependencies, or grading rules; any new minimum backend endpoint must pass the documented gate and be implemented, tested, and recorded before use.
 - Break or weaken a completed M13 flow.
 - Use route parameters for tokens/passwords or trust an unvalidated active role.
 - Add secrets, live ngrok URLs, or reviewer credentials to tracked files.
@@ -855,6 +865,7 @@ Sections 23.1–23.5 are the **agent-verifiable** Definition of Done: Claude can
 - [ ] History clearly follows `feature/*` → `dev` → `main`; final stable work is on `main`.
 - [ ] M14 global spec and all seven exact feature specs exist at coach-confirmed grading paths and match final behavior.
 - [ ] Known API-contract mismatches are resolved and recorded from live evidence.
+- [ ] Every backend adjustment is the verified minimum, preserves compatibility where possible, has focused tests, and is documented in this specification and `README.md` with its final contract and verification.
 - [ ] No secrets, local environment files, generated output, debug helpers, or submission summary are committed.
 
 ### 23.2 Authentication and navigation

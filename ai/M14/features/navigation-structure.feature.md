@@ -373,7 +373,7 @@ Claude must update the complete-key collection used by logout/cleanup whenever i
 - Keep tabs declared explicitly so placeholder/template routes do not appear automatically.
 - Await authentication storage writes before changing in-memory guards.
 - Preserve unrelated M13 files and behavior.
-- Do not modify the Java backend.
+- This feature needs no Java backend change: the verified `POST /api/auth` contract already returns `accessToken`, `user_id`, and nullable `customer_id`/`courier_id`. Under the revised minimum-change backend policy, a backend change would be justified only if a verified requirement could not be met safely in the client, which is not the case here.
 - Do not add a new navigation or state-management dependency.
 - Preserve JavaScript, existing formatting, purpose headers, semantic naming, accessibility labels, and established theme constants.
 - Use `apply_patch`-style focused edits and preserve unrelated worktree changes.

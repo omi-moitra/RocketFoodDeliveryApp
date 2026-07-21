@@ -381,7 +381,7 @@ Every other role/ID combination is invalid and fails closed.
 - Await every persistence operation that changes route eligibility.
 - Keep role decisions centralized; screens must not duplicate storage validation.
 - Preserve unrelated worktree changes and completed M13 behavior.
-- Do not modify the Java backend for this feature.
+- This feature needs no Java backend change: the login contract is verified sufficient (see the re-audit in the implementation log). Per the revised minimum-change backend policy, a backend change would apply only if a verified requirement could not be satisfied safely in the client, which it can.
 - Do not claim native back, restart, or persistence behavior from static inspection/export alone.
 
 ## 10. Acceptance criteria

@@ -282,6 +282,9 @@ public class OrderService {
             dto.setStatus(order.getOrderStatus().getName());
         }
 
+        // Nullable rating is exposed so clients can preserve it when sending a broad order update.
+        dto.setRestaurant_rating(order.getRestaurantRating());
+
         if (order.getCourier() != null) {
             dto.setCourier_id(order.getCourier().getId());
             if (order.getCourier().getUser() != null) {

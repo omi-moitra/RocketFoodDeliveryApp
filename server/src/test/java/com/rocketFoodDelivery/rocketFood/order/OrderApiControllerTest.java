@@ -110,6 +110,69 @@ public class OrderApiControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    // ==================== restaurant_rating in the order response ====================
+
+    @Test
+    public void testOrderResponse_ExposesRestaurantRating() throws Exception {
+        int id = createFreshOrder();
+
+        // Set a rating through the existing rating endpoint, then confirm the order response now
+        // returns restaurant_rating so a client can read and preserve it.
+        mockMvc.perform(put("/api/order/{id}/rating", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"restaurant_rating\": 4}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.restaurant_rating").value(4));
+    }
+
+    @Test
+    public void testUpdateOrder_PreservesRatingAndCourierWhenEchoed() throws Exception {
+        // The fresh order uses restaurant 1 and customer 1, so those values are known without
+        // re-reading them. Set a rating and assign a courier, then advance the status through the
+        // broad update while echoing the current rating: the rating and courier must survive.
+        int id = createFreshOrder();
+
+        mockMvc.perform(put("/api/order/{id}/rating", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"restaurant_rating\": 4}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/api/order/{id}/courier", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"courier_id\": 1}"))
+                .andExpect(status().isOk());
+
+        // Broad update to delivered, echoing restaurant_rating 4 read from the response above.
+        mockMvc.perform(put("/api/orders/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"restaurant_id\": 1, \"customer_id\": 1, \"order_status_id\": 3, \"restaurant_rating\": 4}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("delivered"))
+                .andExpect(jsonPath("$.data.restaurant_rating").value(4))
+                .andExpect(jsonPath("$.data.courier_id").value(1))
+                .andExpect(jsonPath("$.data.restaurant_id").value(1))
+                .andExpect(jsonPath("$.data.customer_id").value(1));
+    }
+
+    /** Creates a fresh pending order (restaurant 1, customer 1, product 1) and returns its id. */
+    private int createFreshOrder() throws Exception {
+        ApiCreateOrderDTO request = new ApiCreateOrderDTO();
+        request.setRestaurantId(1);
+        request.setCustomerId(1);
+        ApiCreateOrderDTO.ProductItem item = new ApiCreateOrderDTO.ProductItem();
+        item.setId(1);
+        item.setQuantity(1);
+        request.setProducts(List.of(item));
+
+        MvcResult createResult = mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        return JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.id");
+    }
+
     // ==================== DELETE /api/orders/{id} ====================
 
     @Test

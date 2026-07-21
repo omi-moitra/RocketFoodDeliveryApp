@@ -10,6 +10,7 @@
 - [Installation / Setup](#installation--setup)
 - [Environment Variables](#environment-variables)
 - [API Documentation](#api-documentation)
+- [Backend Compatibility and Minimum-Change Policy](#backend-compatibility-and-minimum-change-policy)
 - [Examples from This Project](#examples-from-this-project)
 - [Seeded Development Data](#seeded-development-data)
 - [Verification](#verification)
@@ -215,6 +216,42 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
 | `POST` | `/api/orders` | Create an order with restaurant, customer, and product quantities |
 | `GET` | `/api/orders?type=customer&id={id}` | Load the authenticated customer's order history |
+| `GET` | `/api/orders/pending` | Load all pending orders for courier acceptance |
+| `GET` | `/api/orders?type=courier&id={id}` | Load the authenticated courier's assigned orders |
+| `PUT` | `/api/orders/{id}` | Update an order; courier progression echoes `restaurant_id`, `customer_id`, and the current `restaurant_rating`, changing only `order_status_id` (`2`\|`3`) |
+| `PUT` | `/api/order/{id}/courier` | Assign a courier to an order; body `{ "courier_id": {id} }` |
+
+## Backend Compatibility and Minimum-Change Policy
+
+Module 14 uses the existing Spring Boot API by default. Frontend services should adapt verified backend request and response shapes into stable client models whenever that can satisfy the feature safely.
+
+A backend adjustment is allowed only when repository/live evidence proves that a required frontend behavior cannot be implemented through an adapter without data loss, guessed values, or a missing operation. The adjustment must:
+
+- Change the smallest possible controller/DTO/service surface and preserve existing API compatibility.
+- Avoid unrelated cleanup, renaming, schema changes, broad refactors, or speculative redesign.
+- Include focused backend tests and updated Postman requests when API-facing.
+- Be integrated through the frontend service boundary rather than directly from screen code.
+- Be documented in `ai/M14/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
+
+Each documented backend adjustment must identify the source discrepancy, why a frontend-only adapter was unsafe or insufficient, the exact method/path/body/response, changed server and client files, compatibility impact, tests, Postman/database evidence, and any remaining manual verification.
+
+### Module 14 backend adjustment record
+
+| Status | Feature | Verified discrepancy | Minimum authorized resolution |
+|---|---|---|---|
+| Implemented | Courier Delivery status progression | The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` (the order response) did **not** return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client could not read the current rating to round-trip it and would erase it by sending `null`. | Add `restaurant_rating` to the response DTO `ApiOrderDTO` (one field + one mapping line) so the client can read the current rating and echo it back through the **existing** broad `PUT /api/orders/{id}`. No new endpoint, DTO, or service method. |
+
+**Implemented change (DTO field addition)**
+
+- **Server change:** `dtos/order/ApiOrderDTO.java` — added nullable `Integer restaurant_rating`; `service/OrderService.java#mapOrderToDTO` — `dto.setRestaurant_rating(order.getRestaurantRating())`. That is the entire production change.
+- **Endpoint used:** the existing `PUT /api/orders/{id}` (unchanged). Courier progression sends `{ restaurant_id, customer_id, order_status_id: 2|3, restaurant_rating: <current value> }`, changing only the status. Courier is not in this body, so an existing assignment is preserved.
+- **Response:** `ApiOrderDTO` now includes `restaurant_rating` (nullable). All other fields unchanged.
+- **Why a frontend-only adapter was insufficient:** the response never exposed `restaurant_rating`, so no adapter could rebuild the required broad-update body without guessing it; the broad update then overwrites it, causing silent data loss. Exposing the field in the response is the smallest change that removes the guess.
+- **Compatibility impact:** additive only. Adding a field to a response breaks no existing consumer; the broad update, creation, retrieval, assignment, and rating endpoints, and all entities/schema/security/seeders are unchanged.
+- **Frontend integration:** `client/services/orderService.js` normalizes `restaurantId`, `customerId`, and `restaurantRating`, then `acceptDelivery` (status 2 via broad update, then assign courier), `markDelivered` (status 3 via broad update), and `assignActiveCourier` (partial-acceptance recovery) build the body; screens never build it.
+- **Tests:** `server/.../order/OrderApiControllerTest.java` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`. (Backend test run pending on the operator's machine; not re-run in the latest pass.)
+- **Postman:** `PostmanCollection.json` includes pending, courier-scoped, broad-update→in progress, courier assignment, and broad-update→delivered requests.
+- **DBeaver / native:** database before/after inspection and on-device courier interaction remain manual checks for the operator with a running device.
 
 ## Examples from This Project
 
