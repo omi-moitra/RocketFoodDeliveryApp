@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Order History Page
 
 > Defines the authenticated Order History tab: loading the current customer's orders, the structured `ORDER` / `STATUS` / `VIEW` table from the wireframe, and the View action that opens the Order History Detail modal. Use this document together with `ai/ai-spec.md`, `ai/features/navigation-structure.feature.md`, `ai/features/header-footer.feature.md`, `ai/features/menu-modal-confirmation.feature.md`, and `ai/features/order-history-modal.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Customer Order History Page
@@ -29,11 +33,15 @@
 - **API endpoint:** `GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}`
 - **Implementation branch:** `feature/order-history-page`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Show an authenticated customer every order they have placed, as a structured table with exactly the wireframe's three headings — `ORDER`, `STATUS`, and `VIEW` — where each row displays the order's restaurant name, its current status, and a View action that opens the Order History Detail modal for that exact order.
 
 Orders load for the stored authenticated `customer_id` (never `user_id`) with the bearer token, and the list must include orders created moments earlier through the Order Confirmation modal. This feature owns the page, the request, the table, and opening the modal with the correct selected order object; everything rendered inside the modal belongs to `order-history-modal.feature.md`.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -65,6 +73,8 @@ Orders load for the stored authenticated `customer_id` (never `user_id`) with th
 - Order status updates, cancellation, reordering, ratings, pagination, search, or filtering of history entries not shown by the wireframe.
 - Modifying Java controllers, DTOs, services, repositories, database schema, or seeded records.
 - Persisting orders to AsyncStorage or inventing a per-order detail endpoint; the detail modal uses the already-returned order object.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -182,6 +192,8 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 - Add JSDoc where `fetchCustomerOrders` documents parameters, the normalized return shape, and thrown errors.
 - Remove stale comments before completion.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Order History Logic
 
 ### View Order History
@@ -210,6 +222,8 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 1. A valid empty array shows the deliberate no-orders state.
 2. A connection/service/response failure shows a safe message with retry; existing rows survive a failed refresh.
 3. HTTP 401/403 runs the shared unauthorized transition, clears the session, and returns to Login.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
@@ -248,6 +262,8 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 - Success: HTTP 200 with `{ "message": "Success", "data": [ ...order objects... ] }` as documented in Requirement B; an unknown customer or no orders yields an empty array.
 - This feature calls no other endpoint.
 - Postman must include the preconfigured customer order-history request using collection variables for the customer ID and token so graders edit nothing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Data, Validation, and State
 
@@ -310,11 +326,13 @@ ready → modal-open → ready
 | `modal-open` | Modal closes | `ready` | List, scroll position, and data unchanged. |
 | Any authenticated state | HTTP 401/403 | logged out | Clear session and return to Login. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Wireframe Composition
 
-- Treat the `Order History` page in `support_materials_13/Design/Wireframe.pdf` as the visual source.
+- Treat the `Order History` page in `client/docs/m13/design/Wireframe.pdf` as the visual source.
 - Preserve this hierarchy inside the shared authenticated frame:
   1. `MY ORDERS` heading.
   2. Charcoal table-header band with white `ORDER`, `STATUS`, and `VIEW` labels.
@@ -343,6 +361,8 @@ ready → modal-open → ready
 - Loading, empty, refresh, and error states are announced without producing repeated noisy announcements.
 - Rows and controls remain readable and aligned at larger text sizes.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Situation | Expected behavior |
@@ -360,6 +380,8 @@ ready → modal-open → ready
 | Late/stale response | Never overwrites newer data or updates an unmounted screen. |
 | Long history | All rows reachable by vertical scrolling between header and footer. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript for only this feature.
@@ -374,6 +396,8 @@ ready → modal-open → ready
 - Use centralized palette, typography, spacing, and minimum touch-target values from `client/constants/theme.js`.
 - Follow global naming, file header/Contents, inline-comment, logging, secret, request, error, testing, branch, staging-command, and commit-message rules.
 - Keep list rendering separate from modal content; do not implement the modal's interior in this feature.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -414,6 +438,8 @@ ready → modal-open → ready
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
 - [x] Postman contains the preconfigured customer order-history request needing no manual query edits.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is complete only when:
@@ -428,6 +454,8 @@ This feature is complete only when:
 - All changed source files retain accurate Contents headers and detailed comments next to non-obvious logic.
 - The implementation follows `feature/order-history-page` → `dev` workflow, and the final AI handoff provides the exact scoped staging command before its copy-ready commit message.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
@@ -441,3 +469,5 @@ This feature is complete only when:
 - Reuse `client/services/orderService.js` from the confirmation feature; add `fetchCustomerOrders` beside `createOrder` rather than creating a parallel service.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes an endpoint, field, envelope, or lifecycle behavior, update this feature spec before continuing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

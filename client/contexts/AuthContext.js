@@ -22,7 +22,6 @@ const AuthContext = createContext(null);
 /**
  * Restores and owns the in-memory customer session shared by protected routes.
  * RootLayout wraps the route tree with this provider at application startup.
- * Read aloud: “auth provider,” where “auth” means authentication.
  */
 export function AuthProvider({ children }) {
   // session is the credential/customer snapshot; loading blocks routing until storage resolves.
@@ -36,7 +35,6 @@ export function AuthProvider({ children }) {
     /**
      * Reads the persisted session and converts unreadable storage into a logged-out state.
      * The provider's startup effect calls it exactly once per mount.
-     * Read aloud: “restore session.”
      */
     async function restoreSession() {
       try {
@@ -70,7 +68,6 @@ export function AuthProvider({ children }) {
    * Persists a verified login before exposing it to protected navigation.
    * LoginScreen calls it after authenticateUser succeeds.
    * useCallback keeps its identity stable so screens can safely list it in effect dependencies.
-   * Read aloud: “complete sign in.”
    */
   const completeSignIn = useCallback(async (authValues) => {
     try {
@@ -88,7 +85,6 @@ export function AuthProvider({ children }) {
    * Persists a dual-role user's explicit choice, then exposes only the selected role tree.
    * Account Selection calls it; the root guard swaps trees once storage confirms the choice.
    * useCallback keeps its identity stable for effect dependencies and disabled-tap guards.
-   * Read aloud: “select role.”
    */
   const selectRole = useCallback(async (role) => {
     // Storage validates the role against the session's available IDs before it becomes active.
@@ -99,7 +95,6 @@ export function AuthProvider({ children }) {
   /**
    * Removes persisted credentials before clearing the in-memory route guard.
    * AppHeader and unauthorized-response handling use this shared transition.
-   * Read aloud: “sign out.”
    */
   const signOut = useCallback(async () => {
     // Storage is cleared before route guards remove the authenticated navigation tree.
@@ -110,7 +105,6 @@ export function AuthProvider({ children }) {
   /**
    * Closes protected routes after the API proves that the stored session is no longer valid.
    * Protected feature services/screens call it when a request returns HTTP 401.
-   * Read aloud: “handle unauthorized.”
    */
   const handleUnauthorized = useCallback(async () => {
     try {
@@ -142,7 +136,6 @@ export function AuthProvider({ children }) {
 /**
  * Returns the nearest authentication context and fails clearly when no provider exists.
  * Screens and shared authenticated components call this hook to access session actions/state.
- * Read aloud: “use auth,” where “auth” means authentication.
  */
 export function useAuth() {
   const context = useContext(AuthContext);

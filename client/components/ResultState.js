@@ -1,7 +1,9 @@
 /**
  * File: ResultState.js
  * Purpose: Renders the shared loading/empty/error body used by the list-style screens.
- * Contents: result-state component, shared state styles.
+ * Contents:
+ * 1. result-state component
+ * 2. shared state styles
  */
 
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -14,7 +16,6 @@ import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
  * empty component so all three screens share one state presentation.
  * Kinds: `loading` (spinner), `info` (polite title/message), `alert` (assertive
  * title/message), `error` (assertive dark-red message).
- * Read aloud: “result state.”
  * @param {{kind: 'loading'|'info'|'alert'|'error', title?: string, message?: string,
  *          actionLabel?: string, onAction?: () => void, minHeight?: number}} props
  */

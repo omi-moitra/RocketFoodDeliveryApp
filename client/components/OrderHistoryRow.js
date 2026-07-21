@@ -23,7 +23,6 @@ export const ORDER_TABLE_COLUMNS = Object.freeze({
 /**
  * Shows one order's restaurant name, uppercase status, and magnifier View action.
  * The Order History screen renders it per validated order inside the MY ORDERS table.
- * Read aloud: “order history row.”
  */
 export default function OrderHistoryRow({ onView, order }) {
   return (

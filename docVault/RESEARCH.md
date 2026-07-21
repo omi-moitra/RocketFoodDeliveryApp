@@ -1,6 +1,16 @@
+<a id="top"></a>
+
 # Mobile Application Research
 
 <!-- Purpose: Explains native and cross-platform apps and compares React with React Native. Contents: two research topics and sources. -->
+
+## Table of Contents
+
+- [Native vs. Cross-Platform Mobile Applications](#native-vs-cross-platform-mobile-applications)
+- [React Native vs. React](#react-native-vs-react)
+- [Sources](#sources)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Native vs. Cross-Platform Mobile Applications
 
@@ -20,6 +30,8 @@ Some important differences are:
 Native development can be a better choice when an app needs the highest possible performance or uses many platform-specific features. Cross-platform development can be a better choice when a smaller team wants to build and maintain an app for both iOS and Android more quickly.
 
 For the Rocket Food Delivery project, cross-platform development makes sense because React Native and Expo allow the customer app to run on both iOS and Android without creating two completely separate projects.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## React Native vs. React
 
@@ -49,8 +61,12 @@ React applications also use browser features such as the DOM and browser URLs. R
 
 Knowing React makes React Native easier to learn because the component structure and programming ideas are similar. The main adjustment is learning to use native mobile components and mobile APIs instead of HTML, CSS, and browser APIs.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Sources
 
 - [React: Describing the UI](https://react.dev/learn/describing-the-ui)
 - [React Native: Core Components and Native Components](https://reactnative.dev/docs/intro-react-native-components)
 - [React Native: Platform-Specific Code](https://reactnative.dev/docs/platform-specific-code)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

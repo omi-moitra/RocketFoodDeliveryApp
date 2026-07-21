@@ -1,4 +1,10 @@
-/** Purpose: Defines Restaurant List to Restaurant Menu stack navigation. Contents: stack options and screens. */
+/**
+ * File: _layout.js
+ * Purpose: Defines Restaurant List to Restaurant Menu stack navigation.
+ * Contents:
+ * 1. Restaurant stack initial-route setting
+ * 2. Restaurant stack layout
+ */
 
 import { Stack } from 'expo-router';
 
@@ -10,7 +16,6 @@ export const unstable_settings = {
 /**
  * Defines the nested route sequence from the restaurant list to a selected menu.
  * Expo Router uses it for every route inside the restaurant folder.
- * Read aloud: “restaurant stack layout.”
  */
 export default function RestaurantStackLayout() {
   return (

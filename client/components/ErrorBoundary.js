@@ -1,7 +1,9 @@
 /**
  * File: ErrorBoundary.js
  * Purpose: Contains render-time failures so one bad value cannot white-screen the whole app.
- * Contents: error boundary class component, fallback styles.
+ * Contents:
+ * 1. error boundary class component
+ * 2. fallback styles
  */
 
 import { Component } from 'react';
@@ -13,7 +15,6 @@ import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
  * Catches errors thrown while rendering descendants and shows a recoverable fallback screen.
  * RootLayout wraps the navigator with it; “Try Again” re-renders the tree from current state.
  * The fallback uses only the default body font because a font-load failure may be the cause.
- * Read aloud: “error boundary.”
  */
 export default class ErrorBoundary extends Component {
   state = { hasError: false };

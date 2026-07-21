@@ -41,11 +41,23 @@ const ACCOUNT_MESSAGES = Object.freeze({
   saved: 'Your details were saved.',
 });
 
+const REQUEST_STATUS = Object.freeze({
+  ERROR: 'error',
+  LOADING: 'loading',
+  READY: 'ready',
+});
+
+const SAVE_STATUS = Object.freeze({
+  ERROR: 'error',
+  IDLE: 'idle',
+  SAVING: 'saving',
+  SUCCESS: 'success',
+});
+
 /**
  * Renders the shared Account Settings experience for one validated active role.
  * The Customer and Courier route wrappers pass their `expectedRole`; the service verifies it
  * against the active session and returns only that role's editable email and phone.
- * Read aloud: “account screen.”
  * @param {{expectedRole: 'customer'|'courier'}} props
  */
 export default function AccountScreen({ expectedRole }) {
@@ -55,13 +67,13 @@ export default function AccountScreen({ expectedRole }) {
   // requestStatus is the initial-load lifecycle; savedAccount is the authoritative snapshot and the
   // draft fields are the editable copy. Field errors and saveStatus are tracked independently so
   // impossible states (saving with invalid fields, success while dirty) cannot be represented.
-  const [requestStatus, setRequestStatus] = useState('loading');
+  const [requestStatus, setRequestStatus] = useState(REQUEST_STATUS.LOADING);
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   const [savedAccount, setSavedAccount] = useState(null);
   const [emailDraft, setEmailDraft] = useState('');
   const [phoneDraft, setPhoneDraft] = useState('');
   const [fieldErrors, setFieldErrors] = useState({ email: '', phone: '' });
-  const [saveStatus, setSaveStatus] = useState('idle');
+  const [saveStatus, setSaveStatus] = useState(SAVE_STATUS.IDLE);
   const [saveErrorMessage, setSaveErrorMessage] = useState('');
   const [retrySequence, setRetrySequence] = useState(0);
 
@@ -107,7 +119,7 @@ export default function AccountScreen({ expectedRole }) {
       newestRequestRef.current = requestId;
 
       if (!hasLoadedOnceRef.current) {
-        setRequestStatus('loading');
+        setRequestStatus(REQUEST_STATUS.LOADING);
       }
 
       async function loadAccount() {
@@ -123,8 +135,8 @@ export default function AccountScreen({ expectedRole }) {
           setEmailDraft(account.roleEmail);
           setPhoneDraft(account.rolePhone);
           setFieldErrors({ email: '', phone: '' });
-          setSaveStatus('idle');
-          setRequestStatus('ready');
+          setSaveStatus(SAVE_STATUS.IDLE);
+          setRequestStatus(REQUEST_STATUS.READY);
         } catch (error) {
           if (
             requestController.signal.aborted ||
@@ -145,7 +157,7 @@ export default function AccountScreen({ expectedRole }) {
             return;
           }
 
-          setRequestStatus('error');
+          setRequestStatus(REQUEST_STATUS.ERROR);
           setLoadErrorMessage(
             error instanceof ApiRequestError ? error.message : ACCOUNT_MESSAGES.loadError,
           );
@@ -166,7 +178,7 @@ export default function AccountScreen({ expectedRole }) {
 
   function handleChangeEmail(value) {
     setEmailDraft(value);
-    setSaveStatus('idle');
+    setSaveStatus(SAVE_STATUS.IDLE);
     if (fieldErrors.email) {
       setFieldErrors((current) => ({ ...current, email: '' }));
     }
@@ -174,7 +186,7 @@ export default function AccountScreen({ expectedRole }) {
 
   function handleChangePhone(value) {
     setPhoneDraft(value);
-    setSaveStatus('idle');
+    setSaveStatus(SAVE_STATUS.IDLE);
     if (fieldErrors.phone) {
       setFieldErrors((current) => ({ ...current, phone: '' }));
     }
@@ -183,7 +195,6 @@ export default function AccountScreen({ expectedRole }) {
   /**
    * Validates locally, then saves the active role's email/phone and reloads authoritative values.
    * Duplicate saves are blocked; drafts are preserved on a retryable failure.
-   * Read aloud: “handle save.”
    */
   async function handleSave() {
     if (saveLockRef.current || !isDirty) {
@@ -197,14 +208,14 @@ export default function AccountScreen({ expectedRole }) {
 
     if (nextErrors.email || nextErrors.phone) {
       setFieldErrors(nextErrors);
-      setSaveStatus('idle');
+      setSaveStatus(SAVE_STATUS.IDLE);
       return;
     }
 
     saveLockRef.current = true;
     setFieldErrors({ email: '', phone: '' });
     setSaveErrorMessage('');
-    setSaveStatus('saving');
+    setSaveStatus(SAVE_STATUS.SAVING);
     const requestController = new AbortController();
     saveControllerRef.current = requestController;
 
@@ -224,7 +235,7 @@ export default function AccountScreen({ expectedRole }) {
       setSavedAccount(updated);
       setEmailDraft(updated.roleEmail);
       setPhoneDraft(updated.rolePhone);
-      setSaveStatus('success');
+      setSaveStatus(SAVE_STATUS.SUCCESS);
     } catch (error) {
       if (!isMountedRef.current || requestController.signal.aborted || error?.code === 'aborted') {
         return;
@@ -236,7 +247,7 @@ export default function AccountScreen({ expectedRole }) {
       }
 
       // Preserve the user's drafts and the saved snapshot; only surface a safe retry message.
-      setSaveStatus('error');
+      setSaveStatus(SAVE_STATUS.ERROR);
       setSaveErrorMessage(
         error instanceof ApiRequestError ? error.message : ACCOUNT_MESSAGES.loadError,
       );
@@ -249,7 +260,7 @@ export default function AccountScreen({ expectedRole }) {
     }
   }
 
-  if (requestStatus === 'loading') {
+  if (requestStatus === REQUEST_STATUS.LOADING) {
     return (
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <ResultState kind="loading" message="Loading your account…" />
@@ -257,7 +268,7 @@ export default function AccountScreen({ expectedRole }) {
     );
   }
 
-  if (requestStatus === 'error') {
+  if (requestStatus === REQUEST_STATUS.ERROR) {
     return (
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <ResultState
@@ -270,8 +281,8 @@ export default function AccountScreen({ expectedRole }) {
     );
   }
 
-  const isSaving = saveStatus === 'saving';
-  const showSuccess = saveStatus === 'success' && !isDirty;
+  const isSaving = saveStatus === SAVE_STATUS.SAVING;
+  const showSuccess = saveStatus === SAVE_STATUS.SUCCESS && !isDirty;
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
@@ -283,86 +294,97 @@ export default function AccountScreen({ expectedRole }) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <Text accessibilityRole="header" style={styles.title}>
-            ACCOUNT
-          </Text>
+          <View style={styles.formContainer}>
+            <Text accessibilityRole="header" style={styles.title}>
+              MY ACCOUNT
+            </Text>
 
-          <Text style={styles.inputLabel}>User Email</Text>
-          <View style={styles.readOnlyField}>
-            <Text
-              accessibilityLabel={`User email ${savedAccount.primaryEmail}, read only`}
-              style={styles.readOnlyText}
+            <Text style={styles.roleContext}>Logged In As: {roleLabel}</Text>
+
+            <Text style={styles.inputLabel}>Primary Email (Read Only)</Text>
+            <View style={styles.readOnlyField}>
+              <Text
+                accessibilityLabel={`User email ${savedAccount.primaryEmail}, read only`}
+                style={styles.readOnlyText}
+              >
+                {savedAccount.primaryEmail}
+              </Text>
+            </View>
+            <Text style={styles.helperText}>Email used to log in to the application.</Text>
+
+            <Text style={styles.inputLabel}>{roleLabel} Email</Text>
+            <TextInput
+              accessibilityLabel={`${roleLabel} email`}
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect={false}
+              editable={!isSaving}
+              keyboardType="email-address"
+              onChangeText={handleChangeEmail}
+              placeholder="Enter role email"
+              placeholderTextColor={COLORS.charcoal}
+              style={[styles.input, fieldErrors.email && styles.inputError]}
+              value={emailDraft}
+            />
+            {fieldErrors.email ? (
+              <Text accessibilityRole="alert" style={styles.fieldError}>
+                {fieldErrors.email}
+              </Text>
+            ) : (
+              <Text style={styles.helperText}>Email used for your {roleLabel} account.</Text>
+            )}
+
+            <Text style={styles.inputLabel}>{roleLabel} Phone</Text>
+            <TextInput
+              accessibilityLabel={`${roleLabel} phone`}
+              autoComplete="tel"
+              editable={!isSaving}
+              keyboardType="phone-pad"
+              onChangeText={handleChangePhone}
+              placeholder="Enter role phone"
+              placeholderTextColor={COLORS.charcoal}
+              style={[styles.input, fieldErrors.phone && styles.inputError]}
+              value={phoneDraft}
+            />
+            {fieldErrors.phone ? (
+              <Text accessibilityRole="alert" style={styles.fieldError}>
+                {fieldErrors.phone}
+              </Text>
+            ) : (
+              <Text style={styles.helperText}>Phone number for your {roleLabel} account.</Text>
+            )}
+
+            <View style={styles.messageRegion}>
+              {saveErrorMessage ? (
+                <Text accessibilityLiveRegion="assertive" accessibilityRole="alert" style={styles.saveError}>
+                  {saveErrorMessage}
+                </Text>
+              ) : null}
+              {showSuccess ? (
+                <Text accessibilityLiveRegion="polite" style={styles.saveSuccess}>
+                  {ACCOUNT_MESSAGES.saved}
+                </Text>
+              ) : null}
+            </View>
+
+            <Pressable
+              accessibilityLabel="Update account details"
+              accessibilityRole="button"
+              accessibilityState={{ busy: isSaving, disabled: isSaving || !isDirty }}
+              disabled={isSaving || !isDirty}
+              onPress={handleSave}
+              style={({ pressed }) => [
+                styles.saveButton,
+                (isSaving || !isDirty) && styles.saveButtonDisabled,
+                pressed && isDirty && !isSaving && styles.saveButtonPressed,
+              ]}
             >
-              {savedAccount.primaryEmail}
-            </Text>
-          </View>
-
-          <Text style={styles.inputLabel}>{roleLabel} Email</Text>
-          <TextInput
-            accessibilityLabel={`${roleLabel} email`}
-            autoCapitalize="none"
-            autoComplete="email"
-            autoCorrect={false}
-            editable={!isSaving}
-            keyboardType="email-address"
-            onChangeText={handleChangeEmail}
-            placeholder="Enter role email"
-            placeholderTextColor={COLORS.charcoal}
-            style={[styles.input, fieldErrors.email && styles.inputError]}
-            value={emailDraft}
-          />
-          {fieldErrors.email ? (
-            <Text accessibilityRole="alert" style={styles.fieldError}>
-              {fieldErrors.email}
-            </Text>
-          ) : null}
-
-          <Text style={styles.inputLabel}>{roleLabel} Phone</Text>
-          <TextInput
-            accessibilityLabel={`${roleLabel} phone`}
-            autoComplete="tel"
-            editable={!isSaving}
-            keyboardType="phone-pad"
-            onChangeText={handleChangePhone}
-            placeholder="Enter role phone"
-            placeholderTextColor={COLORS.charcoal}
-            style={[styles.input, fieldErrors.phone && styles.inputError]}
-            value={phoneDraft}
-          />
-          {fieldErrors.phone ? (
-            <Text accessibilityRole="alert" style={styles.fieldError}>
-              {fieldErrors.phone}
-            </Text>
-          ) : null}
-
-          <View style={styles.messageRegion}>
-            {saveErrorMessage ? (
-              <Text accessibilityLiveRegion="assertive" accessibilityRole="alert" style={styles.saveError}>
-                {saveErrorMessage}
+              {isSaving ? <ActivityIndicator color={COLORS.white} style={styles.saveProgress} /> : null}
+              <Text style={styles.saveButtonText}>
+                {isSaving ? 'UPDATING ACCOUNT' : 'UPDATE ACCOUNT'}
               </Text>
-            ) : null}
-            {showSuccess ? (
-              <Text accessibilityLiveRegion="polite" style={styles.saveSuccess}>
-                {ACCOUNT_MESSAGES.saved}
-              </Text>
-            ) : null}
+            </Pressable>
           </View>
-
-          <Pressable
-            accessibilityLabel="Save account details"
-            accessibilityRole="button"
-            accessibilityState={{ busy: isSaving, disabled: isSaving || !isDirty }}
-            disabled={isSaving || !isDirty}
-            onPress={handleSave}
-            style={({ pressed }) => [
-              styles.saveButton,
-              (isSaving || !isDirty) && styles.saveButtonDisabled,
-              pressed && isDirty && !isSaving && styles.saveButtonPressed,
-            ]}
-          >
-            {isSaving ? <ActivityIndicator color={COLORS.white} style={styles.saveProgress} /> : null}
-            <Text style={styles.saveButtonText}>{isSaving ? 'SAVING' : 'SAVE'}</Text>
-          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -381,10 +403,21 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: SPACING.lg,
   },
+  formContainer: {
+    alignSelf: 'center',
+    maxWidth: 680,
+    width: '100%',
+  },
   title: {
     color: COLORS.charcoal,
     fontFamily: FONT_FAMILIES.oswaldRegular,
     fontSize: 28,
+    marginBottom: SPACING.md,
+  },
+  roleContext: {
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 16,
     marginBottom: SPACING.lg,
   },
   inputLabel: {
@@ -394,10 +427,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   readOnlyField: {
-    backgroundColor: COLORS.warmYellow,
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.charcoal,
     borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xs,
     minHeight: 56,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
@@ -419,6 +454,13 @@ const styles = StyleSheet.create({
     minHeight: 56,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
+  },
+  helperText: {
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 12,
+    marginBottom: SPACING.lg,
+    opacity: 0.65,
   },
   inputError: {
     borderColor: COLORS.darkRed,

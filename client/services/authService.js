@@ -1,10 +1,14 @@
 /**
  * File: authService.js
  * Purpose: Authenticates credentials and maps the role-capable backend session response.
- * Contents: login messages, identifier validation, role-aware authentication request.
+ * Contents:
+ * 1. login messages
+ * 2. identifier validation
+ * 3. role-aware authentication request
  */
 
 import { ApiRequestError, requestJson } from './apiClient';
+import { isPositiveSafeInteger } from '../utils/validation';
 
 // Screens receive stable, user-safe messages instead of backend or network implementation details.
 export const LOGIN_ERROR_MESSAGES = Object.freeze({
@@ -18,21 +22,23 @@ export const LOGIN_ERROR_MESSAGES = Object.freeze({
 /**
  * Accepts only positive whole-number identifiers returned as numbers or numeric strings.
  * authenticateUser uses it before trusting backend user/customer/courier IDs.
- * Read aloud: “is usable identifier.”
  */
 function isUsableIdentifier(value) {
   if (typeof value === 'number') {
-    return Number.isInteger(value) && value > 0;
+    return isPositiveSafeInteger(value);
   }
 
-  return typeof value === 'string' && /^\d+$/.test(value.trim()) && Number(value) > 0;
+  return (
+    typeof value === 'string' &&
+    /^\d+$/.test(value.trim()) &&
+    isPositiveSafeInteger(Number(value.trim()))
+  );
 }
 
 /**
  * Submits credentials and maps a successful payload into a role-capable client session shape.
  * A response with at least one supported role ID is accepted; neither role is rejected safely.
  * LoginScreen calls it before AuthProvider persists the authenticated session.
- * Read aloud: “authenticate user.”
  */
 export async function authenticateUser({ email, password, signal }) {
   const { data, response } = await requestJson('/api/auth', {

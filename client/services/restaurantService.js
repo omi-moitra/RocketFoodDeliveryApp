@@ -9,8 +9,14 @@
  * 5. Protected restaurant-detail fetch
  */
 
-import { getStoredSession } from '../storage/authStorage';
-import { ApiRequestError, requestJson } from './apiClient';
+import {
+  ApiRequestError,
+  classifyProtectedFailure,
+  requestJson,
+  requireSession,
+  requireSuccessList,
+  requireSuccessObject,
+} from './apiClient';
 
 export const RESTAURANT_ERROR_MESSAGES = Object.freeze({
   response: 'The restaurant service returned an unexpected response. Please try again.',
@@ -22,7 +28,6 @@ export const RESTAURANT_ERROR_MESSAGES = Object.freeze({
 /**
  * Reports whether a value is a whole number inside an inclusive allowed range.
  * Filter and response validation share it to enforce the backend's integer contract.
- * Read aloud: “is integer in range.”
  */
 function isIntegerInRange(value, minimum, maximum) {
   return Number.isInteger(value) && value >= minimum && value <= maximum;
@@ -31,7 +36,6 @@ function isIntegerInRange(value, minimum, maximum) {
 /**
  * Converts the selected filter values into the exact restaurant endpoint and query string.
  * fetchRestaurants uses it before sending the protected request.
- * Read aloud: “build restaurant path.”
  */
 function buildRestaurantPath({ priceRange, rating }) {
   const queryEntries = [];
@@ -70,7 +74,6 @@ function buildRestaurantPath({ priceRange, rating }) {
 /**
  * Validates one backend restaurant and maps its snake-case fields to the client shape.
  * normalizeRestaurants calls it for every response item before UI code receives the data.
- * Read aloud: “normalize restaurant.”
  */
 function normalizeRestaurant(rawRestaurant) {
   if (!rawRestaurant || typeof rawRestaurant !== 'object' || Array.isArray(rawRestaurant)) {
@@ -104,16 +107,13 @@ function normalizeRestaurant(rawRestaurant) {
 /**
  * Validates the API envelope and returns a duplicate-free array of normalized restaurants.
  * fetchRestaurants uses it as the final boundary between untrusted JSON and screen state.
- * Read aloud: “normalize restaurants.”
  */
 function normalizeRestaurants(responseData) {
-  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
-    throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response);
-  }
+  const rawRestaurants = requireSuccessList(responseData, RESTAURANT_ERROR_MESSAGES.response);
 
   const seenRestaurantIds = new Set();
 
-  return responseData.data.map((rawRestaurant) => {
+  return rawRestaurants.map((rawRestaurant) => {
     const restaurant = normalizeRestaurant(rawRestaurant);
 
     // Duplicate IDs would produce unstable FlatList keys and could open the wrong menu.
@@ -131,17 +131,12 @@ function normalizeRestaurants(responseData) {
  * The Restaurant List screen calls it whenever its initial load or filters change.
  * The token is read from the shared session boundary at request time, matching the
  * project-wide convention that credentials never travel through props or arguments.
- * Read aloud: “fetch restaurants.”
  * @param {{priceRange: number|null, rating: number|null, signal?: AbortSignal}} options
  * @returns {Promise<Array<{id: number, name: string, priceRange: number, rating: number}>>}
  * @throws {ApiRequestError} When authentication, transport, HTTP, or response validation fails.
  */
 export async function fetchRestaurants({ priceRange, rating, signal }) {
-  const session = await getStoredSession();
-
-  if (!session) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
-  }
+  const session = await requireSession(RESTAURANT_ERROR_MESSAGES.token);
 
   const path = buildRestaurantPath({ priceRange, rating });
   const { data, response } = await requestJson(path, {
@@ -152,13 +147,7 @@ export async function fetchRestaurants({ priceRange, rating, signal }) {
     signal,
   });
 
-  if (response.status === 401) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', RESTAURANT_ERROR_MESSAGES.service, response.status);
-  }
+  classifyProtectedFailure(response, RESTAURANT_ERROR_MESSAGES);
 
   if (!response.ok) {
     throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response, response.status);
@@ -176,11 +165,7 @@ export async function fetchRestaurants({ priceRange, rating, signal }) {
  * @throws {ApiRequestError} For authentication, unavailable, HTTP, or response failures.
  */
 export async function fetchRestaurantById({ restaurantId, signal }) {
-  const session = await getStoredSession();
-
-  if (!session) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
-  }
+  const session = await requireSession(RESTAURANT_ERROR_MESSAGES.token);
 
   if (!Number.isSafeInteger(restaurantId) || restaurantId <= 0) {
     throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response);
@@ -193,23 +178,18 @@ export async function fetchRestaurantById({ restaurantId, signal }) {
     signal,
   });
 
-  if (response.status === 401) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
-  }
+  classifyProtectedFailure(response, RESTAURANT_ERROR_MESSAGES);
 
   if (response.status === 404) {
     throw new ApiRequestError('unavailable', RESTAURANT_ERROR_MESSAGES.unavailable, 404);
   }
 
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', RESTAURANT_ERROR_MESSAGES.service, response.status);
-  }
-
-  if (!response.ok || !data || data.message !== 'Success') {
+  if (!response.ok) {
     throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response, response.status);
   }
 
-  const restaurant = normalizeRestaurant(data.data);
+  const rawRestaurant = requireSuccessObject(data, RESTAURANT_ERROR_MESSAGES.response);
+  const restaurant = normalizeRestaurant(rawRestaurant);
 
   // The route is the menu boundary; a mismatched response must never relabel another restaurant.
   if (restaurant.id !== restaurantId) {

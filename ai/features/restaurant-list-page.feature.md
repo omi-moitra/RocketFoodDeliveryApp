@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Restaurant List Page
 
 > Defines the authenticated restaurant-browsing screen, rating and price filters, restaurant-card grid, and navigation to the selected restaurant menu. Use this document together with `ai/ai-spec.md`, `ai/features/navigation-structure.feature.md`, and `ai/features/header-footer.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Customer Restaurant List and Filters
@@ -29,11 +33,15 @@
 - **API endpoint:** `GET ${API_BASE_URL}/api/restaurants`
 - **Implementation branch:** `feature/restaurant-list-page`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Allow an authenticated customer to browse every available restaurant in the wireframe's scrollable card grid, optionally narrow the results by exact rating, exact price range, or both, and open the correct Restaurant Menu by pressing a restaurant image.
 
 The initial Restaurants view must have neither filter selected and must request all restaurants. Every filter state must remain understandable, recoverable, and distinguish no matching restaurants from request failure. The page must use the supplied restaurant images and exact project palette while remaining usable on both iOS and Android.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -66,7 +74,9 @@ The initial Restaurants view must have neither filter selected and must request 
 - Free-text search, sorting, favorites, pagination, maps, distance calculation, cuisine filtering, or additional filter types.
 - Uploading restaurant images or requiring image URLs from the restaurant API.
 - Passing the JWT, customer ID, complete restaurant object, or image object through route parameters.
-- Importing runtime images directly from `support_materials_13/`, or deleting a source image before its runtime copy has been verified.
+- Reintroducing the obsolete duplicate support-material image directory or deleting a verified runtime image under `client/images/restaurants/`.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -153,7 +163,7 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 
 ### Requirement H — Restaurant Grid and Card Content
 
-- Match the `Restaurants Page` wireframes in `support_materials_13/Design/Wireframe.pdf`.
+- Match the `Restaurants Page` wireframes in `client/docs/m13/design/Wireframe.pdf`.
 - Display the page heading `NEARBY RESTAURANTS`.
 - Display the subsection heading `RESTAURANTS` below the filter row.
 - Render restaurant cards in a responsive two-column grid at normal phone widths, with consistent gutters and card dimensions.
@@ -168,15 +178,15 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 
 ### Requirement I — Supplied Restaurant Images
 
-- Copy the six supplied images from `support_materials_13/Images/Restaurants/` to the graded runtime path `client/images/restaurants/` before implementation is considered complete:
+- Keep the six supplied, byte-verified images at the graded runtime path `client/images/restaurants/`:
   - `cuisineGreek.jpg`
   - `cuisineJapanese.jpg`
   - `cuisinePasta.jpg`
   - `cuisinePizza.jpg`
   - `cuisineSoutheast.jpg`
   - `cuisineViet.jpg`
-- After all six files have been copied successfully, verify that every destination file exists, is readable, and matches its source filename; then delete the six originals from `support_materials_13/Images/Restaurants/`.
-- Never delete a source image when its destination copy is missing, unreadable, incomplete, or named incorrectly.
+- Git provenance confirms these runtime files are byte-identical to the former supplied originals. Verify every file remains present, readable, and correctly named; do not recreate the intentionally removed duplicate source directory.
+- Never delete a runtime image when its use is still registered in `client/constants/restaurantImages.js`.
 - Use static local `require(...)` entries or an equivalent React Native-compatible image registry; do not build dynamic string paths for `require`.
 - The source permits any supplied restaurant image to be assigned to a card. Make the assignment stable for a restaurant during the current session/list lifecycle, preferably through a deterministic function of the restaurant ID, so rerenders and filter changes do not cause visible image flicker.
 - Use an image resize mode and card crop consistent with the wireframe without stretching the source image.
@@ -242,6 +252,8 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 - Do not add a comment to every line, narrate obvious assignments or rendering, leave stale comments, paste prompts, expose credentials/tokens, or use comments to compensate for unclear names and oversized functions.
 - Before completion, review every changed file and update or remove comments and TOC entries that no longer match the final implementation.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Restaurant List Logic
 
 ### Initial Unfiltered Load
@@ -291,6 +303,8 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 3. An HTTP 401 invokes the shared sign-out flow rather than showing a normal list error indefinitely.
 4. Cleared authentication causes root navigation to replace the customer area with Login.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
 ### Frontend Routes and Layouts
@@ -338,6 +352,8 @@ GET ${API_BASE_URL}/api/restaurants?rating=<integer>&price_range=<integer>
 - A successful response is HTTP 200 with `{ "message": "Success", "data": [...] }`.
 - An empty successful `data` array is a valid no-results response.
 - This feature does not require `GET /api/restaurants/{id}`; add that call only if a later approved implementation demonstrates a real need.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Data, Validation, and State
 
@@ -400,11 +416,13 @@ idle → loading → success
 | Any authenticated state | HTTP 401 | signed out | Clear session and replace with Login. |
 | `success` | Valid image pressed | navigating | Push Menu route once with selected ID. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Wireframe Composition
 
-- Treat `support_materials_13/Design/Wireframe.pdf`, Restaurants Page without filter and with filter, as the visual source.
+- Treat `client/docs/m13/design/Wireframe.pdf`, Restaurants Page without filter and with filter, as the visual source.
 - Preserve this top-to-bottom hierarchy inside the shared authenticated frame:
   1. `NEARBY RESTAURANTS` heading.
   2. Side-by-side Rating and Price controls.
@@ -436,6 +454,8 @@ idle → loading → success
 - Loading and result-count/no-result messages should be announced appropriately without repeated noisy announcements on every render.
 - Preserve readable contrast, dynamic text growth where practical, and logical screen-reader traversal order.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Situation | Expected behavior |
@@ -454,6 +474,8 @@ idle → loading → success
 | Back from Menu | Restaurant List returns without losing valid auth state; current mounted filters/list position remain where supported. |
 | Long result set | Cards scroll between the persistent header and footer without clipping. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript only for this feature.
@@ -463,10 +485,12 @@ idle → loading → success
 - Use React Native components; do not render browser-only React Bootstrap DOM components in the native screen.
 - Use `FlatList` or an equivalent virtualized native list for the two-column grid.
 - Use centralized theme values and supplied assets only.
-- Copy the six restaurant images to `client/images/restaurants/`, verify the destination files, and then delete their originals from `support_materials_13/Images/Restaurants/`; do not delete first or remove other support materials.
+- Retain and verify the six byte-identical restaurant images under `client/images/restaurants/`; do not recreate their deliberately removed duplicate source directory.
 - Keep screen, service, image-registry, and component responsibilities separate enough to test without introducing an unrequested state library or architecture layer.
 - Follow Requirement M and the global file-header, per-file TOC, naming, comment, logging, secret, and error-handling rules.
 - Do not modify `server/` for this Module 13 feature.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -493,7 +517,7 @@ idle → loading → success
 
 - [x] Results render in a responsive two-column, scrollable grid implementing the supplied Restaurants wireframe structure.
 - [x] Each card displays a stable supplied image, restaurant name, correct price symbols, and correct rating/unrated presentation.
-- [x] All six supplied restaurant images exist and are readable under `client/images/restaurants/`, and their six originals are absent from `support_materials_13/Images/Restaurants/` after the verified move.
+- [x] All six supplied restaurant images exist and are readable under `client/images/restaurants/`; Git provenance confirms they match the former originals byte-for-byte.
 - [x] The restaurant image is an accessible press target.
 - [x] Pressing an image opens exactly one Menu route for that restaurant's API `id`.
 - [x] No token, customer ID, array index, or full restaurant object is passed as the Menu route identifier.
@@ -519,6 +543,8 @@ idle → loading → success
 - [x] Comments explain why the logic exists without narrating obvious syntax, exposing sensitive values, or becoming stale.
 - [x] Reusable helpers with non-obvious parameters, return values, normalized data, or errors use accurate JSDoc where it materially improves the contract.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is complete only when:
@@ -535,6 +561,8 @@ This feature is complete only when:
 - Relevant automated/component/service tests pass, Postman cases pass, lint/static checks pass, and no new warning, secret, temporary log, generated file, or unrelated refactor remains.
 - The implementation branch follows the global feature-branch, review, and merge workflow.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementing.
@@ -549,3 +577,5 @@ This feature is complete only when:
 - Preserve the current working nested navigation, session, header, and footer contracts; do not refactor unrelated features.
 - Do not modify the Java backend or invent another endpoint to simplify the client.
 - If an implementation decision conflicts with the grading sheet, business document, wireframe, or global spec, follow the authority order in `ai/ai-spec.md` and record unresolved questions instead of guessing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

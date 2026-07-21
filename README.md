@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # Rocket Food Delivery Mobile App
 
 ## Table of Contents
@@ -17,11 +19,15 @@
 - [Related Documentation](#related-documentation)
 - [Author / Contributors](#author--contributors)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Project Description
 
 Rocket Food Delivery is a cross-platform customer app for browsing restaurants, filtering by rating and price, choosing menu quantities, placing an order, and reviewing order history. It gives customers one mobile workflow while the existing Java API manages authentication, restaurant data, products, and orders.
 
 This repository is the Module 13 mobile-development project. It contains the Expo/React Native client, the existing Spring Boot backend used by the client, project specifications, research, concept documentation, and an importable Postman collection.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Features
 
@@ -33,6 +39,8 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 - Customer order history and order-detail modal, including pending orders without a courier
 - Shared loading, empty, error, and session-expiry handling
 - iOS, Android, simulator, and physical-device development through Expo and ngrok
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Tech Stack
 
@@ -50,6 +58,8 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 
 Expo SDK 54 is intentional. A coach confirmed that the repository's current `expo ~54.0.34` baseline is acceptable for this submission.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Project Structure
 
 ```text
@@ -60,10 +70,11 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   ├── components/             # Reusable interface components and modals
 │   ├── constants/              # Theme, assets, labels, and currency rules
 │   ├── contexts/               # Authentication/session context
+│   ├── docs/                   # Supplied M13/M14 design references
 │   ├── images/restaurants/     # Six bundled restaurant images
 │   ├── services/               # API requests and response validation
 │   ├── storage/                # AsyncStorage session boundary
-│   ├── utils/                  # Menu, label, and validation helpers
+│   ├── utils/                  # Pure helpers and focused client unit tests
 │   ├── .env.example            # Safe client environment template
 │   ├── app.json                # Expo application configuration
 │   ├── package.json            # Client scripts and dependencies
@@ -75,11 +86,11 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   └── pom.xml                 # Java and Spring dependencies
 ├── scripts/ngrok-phone.sh           # Physical-phone API tunnel helper
 ├── ai/                              # Project rules and feature specifications
-├── support_materials_13/            # Supplied wireframes, palette, and images
+├── Concepts/M13/                    # Module 13 concepts and code references
+├── docVault/                        # Research and implementation audit documents
 ├── LeetCode-Challenges/              # Required SQL challenge solution screenshots
 ├── PostmanCollection.json           # Importable mobile API request collection
-├── CONCEPTS.md                      # Three project concepts and code references
-└── RESEARCH.md                      # Required mobile-development research
+└── README.md                        # Setup, API, verification, and project overview
 ```
 
 The mobile route hierarchy is:
@@ -87,13 +98,20 @@ The mobile route hierarchy is:
 ```text
 Root Stack
 ├── Login
-└── Customer Tabs
-    ├── Restaurants
-    │   └── Restaurant Stack
-    │       ├── Restaurant List
-    │       └── Restaurant Menu
-    └── Order History
+├── Account Selection
+├── Customer Tabs
+│   ├── Restaurants
+│   │   └── Restaurant Stack
+│   │       ├── Restaurant List
+│   │       └── Restaurant Menu
+│   ├── Order History
+│   └── Account
+└── Courier Tabs
+    ├── Order Delivery
+    └── Account
 ```
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Prerequisites
 
@@ -103,6 +121,8 @@ Root Stack
 - MySQL 8
 - Expo Go for physical-device testing, or an iOS/Android simulator
 - ngrok and a free ngrok account only when testing the API from a physical phone
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Installation / Setup
 
@@ -191,6 +211,8 @@ From the repository root, run:
 
 The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL to `client/.env`, and restores the previous file when stopped with `Ctrl+C`. Follow its prompt to start Expo. If the phone and computer cannot connect directly for Expo's development traffic, use `npx expo start -c --tunnel` from `client/`.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Environment Variables
 
 | Setting | Location | Required | Purpose |
@@ -203,6 +225,8 @@ The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL
 | ngrok authtoken | ngrok user config | Physical phone only | Allows the local API tunnel to start |
 
 `EXPO_PUBLIC_*` values are embedded in the client bundle and must never contain secrets. Backend notification settings for Twilio and Notify.EU are optional and are not needed for the Module 13 customer flow because order requests send both notification flags as `false`. Those optional provider settings are therefore not part of the required local setup above.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## API Documentation
 
@@ -222,6 +246,8 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `PUT` | `/api/order/{id}/courier` | Assign a courier to an order; body `{ "courier_id": {id} }` |
 | `GET` | `/api/account/{userId}?type={role}` | Load the account (primary email + nested role details); `type` is accepted and ignored, client selects the active role |
 | `POST` | `/api/account/{userId}` | Update the active role's email/phone; body `{ "account_type", "account_email", "account_phone" }` (primary email never changed) |
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Backend Compatibility and Minimum-Change Policy
 
@@ -282,6 +308,8 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 - **Postman:** `PostmanCollection.json` includes pending, courier-scoped, broad-update→in progress, courier assignment, and broad-update→delivered requests.
 - **DBeaver / native:** database before/after inspection and on-device courier interaction remain manual checks for the operator with a running device.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Examples from This Project
 
 ### Seeded customer login
@@ -334,6 +362,8 @@ After the customer chooses menu quantities and confirms the modal, the client se
 
 The actual IDs come from the authenticated customer and loaded restaurant/menu data. The order modal accepts only a valid HTTP `201` Success response before displaying its success state. Returning to Order History refreshes the list and lets the customer open the persisted order details.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Seeded Development Data
 
 `server/src/main/java/com/rocketFoodDelivery/rocketFood/DataSeeder.java` runs when the Spring application starts. On a fresh database it creates the following development data:
@@ -367,6 +397,8 @@ The request flow is: screen/component → client service → shared API client �
 
 Import [PostmanCollection.json](PostmanCollection.json) into Postman for the preconfigured mobile requests. Replace its safe collection variables with local test values as needed; never commit a live token. The exported collection is included, but a final unchanged collection run is tracked separately from this README.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Verification
 
 Backend tests:
@@ -384,14 +416,18 @@ npx expo-doctor
 npm install
 ```
 
-The completed manual QA covers the customer journey on iOS and Android: login and persistence, navigation, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, keyboard behavior, and restart behavior.
+Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL, and login plus the initial authenticated app view succeeded. The complete customer/courier journeys, Android, persistence/restart, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, and keyboard behavior remain pending manual verification.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Related documentation
 
-- [CONCEPTS.md](CONCEPTS.md) explains mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
-- [RESEARCH.md](RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
+- [Module 13 concepts](Concepts/M13/CONCEPTS.md) explain mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
+- [Research](docVault/RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
 - [ai/ai-spec.md](ai/ai-spec.md) records repository-wide implementation rules and decisions.
 - [`ai/features/`](ai/features/) contains the feature-level behavior contracts.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Author / Contributors
 
@@ -401,3 +437,5 @@ Created by **Omoitra** for CodeBoxx Full-Stack Development Module 13.
 - [Project repository](https://github.com/omoitra-droid/M13-rocketFoodDelivery)
 
 No additional contributors are listed for this student project.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

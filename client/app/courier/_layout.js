@@ -1,111 +1,47 @@
 /**
  * File: _layout.js
- * Purpose: Defines authenticated courier tabs and their shared header boundary.
- * Contents: imports, tab layout, navigation options.
+ * Purpose: Configures the shared authenticated tab shell for the Courier role.
+ * Contents:
+ * 1. imports
+ * 2. initial-route setting
+ * 3. courier tabs layout
  */
 
-import { Redirect, Tabs } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
-
-import AppHeader from '../../components/AppHeader';
-import AppIcon from '../../components/AppIcon';
-import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
+import RoleTabsLayout from '../../components/RoleTabsLayout';
+import { ROLES } from '../../storage/authStorage';
 
 // Expo Router reads this reserved setting to choose Order Delivery as the initial courier tab.
 export const unstable_settings = {
   initialRouteName: 'index',
 };
 
-/**
- * Renders one footer icon and its highlighted background when its tab is active.
- * CourierTabsLayout uses it for both required footer destinations.
- * Read aloud: “tab icon.”
- */
-function TabIcon({ color, focused, name, size }) {
-  return (
-    <View style={[styles.tabIndicator, focused && styles.activeTabIndicator]}>
-      <AppIcon color={color} name={name} size={size} />
-    </View>
-  );
-}
+// Order Delivery and Account, in the required exact order.
+const COURIER_TAB_SCREENS = [
+  {
+    accessibilityLabel: 'Order Delivery tab',
+    iconName: 'truck',
+    name: 'index',
+    title: 'Order Delivery',
+  },
+  {
+    accessibilityLabel: 'Account tab',
+    iconName: 'user',
+    name: 'account',
+    title: 'Account',
+  },
+];
 
 /**
- * Defines the authenticated Order Delivery and Account tabs plus their shared header.
- * Expo Router loads it for every route inside the courier folder.
- * Read aloud: “courier tabs layout.”
+ * Defines the authenticated Order Delivery and Account tabs.
+ * Expo Router loads it for every route inside the courier folder; the shared header, tab-bar
+ * styling, and active-icon presentation live in the reusable `RoleTabsLayout`.
  */
 export default function CourierTabsLayout() {
   const { session } = useAuth();
 
   // Fail closed: only an active courier session with a courier ID may render Courier tabs.
-  if (!session || session.activeRole !== 'courier' || !session.courierId) {
-    return <Redirect href="/" />;
-  }
+  const isAuthorized = Boolean(session) && session.activeRole === ROLES.courier && Boolean(session.courierId);
 
-  return (
-    <Tabs
-      backBehavior="initialRoute"
-      screenOptions={{
-        header: () => <AppHeader />,
-        headerShown: true,
-        tabBarActiveTintColor: COLORS.charcoal,
-        tabBarHideOnKeyboard: false,
-        tabBarInactiveTintColor: COLORS.charcoal,
-        tabBarItemStyle: styles.tabItem,
-        tabBarLabelPosition: 'below-icon',
-        tabBarLabelStyle: styles.tabLabel,
-        tabBarStyle: styles.tabBar,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarAccessibilityLabel: 'Order Delivery tab',
-          tabBarIcon: ({ color, focused, size }) => (
-            <TabIcon color={color} focused={focused} name="truck" size={size} />
-          ),
-          title: 'Order Delivery',
-        }}
-      />
-      <Tabs.Screen
-        name="account"
-        options={{
-          tabBarAccessibilityLabel: 'Account tab',
-          tabBarIcon: ({ color, focused, size }) => (
-            <TabIcon color={color} focused={focused} name="user" size={size} />
-          ),
-          title: 'Account',
-        }}
-      />
-    </Tabs>
-  );
+  return <RoleTabsLayout isAuthorized={isAuthorized} screens={COURIER_TAB_SCREENS} />;
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: COLORS.white,
-    borderTopColor: COLORS.charcoal,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    minHeight: 78,
-    paddingTop: SPACING.sm,
-  },
-  tabItem: {
-    minHeight: 64,
-    paddingBottom: SPACING.xs,
-  },
-  tabLabel: {
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 16,
-  },
-  tabIndicator: {
-    alignItems: 'center',
-    borderRadius: LAYOUT.footerIndicatorHeight / 2,
-    height: LAYOUT.footerIndicatorHeight,
-    justifyContent: 'center',
-    width: LAYOUT.footerIndicatorWidth,
-  },
-  activeTabIndicator: {
-    backgroundColor: COLORS.warmYellow,
-  },
-});

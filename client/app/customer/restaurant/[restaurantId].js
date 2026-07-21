@@ -39,7 +39,6 @@ const MENU_MESSAGES = Object.freeze({
 /**
  * Loads the selected menu, protects quantity boundaries, and hosts the order confirmation modal.
  * Expo Router renders it for the nested dynamic restaurant route.
- * Read aloud: “restaurant menu screen.”
  */
 export default function RestaurantMenuScreen() {
   const router = useRouter();
@@ -218,7 +217,6 @@ export default function RestaurantMenuScreen() {
    * Resets every quantity to zero after the modal reports a successfully created order.
    * The consumed selection must not stay orderable, so Create Order returns to disabled; closing
    * from idle, error, or processing never calls this and keeps the quantities intact.
-   * Read aloud: “handle order created.”
    */
   function handleOrderCreated() {
     setQuantities({});

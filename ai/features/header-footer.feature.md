@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Header and Footer
 
 > Defines the shared authenticated header and persistent footer navigation for the Rocket Food Delivery mobile application. Use this document together with `ai/ai-spec.md` and `ai/features/navigation-structure.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Authenticated Header and Footer Navigation
@@ -29,6 +33,8 @@
 - **Related navigation specification:** `ai/features/navigation-structure.feature.md`
 - **Implementation branch:** `feature/header-footer`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Give authenticated customers a consistent frame around the application. The header must identify Rocket Food Delivery and provide a reliable Log Out action. The footer must let the customer move between Restaurants and Order History from anywhere in the authenticated customer area.
@@ -36,6 +42,8 @@ Give authenticated customers a consistent frame around the application. The head
 The header and footer are visible on all pages except the Login page.
 
 The shared frame must remain visible across the Restaurant List, Restaurant Menu, and Order History pages without being duplicated by nested navigators. It must respect safe areas, leave page content usable and scrollable, and disappear completely when the customer is on Login.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -75,8 +83,10 @@ The shared frame must remain visible across the Restaurant List, Restaurant Menu
 - New backend endpoints, logout endpoints, token revocation, or Java server changes.
 - Additional footer tabs, drawer navigation, a floating navigation bar, or role-specific navigation.
 - A page title, search field, profile menu, avatar, notification control, or any other ungraded header action.
-- Replacing or editing the original files under `support_materials_13/`.
+- Replacing or editing the supplied references under `client/docs/m13/` or verified branding assets under `client/assets/`.
 - Approximate brand colors, unapproved logos, emoji icons, or newly invented branding.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -84,8 +94,8 @@ The shared frame must remain visible across the Restaurant List, Restaurant Menu
 
 - Render one shared header throughout the authenticated customer area.
 - Display the supplied Rocket Food Delivery logo in the header.
-- Use `support_materials_13/Images/AppLogoV1.png` as the default header source because it is the compact horizontal supplied logo.
-- Copy the approved runtime logo into the client asset location; do not load it at runtime from `support_materials_13/`.
+- Use `client/assets/app-logo.png`, the byte-identical runtime port of supplied `AppLogoV1.png`, as the default header source because it is the compact horizontal logo.
+- Load the logo only from that static runtime asset; the former duplicate support-material directory was intentionally consolidated.
 - Preserve the logo's aspect ratio; do not stretch, crop, recolor, redraw, or replace it with text.
 - Display a visible button with the exact label `Log Out`.
 - Keep the logo and Log Out button usable on narrow screens without overlap or horizontal clipping.
@@ -152,6 +162,8 @@ The shared frame must remain visible across the Restaurant List, Restaurant Menu
 - Account for the keyboard on screens that accept input without moving the footer into an unusable position.
 - Use one shared source for theme values and shared layout spacing.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Shared Layout Logic
 
 ### Login to Authenticated Layout
@@ -195,6 +207,8 @@ The shared frame must remain visible across the Restaurant List, Restaurant Menu
 3. The application does not claim logout succeeded.
 4. A concise retry message is shown without exposing private/internal details.
 5. The button returns to its interactive state so the customer can retry.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
@@ -249,6 +263,8 @@ The header does not need customer profile data and must not receive a password o
 
 This feature creates no endpoint and makes no logout request. The supplied backend has no required logout endpoint. Logout is a client session operation: clear local authentication/customer state, then replace the route with Login.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Data, Validation, and State
 
 ### Data Used
@@ -284,14 +300,15 @@ This feature creates no endpoint and makes no logout request. The supplied backe
 | Authenticated / clearing | Cleanup fails | Authenticated / idle with error | Keep authenticated page, show retry message, re-enable logout. |
 | Any authenticated state | Protected API returns HTTP 401 | Logged out | Use shared cleanup and replace with Login. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Supplied Assets
 
-- Original logo files remain unchanged under `support_materials_13/Images/`.
-- The default header source is the supplied compact horizontal `AppLogoV1.png` (`594 × 163`, transparent PNG).
-- Copy the chosen file into the client runtime asset structure and use that copy consistently for the header.
-- `AppLogoV2.png` is a taller supplied variation and must not be substituted casually where it causes the header to grow or content to clip.
+- `client/assets/app-logo.png` remains the byte-identical port of the supplied compact horizontal `AppLogoV1.png` (`594 × 163`, transparent PNG).
+- Use that runtime asset consistently for the header.
+- `client/assets/login-logo.png` is the byte-identical port of the taller supplied `AppLogoV2.png` variation and must not be substituted casually where it causes the header to grow or content to clip.
 - If the approved logo choice changes after direct wireframe/coach review, update this specification and every runtime reference together.
 
 ### Exact Palette
@@ -321,6 +338,8 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - Maintain readable contrast and a usable touch target on both iOS and Android.
 - Ensure larger accessibility text does not hide, overlap, or truncate the only available logout/navigation control.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 - Login is the only application page without the authenticated shared header and footer.
@@ -334,6 +353,8 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - Successful logout cannot be reversed with ordinary platform back navigation.
 - Cleanup failures remain retryable and never expose authentication data.
 - Header/footer colors, typography, spacing, asset treatment, and control placement match the supplied wireframe as closely as possible on both platforms.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Technical Constraints (Feature-Level)
 
@@ -349,6 +370,8 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - Support iOS and Android through Expo.
 - Do not modify the supplied Java backend, database, or original support-material files.
 - Do not add packages unless the current Expo-compatible dependencies cannot meet a confirmed requirement.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -397,12 +420,14 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 ### Layout, Visual, and Platform Verification
 
 - [x] Header/footer colors use exact centralized values from the supplied palette.
-- [ ] The implementation is compared side by side with `support_materials_13/Design/Wireframe.pdf`.
+- [ ] The implementation is compared side by side with `client/docs/m13/design/Wireframe.pdf`.
 - [x] Top and bottom safe areas are respected on iOS and Android.
 - [x] Header and footer do not cover the first or last page content.
 - [x] Long Restaurant List, Restaurant Menu, and Order History content remains scrollable and reachable.
 - [x] Required controls have readable contrast, accessible roles/labels, and usable touch targets.
 - [x] The complete shared-frame and logout flow is verified on both iOS and Android through Expo.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Definition of Done
 
@@ -421,6 +446,8 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - [x] Temporary logs, placeholder controls, unused assets, stale comments, and duplicate shared components are removed.
 - [x] The feature diff contains no access token, password, `.env`, or generated build output.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md`, `navigation-structure.feature.md`, and this file before changing shared layout code.
@@ -432,3 +459,5 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 - Do not change the backend or add a logout endpoint.
 - Keep changes limited to the shared header/footer, their direct session/navigation integration, and the minimum supporting constants/assets.
 - If a verified wireframe or coach decision changes the logo choice or shared-layout contract, update this specification before implementation.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

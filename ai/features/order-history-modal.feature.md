@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # AI Feature Specification — Order History Modal
 
 > Defines the Order History Detail modal's interior: the restaurant-name header with accurate date, status, and courier lines, the product rows with correct quantities and prices, and the order total — all rendered from the already-loaded order object selected on the Order History page. Use this document together with `ai/ai-spec.md`, `ai/features/navigation-structure.feature.md`, `ai/features/header-footer.feature.md`, `ai/features/order-history-page.feature.md`, and `ai/features/menu-modal-confirmation.feature.md`.
@@ -20,6 +22,8 @@
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Identity
 
 - **Feature Name:** Order History Detail Modal
@@ -30,11 +34,15 @@
 - **API endpoint:** None — renders the order object already returned by `GET /api/orders?type=customer&id={customerId}`
 - **Implementation branch:** `feature/order-history-modal`
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Goal
 
 Show an authenticated customer the complete, accurate details of one selected past order: which restaurant it came from, when it was placed, its current status, the courier assigned to it (or a safe blank when none is assigned yet), every ordered product with its quantity and price, and the correct order total.
 
 The grading sheet requires that the modal shows the correct date, status, courier name, products, prices, and totals, and that a missing courier — a valid pending state — never renders as `undefined` or crashes. The Order History page already loads, validates, and passes the selected order object; this feature owns everything rendered inside the modal. No new API request is made.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Feature Scope
 
@@ -65,6 +73,8 @@ The grading sheet requires that the modal shows the correct date, status, courie
 - Login, session handling, header/footer implementation, or logout; the modal renders above the authenticated frame.
 - Modifying Java controllers, DTOs, services, repositories, database schema, or seeded records.
 - Persisting the selected order or modal state to AsyncStorage.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Sub-Requirements (Feature Breakdown)
 
@@ -126,6 +136,8 @@ The grading sheet requires that the modal shows the correct date, status, courie
 - Add JSDoc where a date/display helper has non-obvious parameters or fallbacks.
 - Remove stale comments before completion.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## User Flow and Detail Modal Logic
 
 ### Inspect an Order
@@ -148,6 +160,8 @@ The grading sheet requires that the modal shows the correct date, status, courie
 2. The modal closes; the Order History list, data, and scroll position are unchanged and not refetched.
 3. The customer presses View on a different row.
 4. The modal shows only the newly selected order's details with no stale content.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Interfaces (Pages, Components, Services, Storage, and Endpoints)
 
@@ -174,6 +188,8 @@ The grading sheet requires that the modal shows the correct date, status, courie
 
 - No endpoint belongs to this feature. The data source is the selected order object from the Order History page's `GET /api/orders?type=customer&id={customerId}` response; the backend provides no per-order detail endpoint and none may be invented.
 - Postman evidence for the list endpoint (including an order with a `null` courier) is owned by `order-history-page.feature.md`; this feature relies on it rather than duplicating collection entries.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Data, Validation, and State
 
@@ -214,11 +230,13 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 | `showing` | Page selects a different order | `showing` | Only the new order's details; no stale content. |
 | `showing` | Order has `null` courier | `showing` | Blank courier value; no `undefined`; no crash. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Visual and Accessibility Contract
 
 ### Wireframe Composition
 
-- Treat the `Order History Details` page in `support_materials_13/Design/Wireframe.pdf` as the visual source.
+- Treat the `Order History Details` page in `client/docs/m13/design/Wireframe.pdf` as the visual source.
 - The modal is a centered white rounded panel over the dimmed Order History table; the shared header and footer remain visible but inert behind the backdrop.
 - Panel hierarchy:
   1. Charcoal header block: restaurant name in orange-red Oswald, then white `Order Date:`, `Status:`, and `Courier:` lines, with the white X close control top-right.
@@ -245,6 +263,8 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 - The X close control is a labeled button meeting the global minimum touch target.
 - Long product lists remain scrollable and readable at larger text sizes; status never relies on color alone.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Expected Behavior
 
 | Situation | Expected behavior |
@@ -261,6 +281,8 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 | Many products | Rows scroll inside the panel; header and total remain discoverable. |
 | Modal hidden | No order-specific render; a `null` order prop is tolerated. |
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Technical Constraints (Feature-Level)
 
 - Use JavaScript to match the current client; do not introduce TypeScript for only this feature.
@@ -273,6 +295,8 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 - Use centralized palette, typography, spacing, and minimum touch-target values from `client/constants/theme.js`.
 - Follow global naming, file header/Contents, inline-comment, logging, secret, error, testing, branch, staging-command, and commit-message rules.
 - Keep this feature's diff inside the modal presentation; page behavior changes belong to `order-history-page.feature.md`.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Acceptance Criteria
 
@@ -302,6 +326,8 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
 - [ ] Verified on representative iPhone and Android dimensions, including an order with a `null` courier and an order with multiple products.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Feature Definition of Done
 
 This feature is complete only when:
@@ -316,6 +342,8 @@ This feature is complete only when:
 - All changed source files retain accurate Contents headers and detailed comments next to non-obvious logic.
 - The implementation follows `feature/order-history-modal` → `dev` workflow, and the final AI handoff provides the exact scoped staging command before its copy-ready commit message.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Notes for the AI
 
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
@@ -329,3 +357,5 @@ This feature is complete only when:
 - The modal is presentation-only: no requests, no storage, no navigation, no order actions.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes a field, shape, or lifecycle behavior, update this feature spec before continuing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

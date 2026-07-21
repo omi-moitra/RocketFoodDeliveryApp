@@ -16,7 +16,6 @@ import { getPriceRangeLabel, getRatingLabel } from '../utils/restaurantLabels';
 /**
  * Displays one normalized restaurant and makes only its supplied image the menu action.
  * The Restaurant List screen renders this component for every API result.
- * Read aloud: “restaurant card.”
  */
 export default function RestaurantCard({ onImagePress, restaurant }) {
   const priceLabel = getPriceRangeLabel(restaurant.priceRange);

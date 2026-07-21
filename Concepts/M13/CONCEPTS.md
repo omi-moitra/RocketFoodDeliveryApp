@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # Module 13 – Mobile Development 1
 
 ## Table of Contents
@@ -7,11 +9,15 @@
 3. [Concept 02 — File-Based Nested Navigation Layouts](#️-concept---02)
 4. [Concept 03 — Race Conditions, Stale Responses, and Cancellation](#️-concept---03)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## 🎯 Purpose
 
 This log explains three of the most challenging concepts I applied while building the Module 13 Rocket Food Delivery mobile app. Each entry identifies the concept, its purpose in the project, why it was difficult to understand or implement, and where it appears in the current code.
 
 ---
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## ✏️ Concept - 01
 
@@ -39,6 +45,8 @@ The tunnel itself was also difficult to picture at first. It is not a database c
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## ✏️ Concept - 02
 
 **🔤 Name:**
@@ -64,6 +72,8 @@ At first, I treated each screen as if it owned its entire page. The important re
 
 ---
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## ✏️ Concept - 03
 
 **🔤 Name:**
@@ -88,3 +98,5 @@ I learned that three different client-side problems need three different defense
 - `client/app/customer/order-history.js:52, 65–79` — the same newest-request protection during focus refreshes.
 
 ---
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

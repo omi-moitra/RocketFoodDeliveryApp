@@ -62,7 +62,7 @@ public class OrderApiControllerTest {
 
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.id").exists())
                 .andExpect(jsonPath("$.data.customer_id").exists())
@@ -74,8 +74,8 @@ public class OrderApiControllerTest {
 
     @Test
     public void testCreateOrder_AcceptsCamelCaseNotificationKeys() throws Exception {
-        // The client sends the official camelCase notification keys; the endpoint must accept them
-        // (via @JsonAlias) and still create the order. False flags keep providers uninvoked.
+        // The client sends the official camelCase notification keys; the endpoint maps them
+        // canonically and still creates the order. False flags keep providers uninvoked.
         String body = "{\"restaurant_id\":1,\"customer_id\":1,"
                 + "\"products\":[{\"id\":1,\"quantity\":1}],"
                 + "\"sendSMS\":false,\"sendEmail\":false}";
@@ -97,7 +97,7 @@ public class OrderApiControllerTest {
 
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Bad Request"));
     }
@@ -193,22 +193,8 @@ public class OrderApiControllerTest {
 
     @Test
     public void testDeleteOrder_Success() throws Exception {
-        // Create a fresh order to safely delete
-        ApiCreateOrderDTO request = new ApiCreateOrderDTO();
-        request.setRestaurantId(1);
-        request.setCustomerId(1);
-        ApiCreateOrderDTO.ProductItem item = new ApiCreateOrderDTO.ProductItem();
-        item.setId(1);
-        item.setQuantity(1);
-        request.setProducts(List.of(item));
-
-        MvcResult createResult = mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        int id = JsonPath.read(createResult.getResponse().getContentAsString(), "$.data.id");
+        // Create a fresh order to safely delete, reusing the shared fixture.
+        int id = createFreshOrder();
 
         mockMvc.perform(delete("/api/orders/{id}", id))
                 .andExpect(status().isOk())

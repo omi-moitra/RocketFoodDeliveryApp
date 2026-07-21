@@ -1,11 +1,15 @@
 /**
  * File: DeliveryRow.js
  * Purpose: Renders one courier delivery with its clickable status control and View action.
- * Contents: imports, delivery row component, styles.
+ * Contents:
+ * 1. imports
+ * 2. delivery row component
+ * 3. styles
  */
 
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import AppIcon from './AppIcon';
 import { DELIVERY_STATUS, DELIVERY_STATUS_LABELS } from '../services/orderService';
 import { COLORS, DELIVERY_STATUS_COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 
@@ -16,12 +20,11 @@ const ADVANCE_LABELS = Object.freeze({
 });
 
 /**
- * Displays a single delivery: restaurant, order number, status control, and View.
+ * Displays a single wireframe table row: order ID, address, status control, and View.
  * The status control is clickable only for a PENDING order (accept) or the active courier's
  * IN PROGRESS order (mark delivered); DELIVERED is a locked, non-actionable green indicator. While
  * a mutation is pending the control shows `Updating…` and is disabled. A partial acceptance
  * (status persisted, assignment failed) shows a Retry action instead of a false final status.
- * Read aloud: “delivery row.”
  */
 export default function DeliveryRow({
   delivery,
@@ -41,7 +44,6 @@ export default function DeliveryRow({
 
   /**
    * Renders the status control appropriate to the current status and mutation phase.
-   * Read aloud: “render status control.”
    */
   function renderStatusControl() {
     // Partial acceptance: the order is at IN PROGRESS but unassigned; offer a safe retry, not a
@@ -105,12 +107,11 @@ export default function DeliveryRow({
   return (
     <View style={styles.row}>
       <View style={styles.topRow}>
-        <View style={styles.info}>
-          <Text numberOfLines={1} style={styles.restaurantName}>
-            {delivery.restaurantName}
-          </Text>
-          <Text style={styles.orderNumber}>Order #{delivery.id}</Text>
-        </View>
+        <Text style={styles.orderId}>{delivery.id}</Text>
+
+        <Text numberOfLines={2} style={styles.address}>
+          {delivery.deliveryAddress || 'Address unavailable'}
+        </Text>
 
         {renderStatusControl()}
 
@@ -120,7 +121,7 @@ export default function DeliveryRow({
           onPress={onView}
           style={({ pressed }) => [styles.viewButton, pressed && styles.viewButtonPressed]}
         >
-          <Text style={styles.viewButtonText}>View</Text>
+          <AppIcon color={COLORS.charcoal} name="magnifying-glass" size={18} />
         </Pressable>
       </View>
 
@@ -142,29 +143,29 @@ const styles = StyleSheet.create({
   topRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: SPACING.xs,
   },
-  info: {
-    flex: 1,
-    minWidth: 0,
-  },
-  restaurantName: {
-    color: COLORS.charcoal,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 18,
-  },
-  orderNumber: {
+  orderId: {
     color: COLORS.charcoal,
     fontFamily: FONT_FAMILIES.body,
+    fontSize: 15,
+    textAlign: 'center',
+    width: 44,
+  },
+  address: {
+    color: COLORS.charcoal,
+    flex: 1,
+    fontFamily: FONT_FAMILIES.body,
     fontSize: 14,
-    marginTop: SPACING.xs,
+    minWidth: 0,
+    paddingHorizontal: SPACING.xs,
   },
   statusControl: {
     alignItems: 'center',
     borderRadius: 16,
     justifyContent: 'center',
     minHeight: LAYOUT.minimumTouchTarget,
-    minWidth: 116,
+    minWidth: 104,
     paddingHorizontal: SPACING.sm,
   },
   retryControl: {
@@ -196,20 +197,12 @@ const styles = StyleSheet.create({
   },
   viewButton: {
     alignItems: 'center',
-    backgroundColor: COLORS.orangeRed,
-    borderRadius: 8,
     justifyContent: 'center',
     minHeight: LAYOUT.minimumTouchTarget,
-    minWidth: 64,
-    paddingHorizontal: SPACING.md,
+    width: LAYOUT.minimumTouchTarget,
   },
   viewButtonPressed: {
-    backgroundColor: COLORS.darkRed,
-  },
-  viewButtonText: {
-    color: COLORS.white,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 16,
+    opacity: 0.55,
   },
   rowMessage: {
     color: COLORS.darkRed,

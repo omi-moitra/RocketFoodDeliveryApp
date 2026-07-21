@@ -1,10 +1,19 @@
 /**
  * File: authStorage.js
  * Purpose: Persists and validates the role-capable session values that control protected navigation.
- * Contents: storage keys, role constants, value normalization, session reads, writes, role selection, clearing.
+ * Contents:
+ * 1. storage keys
+ * 2. role constants
+ * 3. value normalization
+ * 4. session reads
+ * 5. writes
+ * 6. role selection
+ * 7. clearing
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { isPositiveSafeInteger } from '../utils/validation';
 
 // Central keys prevent screens and services from silently disagreeing about stored field names.
 export const AUTH_STORAGE_KEYS = Object.freeze({
@@ -27,7 +36,6 @@ const ALL_AUTH_STORAGE_KEYS = Object.freeze(Object.values(AUTH_STORAGE_KEYS));
 /**
  * Converts any nonblank stored value into a trimmed string, otherwise null.
  * Session readers and writers use it as the common base normalization rule.
- * Read aloud: “normalize stored value.”
  */
 function normalizeStoredValue(value) {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
@@ -36,12 +44,15 @@ function normalizeStoredValue(value) {
 /**
  * Converts a stored identifier into a positive numeric string, otherwise null.
  * All customer/courier/user ID reads and writes pass through this stricter rule.
- * Read aloud: “normalize stored identifier.”
  */
 function normalizeStoredIdentifier(value) {
   const normalizedValue = normalizeStoredValue(value);
 
-  if (!normalizedValue || !/^\d+$/.test(normalizedValue) || Number(normalizedValue) <= 0) {
+  if (
+    !normalizedValue ||
+    !/^\d+$/.test(normalizedValue) ||
+    !isPositiveSafeInteger(Number(normalizedValue))
+  ) {
     return null;
   }
 
@@ -51,7 +62,6 @@ function normalizeStoredIdentifier(value) {
 /**
  * Accepts only the exact lowercase role names, rejecting any other stored string.
  * Session restoration uses it before trusting a persisted active role.
- * Read aloud: “normalize stored role.”
  */
 function normalizeStoredRole(value) {
   const normalizedValue = normalizeStoredValue(value);
@@ -64,7 +74,6 @@ function normalizeStoredRole(value) {
 /**
  * Derives the only valid active role for a single-role login; dual-role stays unselected.
  * saveAuthSession uses it so a customer-only or courier-only login routes without Account Selection.
- * Read aloud: “derive initial active role.”
  */
 function deriveInitialActiveRole(customerId, courierId) {
   if (customerId && !courierId) {
@@ -85,7 +94,6 @@ const INVALID_SESSION = Symbol('invalidSession');
 /**
  * Validates a restored active role against the available role IDs and pending-selection rules.
  * getStoredSession uses it to fail closed on any incoherent role/ID combination.
- * Read aloud: “resolve restored active role.”
  */
 function resolveRestoredActiveRole(storedActiveRole, customerId, courierId) {
   if (storedActiveRole === ROLES.customer) {
@@ -109,7 +117,6 @@ function resolveRestoredActiveRole(storedActiveRole, customerId, courierId) {
  * Reconstructs a coherent role-aware session, or null when stored state is unusable.
  * Partial or corrupt values are cleared here so stale data cannot unlock a protected route.
  * AuthProvider calls it during startup route resolution.
- * Read aloud: “get stored session.”
  */
 export async function getStoredSession() {
   const storedEntries = await AsyncStorage.multiGet(ALL_AUTH_STORAGE_KEYS);
@@ -148,7 +155,6 @@ export async function getStoredSession() {
 /**
  * Validates and persists the authenticated values, then returns their normalized session shape.
  * AuthProvider calls it before allowing protected routes to render.
- * Read aloud: “save auth session,” where “auth” means authentication.
  */
 export async function saveAuthSession({
   accessToken,
@@ -204,7 +210,6 @@ export async function saveAuthSession({
 /**
  * Persists an explicit dual-role choice only when the chosen role is available in the session.
  * AuthContext calls it from Account Selection; route screens never write storage directly.
- * Read aloud: “save role selection.”
  */
 export async function saveRoleSelection(role) {
   if (role !== ROLES.customer && role !== ROLES.courier) {
@@ -233,7 +238,6 @@ export async function saveRoleSelection(role) {
 /**
  * Removes every authentication key as one shared logout/session-expiry operation.
  * AuthProvider uses it for logout, unreadable storage, and partial-write cleanup.
- * Read aloud: “clear auth session,” where “auth” means authentication.
  */
 export async function clearAuthSession() {
   await AsyncStorage.multiRemove(ALL_AUTH_STORAGE_KEYS);
