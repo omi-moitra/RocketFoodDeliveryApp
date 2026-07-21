@@ -2,9 +2,8 @@
  * File: DeliveryDetailsModal.js
  * Purpose: Presents one selected delivery's full details from the already-normalized list object.
  * Contents:
- * 1. Order-date formatting helper
- * 2. Delivery details modal component
- * 3. Modal styles
+ * 1. Delivery details modal component
+ * 2. Modal styles
  */
 
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -13,36 +12,7 @@ import AppIcon from './AppIcon';
 import { formatProductCost } from '../constants/currency';
 import { DELIVERY_STATUS_LABELS } from '../services/orderService';
 import { COLORS, DELIVERY_STATUS_COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
-
-// The project-wide order-date format ("July 15, 2026"), matching the customer Order History modal.
-const ORDER_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
-
-/**
- * Formats the normalized ISO `createdOn` value as one documented human-readable date.
- * An unparseable value returns a safe blank so the modal never shows `Invalid Date` or `NaN`.
- * Read aloud: “format order date.”
- * @param {string} createdOn ISO date-time string from the normalized delivery object.
- * @returns {string} A value such as `July 15, 2026`, or an empty string when unparseable.
- */
-function formatOrderDate(createdOn) {
-  if (typeof createdOn !== 'string' || !createdOn.trim()) {
-    return '';
-  }
-
-  // The backend sends microsecond fractions (…T13:01:38.705432); the standard ISO profile stops at
-  // milliseconds, so longer fractions are trimmed before parsing to stay engine-portable.
-  const parsedDate = new Date(createdOn.trim().replace(/(\.\d{3})\d+/, '$1'));
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return '';
-  }
-
-  return ORDER_DATE_FORMATTER.format(parsedDate);
-}
+import { formatOrderDate } from '../utils/orderFormatting';
 
 /**
  * Displays the detail modal for the delivery selected on the Order Delivery screen.

@@ -571,4 +571,85 @@ This is the append-only completion record for work selected from `docVault/REFAC
 - **Change:** Use the injected `objectMapper` in both create tests; reuse `createFreshOrder` in `testDeleteOrder_Success`. Assertions and endpoint coverage unchanged.
 - **Verification:** `mvnw test` for `OrderApiControllerTest,ApiCreateOrderDTODeserializationTest` (local MySQL) → 15 passed, 0 failures.
 
+#### RF-12 — Share order-date normalization/formatting
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `OrderHistoryModal.js` and `DeliveryDetailsModal.js` defined byte-identical `ORDER_DATE_FORMATTER` and `formatOrderDate` (same microsecond-trim regex, same invalid-date guard, same blank fallback). Sharing one copy guarantees the documented project-wide date format cannot drift between the two modals.
+- **Files affected:** `client/utils/orderFormatting.js` (new), `client/components/OrderHistoryModal.js`, `client/components/DeliveryDetailsModal.js`
+- **Change:** Moved the formatter/constant into `client/utils/orderFormatting.js` (matching the directory's existing one-concern-per-file convention, e.g. `validation.js`); both modals import `formatOrderDate` and deleted their local copies. No output/behavior change.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Manual ISO-milliseconds/microseconds/blank/malformed-date checks in both modals remain a native regression item.
+
+#### RF-14 — Share the base order-product normalizer
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `normalizeOrderProduct` (customer history) and `normalizeDeliveryProduct` (courier delivery) in `orderService.js` duplicated the same id/name/quantity/total-cost guard and validation; the courier variant only added `unit_cost`. A shared base prevents the common contract from drifting between the two paths.
+- **Files affected:** `client/services/orderService.js`
+- **Change:** Added a private `normalizeBaseOrderProduct` with the shared guard/validation; `normalizeOrderProduct` now returns it directly, and `normalizeDeliveryProduct` calls it then additionally parses/validates `unit_cost` and spreads it in. Same all-or-nothing null-on-failure contract; no caller changes.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0.
+
+#### RF-01 — Centralize protected HTTP failure classification
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P0
+- **Reason and benefit:** `restaurantService.js` and `productService.js` only treated HTTP 401 as an expired/invalid session, while this backend (confirmed live and documented in `orderService.js`) reports a missing/invalid/expired bearer token as 401 **or** 403. Restaurant List, Restaurant Menu, and product/menu loads were not signing the user out on a 403. `orderService.js` also had four in-file duplicates of the same correct 401/403+5xx ladder.
+- **Files affected:** `client/services/apiClient.js`, `client/services/restaurantService.js`, `client/services/productService.js`, `client/services/orderService.js`, `client/services/accountService.js`
+- **Change:** Added `classifyProtectedFailure(response, messages)` to `apiClient.js` (the shared-transport-behavior owner), throwing `unauthorized` for 401/403 and `service` for 5xx from one place. Adopted it at all 7 call sites — `restaurantService.fetchRestaurants`/`fetchRestaurantById` (fixing the 403 bug), `productService.fetchProductsForRestaurant` (fixing the 403 bug), `orderService.createOrder`/`fetchCustomerOrders`/`requestDeliveryList`/`throwForMutationFailure`, and `accountService.throwForAccountFailure` — each keeping its own subsequent domain-specific checks (404/400/`!response.ok`) unchanged and in the same relative order (safe because HTTP statuses are mutually exclusive).
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. Native confirmation that Restaurant List/Menu/product load now sign out on a 403 remains a pending manual check.
+
+#### RF-17 — Use shared success-envelope predicates/normalizers
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Four services repeated the same `{message:"Success", data:[...]}` list-envelope check and three repeated the same single-object envelope check, each with its own copy of the identical guard logic. One non-conforming variant in `restaurantService.fetchRestaurantById` also merged a transport check into its envelope check.
+- **Files affected:** `client/services/apiClient.js`, `client/services/orderService.js`, `client/services/restaurantService.js`, `client/services/productService.js`, `client/services/accountService.js`
+- **Change:** Added `requireSuccessList`/`requireSuccessObject` to `apiClient.js`. Adopted at all 7 canonical sites (`orderService.normalizeCustomerOrders`/`normalizeDeliveryList`/`normalizeCreatedOrder`/`normalizeUpdatedDelivery`, `restaurantService.normalizeRestaurants`, `productService.normalizeProducts`, `accountService.normalizeAccount`), each keeping its own subsequent field/coherence checks. Also split `fetchRestaurantById`'s merged transport+envelope check so its transport check stays a plain `!response.ok` and its envelope check routes through `requireSuccessObject` too — the observable result (same thrown `response` error) is unchanged, only detected one line earlier.
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. `rg` confirms no manual `message !== 'Success'` checks remain in the four touched services.
+
+#### RF-16 — Consolidate required-session resolution (partial, evidence-scoped)
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Five distinct session-precondition shapes existed across services; only one (role-neutral: restaurant list/detail, product/menu reads) had ≥2 real callers with an identical contract, and one in-file duplicate existed (`fetchCourierDeliveries` re-inlined the same check `requireCourierSession()` already implements). The other three shapes (order creation, customer-scoped, account dual-ID) are genuinely different security postures with a single caller each or an already-appropriate local helper, so they were intentionally left as documented duplication rather than forced into one generic helper (which the reuse test's "no sprawling flag/config object" rule argues against).
+- **Files affected:** `client/services/apiClient.js`, `client/services/restaurantService.js`, `client/services/productService.js`, `client/services/orderService.js`
+- **Change:** Added `requireSession(tokenMessage)` to `apiClient.js` for the 3 role-neutral callers; `restaurantService.fetchRestaurants`/`fetchRestaurantById` and `productService.fetchProductsForRestaurant` now call it instead of inlining `getStoredSession`+`!session` checks. `orderService.fetchCourierDeliveries` now calls the existing `requireCourierSession()` instead of re-inlining its identical check. `createOrder`'s weaker session-only check and `fetchCustomerOrders`'s customer-scoped check were deliberately left untouched (different, intentional security postures, not a bug).
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0.
+
+#### RF-09 — Extract the duplicated Customer/Courier tab shell
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `client/app/customer/_layout.js` and `client/app/courier/_layout.js` shared ~90 byte-identical lines (the `TabIcon` helper, the full `Tabs screenOptions` object, and all 5 style keys), differing only in the guard's role/ID field and the tab descriptor list.
+- **Files affected:** `client/components/RoleTabsLayout.js` (new), `client/app/customer/_layout.js`, `client/app/courier/_layout.js`
+- **Change:** Extracted the shared shell into `RoleTabsLayout` (props: `isAuthorized` boolean, a literal `screens` descriptor array). Each thin `_layout.js` keeps its own `unstable_settings` (Expo Router reads this from the route file itself), computes its own `isAuthorized` guard expression, and passes its own descriptor list; only the identical header/style/tab-registration mechanics moved.
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. Native re-verification of both tab bars (titles/icons/order/initial route/active-indicator styling, logout, wrong-role redirect both directions) remains a pending manual check.
+
+#### RF-11 — Extract the duplicated refresh-error banner
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** `customer/order-history.js` and `courier/index.js` rendered byte-identical refresh-failure banner JSX and 5 style keys, separate from the already-shared `ResultState` component.
+- **Files affected:** `client/components/RefreshErrorBanner.js` (new), `client/app/customer/order-history.js`, `client/app/courier/index.js`
+- **Change:** Extracted `RefreshErrorBanner` (props: `message`, `onRetry`; renders `null` when no message). Both screens replaced their inline banner block with it and removed the now-unused style keys.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Manual failed-refresh check on both screens remains a pending native item.
+
+#### RF-10 — Extract the duplicated focus-refresh list lifecycle
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `customer/order-history.js` and `courier/index.js` duplicated ~90 lines of identical state/refs/`useFocusEffect` lifecycle (generation-staleness guard, loading-vs-refreshing distinction, aborted/unauthorized/refresh-preserves-rows/first-load-error branches, abort-on-blur cleanup). Courier's screen additionally owns a mutation state machine (`activeMutation`, mutation refs, `runStatusMutation`, etc.) with no counterpart in the customer screen, which the extraction must not absorb.
+- **Files affected:** `client/components/useProtectedFocusList.js` (new), `client/app/customer/order-history.js`, `client/app/courier/index.js`
+- **Change:** Extracted `useProtectedFocusList({fetchItems, handleUnauthorized, messages, session})` returning `{items, requestStatus, errorMessage, refreshErrorMessage, isRefreshing, hasRows, retry, setItems}` — a raw setter, matching exactly what each screen did with local state today. `order-history.js` calls it with `fetchCustomerOrders` and keeps its own `selectedOrder`/modal logic untouched. `courier/index.js` calls it with `fetchCourierDeliveries`; its mutation state machine stays entirely in the screen, unchanged, except `applyMutationSuccess` now calls the hook's `setDeliveries`/`retry()` (aliased `handleRetry`) instead of local equivalents — the same two operations, sourced from the hook.
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. This is the largest/highest-risk item in the batch; full native regression (first load, focus refresh, empty/failed refresh with/without rows, rapid tab switching, logout mid-request, and the courier accept/deliver/partial-retry flow against the hook's exposed `setItems`/`retry`) remains a pending manual check for both screens.
+
+#### RF-02 — Use one safe identifier rule everywhere
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P0
+- **Reason and benefit:** `authService.isUsableIdentifier` and `authStorage.normalizeStoredIdentifier` each used their own `Number.isInteger`/regex-based check, which incorrectly accepts a digit string one above `Number.MAX_SAFE_INTEGER` (or an all-9s string that overflows to `Infinity`), unlike the already-shared `isPositiveSafeInteger` three other services already use. The divergence was one-directional (current code over-accepts unsafe-integer overflow); no valid seeded ID is affected.
+- **Files affected:** `client/services/authService.js`, `client/storage/authStorage.js`
+- **Change:** Both functions now route their number-producing branch through `isPositiveSafeInteger` from `utils/validation.js`, with no change to either function's name, signature, or return shape/type — zero caller changes.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Boundary values (`1`, `"1"`, `" 1 "`, `0`, `-1`, `1.5`, `""`, `"abc"`, `Number.MAX_SAFE_INTEGER`, one above it) reasoned through by inspection; native login/session-restore smoke test for customer-only/courier-only/dual-role remains a pending manual check.
+
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

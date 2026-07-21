@@ -3,20 +3,20 @@
  * Purpose: Loads the active courier's deliveries and drives status progression and details.
  * Contents:
  * 1. Imports, messages, and screen state
- * 2. Focus-driven delivery loading and refresh protection
- * 3. Status mutation orchestration (accept, deliver, retry assignment) with partial recovery
- * 4. Retry and View/modal-selection handlers
- * 5. Result states and delivery rows
- * 6. Order Delivery styles
+ * 2. Status mutation orchestration (accept, deliver, retry assignment) with partial recovery
+ * 3. Retry and View/modal-selection handlers
+ * 4. Result states and delivery rows
+ * 5. Order Delivery styles
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import DeliveryDetailsModal from '../../components/DeliveryDetailsModal';
 import DeliveryRow from '../../components/DeliveryRow';
+import RefreshErrorBanner from '../../components/RefreshErrorBanner';
 import ResultState from '../../components/ResultState';
+import { useProtectedFocusList } from '../../components/useProtectedFocusList';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { ApiRequestError } from '../../services/apiClient';
@@ -55,23 +55,31 @@ function mutationErrorMessage(error) {
 export default function OrderDeliveryScreen() {
   const { handleUnauthorized, session } = useAuth();
 
-  // requestStatus is the one explicit lifecycle value (resolving → loading → ready/empty/error,
-  // plus refreshing while existing rows stay visible), avoiding impossible boolean combinations.
-  const [deliveries, setDeliveries] = useState([]);
-  const [requestStatus, setRequestStatus] = useState('resolving');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [refreshErrorMessage, setRefreshErrorMessage] = useState('');
+  // The read/refresh lifecycle (requestStatus, abort/generation guards, refresh-preserves-rows,
+  // etc.) is identical to the Customer Order History screen and lives in the shared hook. Only the
+  // mutation state machine below is courier-specific and must not be merged into that hook.
+  const {
+    errorMessage,
+    hasRows,
+    isRefreshing,
+    items: deliveries,
+    refreshErrorMessage,
+    requestStatus,
+    retry: handleRetry,
+    setItems: setDeliveries,
+  } = useProtectedFocusList({
+    fetchItems: fetchCourierDeliveries,
+    handleUnauthorized,
+    messages: ORDER_DELIVERY_MESSAGES,
+    session,
+  });
+
   const [selectedDelivery, setSelectedDelivery] = useState(null);
-  const [retrySequence, setRetrySequence] = useState(0);
   // activeMutation tracks the one in-flight/failed per-order status change: { orderId, phase, message }
   // where phase is 'updating' | 'partial' | 'error'. Only one mutation runs at a time.
   const [activeMutation, setActiveMutation] = useState(null);
 
-  // newestRequestRef discards stale reads; the count refs distinguish first load from refresh; the
-  // mutation refs lock out concurrent status changes and cancel an in-flight one on unmount.
-  const newestRequestRef = useRef(0);
-  const hasLoadedOnceRef = useRef(false);
-  const lastDeliveryCountRef = useRef(0);
+  // The mutation refs lock out concurrent status changes and cancel an in-flight one on unmount.
   const mutationLockRef = useRef(false);
   const mutationControllerRef = useRef(null);
   const isMountedRef = useRef(true);
@@ -82,81 +90,6 @@ export default function OrderDeliveryScreen() {
       mutationControllerRef.current?.abort();
     };
   }, []);
-
-  useFocusEffect(
-    // The focus effect drives loading so returning to the tab refreshes the list and a status
-    // change confirmed elsewhere appears without a manual reload. Blurring aborts the request.
-    useCallback(() => {
-      if (!session?.accessToken) {
-        // Missing session: the courier layout redirects to Login; never request without one.
-        return undefined;
-      }
-
-      const requestController = new AbortController();
-      const requestId = newestRequestRef.current + 1;
-      newestRequestRef.current = requestId;
-
-      // A refresh keeps the current rows on screen instead of flashing back to a spinner.
-      setRefreshErrorMessage('');
-      setRequestStatus(hasLoadedOnceRef.current ? 'refreshing' : 'loading');
-
-      async function loadDeliveries() {
-        try {
-          const loadedDeliveries = await fetchCourierDeliveries({
-            signal: requestController.signal,
-          });
-
-          // Only the newest active request may replace the list; a late response changes nothing.
-          if (requestController.signal.aborted || requestId !== newestRequestRef.current) {
-            return;
-          }
-
-          hasLoadedOnceRef.current = true;
-          lastDeliveryCountRef.current = loadedDeliveries.length;
-          setDeliveries(loadedDeliveries);
-          setRequestStatus(loadedDeliveries.length ? 'ready' : 'empty');
-        } catch (error) {
-          if (
-            requestController.signal.aborted ||
-            error?.code === 'aborted' ||
-            requestId !== newestRequestRef.current
-          ) {
-            return;
-          }
-
-          // HTTP 401/403 proves the session is unusable; the shared transition signs out instead
-          // of leaving a retryable page error that could never succeed.
-          if (error?.code === 'unauthorized') {
-            await handleUnauthorized();
-            return;
-          }
-
-          // A failed refresh with data on screen keeps the existing rows and shows a banner; only
-          // a failed first load may occupy the whole list area.
-          if (hasLoadedOnceRef.current) {
-            setRefreshErrorMessage(ORDER_DELIVERY_MESSAGES.refresh);
-            setRequestStatus(lastDeliveryCountRef.current ? 'ready' : 'empty');
-            return;
-          }
-
-          setRequestStatus('error');
-          setErrorMessage(
-            error instanceof ApiRequestError && error.code === 'connection'
-              ? ORDER_DELIVERY_MESSAGES.connection
-              : error instanceof ApiRequestError
-                ? error.message
-                : ORDER_DELIVERY_MESSAGES.response,
-          );
-        }
-      }
-
-      loadDeliveries();
-
-      return () => {
-        requestController.abort();
-      };
-    }, [handleUnauthorized, retrySequence, session?.accessToken]),
-  );
 
   /**
    * Applies a persisted mutation result to its row, then reconciles the whole list in the
@@ -170,7 +103,9 @@ export default function OrderDeliveryScreen() {
       ),
     );
     setActiveMutation(null);
-    setRetrySequence((currentSequence) => currentSequence + 1);
+    // Reconcile the whole list in the background so eligibility recomputes from server state
+    // rather than an optimistic guess; this is the same shared-hook refresh the Retry banner uses.
+    handleRetry();
   }
 
   /**
@@ -250,10 +185,6 @@ export default function OrderDeliveryScreen() {
     );
   }
 
-  function handleRetry() {
-    setRetrySequence((currentSequence) => currentSequence + 1);
-  }
-
   /**
    * Opens the details modal with the exact validated delivery object from the pressed row.
    * Read aloud: “handle view delivery.”
@@ -270,9 +201,6 @@ export default function OrderDeliveryScreen() {
   function handleCloseDetails() {
     setSelectedDelivery(null);
   }
-
-  const isRefreshing = requestStatus === 'refreshing';
-  const hasRows = deliveries.length > 0 && (requestStatus === 'ready' || isRefreshing);
 
   function renderDeliveryRow({ item }) {
     const mutationForRow = activeMutation?.orderId === item.id ? activeMutation : null;
@@ -325,18 +253,7 @@ export default function OrderDeliveryScreen() {
           {isRefreshing ? <ActivityIndicator color={COLORS.orangeRed} size="small" /> : null}
         </View>
 
-        {refreshErrorMessage ? (
-          <View accessibilityLiveRegion="polite" style={styles.refreshErrorBanner}>
-            <Text style={styles.refreshErrorText}>{refreshErrorMessage}</Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={handleRetry}
-              style={({ pressed }) => [styles.refreshRetry, pressed && styles.refreshRetryPressed]}
-            >
-              <Text style={styles.refreshRetryText}>Retry</Text>
-            </Pressable>
-          </View>
-        ) : null}
+        <RefreshErrorBanner message={refreshErrorMessage} onRetry={handleRetry} />
 
         <FlatList
           contentContainerStyle={styles.listContent}
@@ -383,33 +300,6 @@ const styles = StyleSheet.create({
     color: COLORS.charcoal,
     fontFamily: FONT_FAMILIES.oswaldRegular,
     fontSize: 28,
-  },
-  refreshErrorBanner: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    justifyContent: 'space-between',
-    marginBottom: SPACING.sm,
-  },
-  refreshErrorText: {
-    color: COLORS.darkRed,
-    flex: 1,
-    fontFamily: FONT_FAMILIES.body,
-    fontSize: 14,
-  },
-  refreshRetry: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: LAYOUT.minimumTouchTarget,
-    paddingHorizontal: SPACING.sm,
-  },
-  refreshRetryPressed: {
-    opacity: 0.6,
-  },
-  refreshRetryText: {
-    color: COLORS.orangeRed,
-    fontFamily: FONT_FAMILIES.oswaldSemiBold,
-    fontSize: 16,
   },
   listContent: {
     flexGrow: 1,

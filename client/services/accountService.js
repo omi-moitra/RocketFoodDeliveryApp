@@ -10,7 +10,12 @@
 
 import { getStoredSession, ROLES } from '../storage/authStorage';
 import { isPositiveSafeInteger, isValidEmail, isValidPhone } from '../utils/validation';
-import { ApiRequestError, requestJson } from './apiClient';
+import {
+  ApiRequestError,
+  classifyProtectedFailure,
+  requestJson,
+  requireSuccessObject,
+} from './apiClient';
 
 // User-safe classification messages; raw server details and tokens never reach the interface.
 export const ACCOUNT_ERROR_MESSAGES = Object.freeze({
@@ -52,9 +57,7 @@ async function requireAccountSession(expectedRole) {
  * Read aloud: “throw for account failure.”
  */
 function throwForAccountFailure(response) {
-  if (response.status === 401 || response.status === 403) {
-    throw new ApiRequestError('unauthorized', ACCOUNT_ERROR_MESSAGES.token, response.status);
-  }
+  classifyProtectedFailure(response, ACCOUNT_ERROR_MESSAGES);
 
   if (response.status === 404) {
     throw new ApiRequestError('notFound', ACCOUNT_ERROR_MESSAGES.notFound, response.status);
@@ -62,10 +65,6 @@ function throwForAccountFailure(response) {
 
   if (response.status === 400) {
     throw new ApiRequestError('invalid', ACCOUNT_ERROR_MESSAGES.invalid, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', ACCOUNT_ERROR_MESSAGES.service, response.status);
   }
 
   if (!response.ok) {
@@ -80,21 +79,14 @@ function throwForAccountFailure(response) {
  * Read aloud: “normalize account.”
  */
 function normalizeAccount(responseData, userId, role, roleId) {
-  const account =
-    responseData?.message === 'Success' &&
-    responseData.data &&
-    typeof responseData.data === 'object' &&
-    !Array.isArray(responseData.data)
-      ? responseData.data
-      : null;
+  const account = requireSuccessObject(responseData, ACCOUNT_ERROR_MESSAGES.response);
 
-  const primaryEmail = typeof account?.email === 'string' ? account.email.trim() : '';
-  const roleDetail = account ? account[role] : null;
+  const primaryEmail = typeof account.email === 'string' ? account.email.trim() : '';
+  const roleDetail = account[role] ?? null;
   const roleEmail = typeof roleDetail?.email === 'string' ? roleDetail.email.trim() : '';
   const rolePhone = typeof roleDetail?.phone === 'string' ? roleDetail.phone.trim() : '';
 
   const isCoherent =
-    account &&
     Number(account.id) === userId &&
     roleDetail &&
     Number(roleDetail.id) === roleId &&

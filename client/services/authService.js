@@ -5,6 +5,7 @@
  */
 
 import { ApiRequestError, requestJson } from './apiClient';
+import { isPositiveSafeInteger } from '../utils/validation';
 
 // Screens receive stable, user-safe messages instead of backend or network implementation details.
 export const LOGIN_ERROR_MESSAGES = Object.freeze({
@@ -22,10 +23,14 @@ export const LOGIN_ERROR_MESSAGES = Object.freeze({
  */
 function isUsableIdentifier(value) {
   if (typeof value === 'number') {
-    return Number.isInteger(value) && value > 0;
+    return isPositiveSafeInteger(value);
   }
 
-  return typeof value === 'string' && /^\d+$/.test(value.trim()) && Number(value) > 0;
+  return (
+    typeof value === 'string' &&
+    /^\d+$/.test(value.trim()) &&
+    isPositiveSafeInteger(Number(value.trim()))
+  );
 }
 
 /**

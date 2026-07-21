@@ -6,6 +6,8 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { isPositiveSafeInteger } from '../utils/validation';
+
 // Central keys prevent screens and services from silently disagreeing about stored field names.
 export const AUTH_STORAGE_KEYS = Object.freeze({
   accessToken: 'rocketFood.accessToken',
@@ -41,7 +43,11 @@ function normalizeStoredValue(value) {
 function normalizeStoredIdentifier(value) {
   const normalizedValue = normalizeStoredValue(value);
 
-  if (!normalizedValue || !/^\d+$/.test(normalizedValue) || Number(normalizedValue) <= 0) {
+  if (
+    !normalizedValue ||
+    !/^\d+$/.test(normalizedValue) ||
+    !isPositiveSafeInteger(Number(normalizedValue))
+  ) {
     return null;
   }
 

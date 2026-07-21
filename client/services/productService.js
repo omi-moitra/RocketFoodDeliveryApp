@@ -7,9 +7,14 @@
  * 3. Protected restaurant-product request
  */
 
-import { getStoredSession } from '../storage/authStorage';
 import { isPositiveSafeInteger } from '../utils/validation';
-import { ApiRequestError, requestJson } from './apiClient';
+import {
+  ApiRequestError,
+  classifyProtectedFailure,
+  requestJson,
+  requireSession,
+  requireSuccessList,
+} from './apiClient';
 
 export const PRODUCT_ERROR_MESSAGES = Object.freeze({
   response: 'Menu information could not be loaded. Please try again.',
@@ -57,13 +62,11 @@ function normalizeProduct(rawProduct, expectedRestaurantId) {
  * @returns {Array<{cost: number, description: string|null, id: number, name: string, restaurantId: number}>}
  */
 function normalizeProducts(responseData, expectedRestaurantId) {
-  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
-    throw new ApiRequestError('response', PRODUCT_ERROR_MESSAGES.response);
-  }
+  const rawProducts = requireSuccessList(responseData, PRODUCT_ERROR_MESSAGES.response);
 
   const seenProductIds = new Set();
 
-  return responseData.data.map((rawProduct) => {
+  return rawProducts.map((rawProduct) => {
     const product = normalizeProduct(rawProduct, expectedRestaurantId);
 
     if (seenProductIds.has(product.id)) {
@@ -83,11 +86,7 @@ function normalizeProducts(responseData, expectedRestaurantId) {
  * @throws {ApiRequestError} For invalid input, authentication, HTTP, or response failures.
  */
 export async function fetchProductsForRestaurant({ restaurantId, signal }) {
-  const session = await getStoredSession();
-
-  if (!session) {
-    throw new ApiRequestError('unauthorized', PRODUCT_ERROR_MESSAGES.token, 401);
-  }
+  const session = await requireSession(PRODUCT_ERROR_MESSAGES.token);
 
   if (!isPositiveSafeInteger(restaurantId)) {
     throw new ApiRequestError('response', PRODUCT_ERROR_MESSAGES.response);
@@ -103,13 +102,7 @@ export async function fetchProductsForRestaurant({ restaurantId, signal }) {
     },
   );
 
-  if (response.status === 401) {
-    throw new ApiRequestError('unauthorized', PRODUCT_ERROR_MESSAGES.token, 401);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', PRODUCT_ERROR_MESSAGES.service, response.status);
-  }
+  classifyProtectedFailure(response, PRODUCT_ERROR_MESSAGES);
 
   if (!response.ok) {
     throw new ApiRequestError('response', PRODUCT_ERROR_MESSAGES.response, response.status);

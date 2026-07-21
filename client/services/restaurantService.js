@@ -9,8 +9,14 @@
  * 5. Protected restaurant-detail fetch
  */
 
-import { getStoredSession } from '../storage/authStorage';
-import { ApiRequestError, requestJson } from './apiClient';
+import {
+  ApiRequestError,
+  classifyProtectedFailure,
+  requestJson,
+  requireSession,
+  requireSuccessList,
+  requireSuccessObject,
+} from './apiClient';
 
 export const RESTAURANT_ERROR_MESSAGES = Object.freeze({
   response: 'The restaurant service returned an unexpected response. Please try again.',
@@ -107,13 +113,11 @@ function normalizeRestaurant(rawRestaurant) {
  * Read aloud: “normalize restaurants.”
  */
 function normalizeRestaurants(responseData) {
-  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
-    throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response);
-  }
+  const rawRestaurants = requireSuccessList(responseData, RESTAURANT_ERROR_MESSAGES.response);
 
   const seenRestaurantIds = new Set();
 
-  return responseData.data.map((rawRestaurant) => {
+  return rawRestaurants.map((rawRestaurant) => {
     const restaurant = normalizeRestaurant(rawRestaurant);
 
     // Duplicate IDs would produce unstable FlatList keys and could open the wrong menu.
@@ -137,11 +141,7 @@ function normalizeRestaurants(responseData) {
  * @throws {ApiRequestError} When authentication, transport, HTTP, or response validation fails.
  */
 export async function fetchRestaurants({ priceRange, rating, signal }) {
-  const session = await getStoredSession();
-
-  if (!session) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
-  }
+  const session = await requireSession(RESTAURANT_ERROR_MESSAGES.token);
 
   const path = buildRestaurantPath({ priceRange, rating });
   const { data, response } = await requestJson(path, {
@@ -152,13 +152,7 @@ export async function fetchRestaurants({ priceRange, rating, signal }) {
     signal,
   });
 
-  if (response.status === 401) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', RESTAURANT_ERROR_MESSAGES.service, response.status);
-  }
+  classifyProtectedFailure(response, RESTAURANT_ERROR_MESSAGES);
 
   if (!response.ok) {
     throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response, response.status);
@@ -176,11 +170,7 @@ export async function fetchRestaurants({ priceRange, rating, signal }) {
  * @throws {ApiRequestError} For authentication, unavailable, HTTP, or response failures.
  */
 export async function fetchRestaurantById({ restaurantId, signal }) {
-  const session = await getStoredSession();
-
-  if (!session) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
-  }
+  const session = await requireSession(RESTAURANT_ERROR_MESSAGES.token);
 
   if (!Number.isSafeInteger(restaurantId) || restaurantId <= 0) {
     throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response);
@@ -193,23 +183,18 @@ export async function fetchRestaurantById({ restaurantId, signal }) {
     signal,
   });
 
-  if (response.status === 401) {
-    throw new ApiRequestError('unauthorized', RESTAURANT_ERROR_MESSAGES.token, 401);
-  }
+  classifyProtectedFailure(response, RESTAURANT_ERROR_MESSAGES);
 
   if (response.status === 404) {
     throw new ApiRequestError('unavailable', RESTAURANT_ERROR_MESSAGES.unavailable, 404);
   }
 
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', RESTAURANT_ERROR_MESSAGES.service, response.status);
-  }
-
-  if (!response.ok || !data || data.message !== 'Success') {
+  if (!response.ok) {
     throw new ApiRequestError('response', RESTAURANT_ERROR_MESSAGES.response, response.status);
   }
 
-  const restaurant = normalizeRestaurant(data.data);
+  const rawRestaurant = requireSuccessObject(data, RESTAURANT_ERROR_MESSAGES.response);
+  const restaurant = normalizeRestaurant(rawRestaurant);
 
   // The route is the menu boundary; a mismatched response must never relabel another restaurant.
   if (restaurant.id !== restaurantId) {

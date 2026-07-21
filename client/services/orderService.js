@@ -11,7 +11,13 @@
 
 import { getStoredSession, ROLES } from '../storage/authStorage';
 import { isNonNegativeSafeInteger, isPositiveSafeInteger } from '../utils/validation';
-import { ApiRequestError, requestJson } from './apiClient';
+import {
+  ApiRequestError,
+  classifyProtectedFailure,
+  requestJson,
+  requireSuccessList,
+  requireSuccessObject,
+} from './apiClient';
 
 // Internal status values used by the courier UI. The backend stores lowercase status names
 // ("pending", "in progress", "delivered"); these stable uppercase tokens are the client's model.
@@ -100,16 +106,10 @@ function buildCreateOrderRequestBody({
  * Read aloud: “normalize created order.”
  */
 function normalizeCreatedOrder(responseData) {
-  const createdOrder =
-    responseData?.message === 'Success' &&
-    responseData.data &&
-    typeof responseData.data === 'object' &&
-    !Array.isArray(responseData.data)
-      ? responseData.data
-      : null;
-  const id = Number(createdOrder?.id);
+  const createdOrder = requireSuccessObject(responseData, ORDER_ERROR_MESSAGES.response);
+  const id = Number(createdOrder.id);
 
-  if (!createdOrder || !isPositiveSafeInteger(id)) {
+  if (!isPositiveSafeInteger(id)) {
     throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response);
   }
 
@@ -159,17 +159,7 @@ export async function createOrder({
     signal,
   });
 
-  // Live evidence (2026-07-15): this backend has no custom AuthenticationEntryPoint and no
-  // per-role rules on /api/**, so Spring Security's default reports a missing, invalid, or
-  // expired token as HTTP 403. Both statuses therefore mean the session is unusable and must
-  // exit through the shared sign-out transition instead of a retryable modal failure.
-  if (response.status === 401 || response.status === 403) {
-    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', ORDER_ERROR_MESSAGES.service, response.status);
-  }
+  classifyProtectedFailure(response, ORDER_ERROR_MESSAGES);
 
   // The backend rejects bad bodies as HTTP 400 `{ error, details }`; details stay unexposed.
   if (!response.ok) {
@@ -185,11 +175,12 @@ export async function createOrder({
 }
 
 /**
- * Validates one raw order product and maps its backend snake_case fields to camelCase.
- * normalizeCustomerOrder calls it for every entry so the detail modal can trust the shape.
- * Read aloud: “normalize order product.”
+ * Validates the fields every order/delivery product line shares and maps backend snake_case
+ * fields to camelCase. normalizeOrderProduct and normalizeDeliveryProduct both build on this base
+ * so the shared id/name/quantity/total-cost contract cannot drift between the two call paths.
+ * Read aloud: “normalize base order product.”
  */
-function normalizeOrderProduct(rawProduct) {
+function normalizeBaseOrderProduct(rawProduct) {
   if (!rawProduct || typeof rawProduct !== 'object' || Array.isArray(rawProduct)) {
     return null;
   }
@@ -209,9 +200,18 @@ function normalizeOrderProduct(rawProduct) {
     return null;
   }
 
+  return { productId, productName, quantity, totalCost };
+}
+
+/**
+ * Validates one raw order product and maps its backend snake_case fields to camelCase.
+ * normalizeCustomerOrder calls it for every entry so the detail modal can trust the shape.
+ * Read aloud: “normalize order product.”
+ */
+function normalizeOrderProduct(rawProduct) {
   // Only the fields the history table and detail modal consume are mapped; the raw unit cost
   // stays unmapped because the modal renders the backend's precomputed line totals.
-  return { productId, productName, quantity, totalCost };
+  return normalizeBaseOrderProduct(rawProduct);
 }
 
 /**
@@ -282,15 +282,13 @@ function normalizeCustomerOrder(rawOrder) {
  * Read aloud: “normalize customer orders.”
  */
 function normalizeCustomerOrders(responseData) {
-  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
-    throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response);
-  }
+  const rawOrders = requireSuccessList(responseData, ORDER_ERROR_MESSAGES.response);
 
   const seenOrderIds = new Set();
   const orders = [];
   let skippedCount = 0;
 
-  for (const rawOrder of responseData.data) {
+  for (const rawOrder of rawOrders) {
     const order = normalizeCustomerOrder(rawOrder);
 
     // Skipping a malformed or duplicated entry keeps it from hiding the whole history.
@@ -341,15 +339,7 @@ export async function fetchCustomerOrders({ signal } = {}) {
     },
   );
 
-  // As verified live for order creation, this backend reports missing/invalid/expired tokens as
-  // HTTP 403 (no custom AuthenticationEntryPoint); both statuses exit through shared sign-out.
-  if (response.status === 401 || response.status === 403) {
-    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', ORDER_ERROR_MESSAGES.service, response.status);
-  }
+  classifyProtectedFailure(response, ORDER_ERROR_MESSAGES);
 
   if (!response.ok) {
     throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response, response.status);
@@ -384,28 +374,19 @@ function normalizeDeliveryStatus(rawStatus) {
  * Read aloud: “normalize delivery product.”
  */
 function normalizeDeliveryProduct(rawProduct) {
-  if (!rawProduct || typeof rawProduct !== 'object' || Array.isArray(rawProduct)) {
+  const base = normalizeBaseOrderProduct(rawProduct);
+
+  if (!base) {
     return null;
   }
 
-  const productId = Number(rawProduct.product_id);
-  const productName =
-    typeof rawProduct.product_name === 'string' ? rawProduct.product_name.trim() : '';
-  const quantity = Number(rawProduct.quantity);
   const unitCost = Number(rawProduct.unit_cost);
-  const totalCost = Number(rawProduct.total_cost);
 
-  if (
-    !isPositiveSafeInteger(productId) ||
-    !productName ||
-    !isPositiveSafeInteger(quantity) ||
-    !isNonNegativeSafeInteger(unitCost) ||
-    !isNonNegativeSafeInteger(totalCost)
-  ) {
+  if (!isNonNegativeSafeInteger(unitCost)) {
     return null;
   }
 
-  return { productId, productName, quantity, totalCost, unitCost };
+  return { ...base, unitCost };
 }
 
 /**
@@ -493,11 +474,9 @@ function normalizeCourierDelivery(rawOrder) {
  * Read aloud: “normalize delivery list.”
  */
 function normalizeDeliveryList(responseData) {
-  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
-    throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response);
-  }
+  const rawDeliveries = requireSuccessList(responseData, ORDER_ERROR_MESSAGES.response);
 
-  return responseData.data.map(normalizeCourierDelivery);
+  return rawDeliveries.map(normalizeCourierDelivery);
 }
 
 /**
@@ -512,15 +491,7 @@ async function requestDeliveryList(path, session, signal) {
     signal,
   });
 
-  // As verified live for the other order calls, this backend reports missing/invalid/expired
-  // tokens as 401 or 403 with no custom entry point; both exit through shared sign-out handling.
-  if (response.status === 401 || response.status === 403) {
-    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', ORDER_ERROR_MESSAGES.service, response.status);
-  }
+  classifyProtectedFailure(response, ORDER_ERROR_MESSAGES);
 
   if (!response.ok) {
     throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response, response.status);
@@ -541,14 +512,9 @@ async function requestDeliveryList(path, session, signal) {
  * @throws {ApiRequestError} Codes: `unauthorized`, `service`, `response`, `connection`, `aborted`.
  */
 export async function fetchCourierDeliveries({ signal } = {}) {
-  const session = await getStoredSession();
-  const courierId = Number(session?.courierId);
-
-  // Only a validated active courier session may issue these requests; a missing session, the wrong
-  // active role, or a missing courier ID routes through shared logged-out handling.
-  if (!session || session.activeRole !== ROLES.courier || !isPositiveSafeInteger(courierId)) {
-    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, 401);
-  }
+  // The active-courier precondition is the same one `acceptDelivery`/`markDelivered` require, so
+  // this reuses that shared helper instead of re-inlining the identical check.
+  const { courierId, session } = await requireCourierSession();
 
   // Both lists load under one call so a single failure classifies the whole refresh; the courier
   // query is scoped by the stored courier ID.
@@ -624,16 +590,10 @@ async function requireCourierSession() {
  * Read aloud: “throw for mutation failure.”
  */
 function throwForMutationFailure(response) {
-  if (response.status === 401 || response.status === 403) {
-    throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, response.status);
-  }
+  classifyProtectedFailure(response, ORDER_ERROR_MESSAGES);
 
   if (response.status === 404) {
     throw new ApiRequestError('notFound', ORDER_ERROR_MESSAGES.notFound, response.status);
-  }
-
-  if (response.status >= 500) {
-    throw new ApiRequestError('service', ORDER_ERROR_MESSAGES.service, response.status);
   }
 
   if (!response.ok) {
@@ -647,14 +607,8 @@ function throwForMutationFailure(response) {
  * Read aloud: “normalize updated delivery.”
  */
 function normalizeUpdatedDelivery(responseData) {
-  const rawOrder =
-    responseData?.message === 'Success' &&
-    responseData.data &&
-    typeof responseData.data === 'object' &&
-    !Array.isArray(responseData.data)
-      ? responseData.data
-      : null;
-  const delivery = rawOrder ? normalizeCourierDelivery(rawOrder) : null;
+  const rawOrder = requireSuccessObject(responseData, ORDER_ERROR_MESSAGES.response);
+  const delivery = normalizeCourierDelivery(rawOrder);
 
   if (!delivery) {
     throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response);

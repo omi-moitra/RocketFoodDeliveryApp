@@ -1,11 +1,17 @@
 /**
  * File: apiClient.js
- * Purpose: Builds environment-based API URLs and performs bounded JSON requests.
+ * Purpose: Builds environment-based API URLs, performs bounded JSON requests, and centralizes the
+ *          shared protected-request failure classification every domain service reuses.
  * Contents:
  * 1. Request error contract
  * 2. API URL configuration
  * 3. Bounded JSON request helper
+ * 4. Shared protected-response failure classification
+ * 5. Shared success-envelope validation
+ * 6. Shared role-neutral session precondition
  */
+
+import { getStoredSession } from '../storage/authStorage';
 
 // Every request gets a finite upper bound so the interface can recover from a hung connection.
 const REQUEST_TIMEOUT_MS = 15000;
@@ -147,4 +153,96 @@ export async function requestJson(path, options = {}) {
     clearTimeout(timeoutId);
     signal?.removeEventListener('abort', handleExternalAbort);
   }
+}
+
+/**
+ * Classifies a protected response's session-expiry and server-outage failures, throwing a shared
+ * `ApiRequestError` for either case; returns normally so the caller continues its own domain-specific
+ * checks (404/400/envelope validation/etc.) for every other status.
+ *
+ * Live evidence (2026-07-15): this backend has no custom AuthenticationEntryPoint and no per-role
+ * rules on `/api/**`, so Spring Security's default reports a missing, invalid, or expired bearer
+ * token as HTTP 403 alongside the expected 401. Both statuses mean the session is unusable and must
+ * exit through the shared sign-out transition rather than a retryable failure.
+ *
+ * Feature services call this once per protected request, before their own remaining checks, instead
+ * of each repeating this same two-branch ladder with only its error messages changed.
+ * Read aloud: “classify protected failure.”
+ * @param {Response} response The fetch Response from a protected request.
+ * @param {{token: string, service: string}} messages Domain-specific safe messages for each case.
+ * @throws {ApiRequestError} Code `unauthorized` for 401/403, or `service` for 5xx.
+ */
+export function classifyProtectedFailure(response, messages) {
+  if (response.status === 401 || response.status === 403) {
+    throw new ApiRequestError('unauthorized', messages.token, response.status);
+  }
+
+  if (response.status >= 500) {
+    throw new ApiRequestError('service', messages.service, response.status);
+  }
+}
+
+/**
+ * Validates a `{ message: "Success", data: [...] }` list envelope and returns the raw array.
+ * Every domain service still owns its own per-row normalization/validation on the returned array;
+ * this only removes the repeated envelope-shape check that precedes it in four services.
+ * Read aloud: “require success list.”
+ * @param {unknown} responseData Parsed JSON body from a protected list request.
+ * @param {string} message Domain-specific safe message for a malformed/missing envelope.
+ * @returns {Array<unknown>} The envelope's `data` array.
+ * @throws {ApiRequestError} Code `response` when the envelope is missing or malformed.
+ */
+export function requireSuccessList(responseData, message) {
+  if (!responseData || responseData.message !== 'Success' || !Array.isArray(responseData.data)) {
+    throw new ApiRequestError('response', message);
+  }
+
+  return responseData.data;
+}
+
+/**
+ * Validates a `{ message: "Success", data: {...} }` single-object envelope and returns the record.
+ * Every domain service still owns its own per-field coherence checks on the returned record; this
+ * only removes the repeated envelope-shape check that precedes it in three services.
+ * Read aloud: “require success object.”
+ * @param {unknown} responseData Parsed JSON body from a protected single-object request.
+ * @param {string} message Domain-specific safe message for a malformed/missing envelope.
+ * @returns {object} The envelope's `data` record.
+ * @throws {ApiRequestError} Code `response` when the envelope is missing or malformed.
+ */
+export function requireSuccessObject(responseData, message) {
+  const record =
+    responseData?.message === 'Success' &&
+    responseData.data &&
+    typeof responseData.data === 'object' &&
+    !Array.isArray(responseData.data)
+      ? responseData.data
+      : null;
+
+  if (!record) {
+    throw new ApiRequestError('response', message);
+  }
+
+  return record;
+}
+
+/**
+ * Reads the current stored session and throws a shared `unauthorized` failure when none exists.
+ * This is the role-neutral precondition shared by every request any authenticated user may make
+ * (restaurant/product reads); role-specific requests keep their own dedicated precondition helper
+ * (`requireCourierSession` in `orderService.js`, `requireAccountSession` in `accountService.js`),
+ * since their role/ID checks are not identical to this one and to each other.
+ * Read aloud: “require session.”
+ * @param {string} tokenMessage Domain-specific safe message for a missing/unusable session.
+ * @returns {Promise<object>} The current stored session.
+ * @throws {ApiRequestError} Code `unauthorized` when no usable session is stored.
+ */
+export async function requireSession(tokenMessage) {
+  const session = await getStoredSession();
+
+  if (!session) {
+    throw new ApiRequestError('unauthorized', tokenMessage, 401);
+  }
+
+  return session;
 }
