@@ -16,7 +16,6 @@ import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 /**
  * Renders one controlled filter selector and its accessible option modal.
  * RestaurantListScreen reuses it for the Rating and Price filters.
- * Read aloud: “filter select.”
  */
 export default function FilterSelect({ label, onChange, options, value }) {
   // isOpen owns only this selector's modal visibility; value remains controlled by its screen.
@@ -28,7 +27,6 @@ export default function FilterSelect({ label, onChange, options, value }) {
   /**
    * Closes the modal before sending the chosen primitive value to the parent screen.
    * Each option button calls it with its API-ready value.
-   * Read aloud: “handle option press.”
    */
   function handleOptionPress(nextValue) {
     setIsOpen(false);

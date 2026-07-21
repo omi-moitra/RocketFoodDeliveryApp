@@ -2,6 +2,7 @@ package com.rocketFoodDelivery.rocketFood.controller.api;
 
 import com.rocketFoodDelivery.rocketFood.dtos.user.ApiAccountDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.user.ApiCreateUserDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.user.ApiPostAccountDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.user.ApiUpdateAccountDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.user.ApiUserDTO;
 import com.rocketFoodDelivery.rocketFood.exception.BadRequestException;
@@ -74,6 +75,26 @@ public class UserApiController {
         if (!type.equals("customer") && !type.equals("courier") && !type.equals("employee")) {
             throw new BadRequestException("Type must be 'customer', 'courier', or 'employee'");
         }
+        ApiAccountDTO dto = userService.updateAccount(id, type, updateDTO)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("User with id %d or %s role not found", id, type)));
+        return ResponseBuilder.buildOkResponse(dto);
+    }
+
+    // Official-shaped account update: POST /api/account/{id} with the role type in the body
+    // ({ account_type, account_email, account_phone }). Delegates to the same updateAccount service
+    // as the PUT endpoint above, which is retained unchanged for backward compatibility. Only the
+    // selected role's email/phone are touched; the primary user email is never modified here.
+    @PostMapping("/api/account/{id}")
+    public ResponseEntity<Object> postAccount(
+            @PathVariable int id,
+            @RequestBody ApiPostAccountDTO postDTO) {
+        String type = postDTO.getAccount_type();
+        if (type == null || (!type.equals("customer") && !type.equals("courier") && !type.equals("employee"))) {
+            throw new BadRequestException("account_type must be 'customer', 'courier', or 'employee'");
+        }
+        ApiUpdateAccountDTO updateDTO =
+                new ApiUpdateAccountDTO(postDTO.getAccount_email(), postDTO.getAccount_phone());
         ApiAccountDTO dto = userService.updateAccount(id, type, updateDTO)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("User with id %d or %s role not found", id, type)));

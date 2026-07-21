@@ -264,14 +264,125 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"send_email\": false,\n  \"send_sms\": false\n}"
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendEmail\": false,\n  \"sendSMS\": false\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/orders",
           "host": ["{{baseUrl}}"],
           "path": ["api", "orders"]
         },
-        "description": "Creates one order for the authenticated customer using seeded restaurant 1 and its seeded product 1. Expects HTTP 201 with { message: 'Success', data: <created order DTO> }."
+        "description": "Creates one order with NEITHER notification (sendSMS/sendEmail both false). These official camelCase notification keys are the backend's canonical HTTP contract. Expects HTTP 201 with { message: 'Success', data: <created order DTO> }."
+      }
+    },
+    {
+      "name": "POST /api/orders — SMS only (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order created with SMS-only notification', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendSMS\": true,\n  \"sendEmail\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order with SMS only (sendSMS true, sendEmail false). The backend acts on the SMS option only after the order is created."
+      }
+    },
+    {
+      "name": "POST /api/orders — email only (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order created with email-only notification', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendSMS\": false,\n  \"sendEmail\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order with email only (sendSMS false, sendEmail true)."
+      }
+    },
+    {
+      "name": "POST /api/orders — SMS and email (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('order created with both notifications', function () {",
+              "    pm.response.to.have.status(201);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('id');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": {{productId}},\n      \"quantity\": 2\n    }\n  ],\n  \"sendSMS\": true,\n  \"sendEmail\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        },
+        "description": "Creates one order with both notifications (sendSMS true, sendEmail true)."
       }
     },
     {
@@ -301,7 +412,7 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": 999999,\n      \"quantity\": 2\n    }\n  ],\n  \"send_email\": false,\n  \"send_sms\": false\n}"
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"products\": [\n    {\n      \"id\": 999999,\n      \"quantity\": 2\n    }\n  ],\n  \"sendEmail\": false,\n  \"sendSMS\": false\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/orders",
@@ -347,12 +458,340 @@
         },
         "description": "Lists every order belonging to the authenticated customer captured by the auth request. Expects HTTP 200 with { message: 'Success', data: [ ...order objects... ] }; an empty array is a valid no-orders result."
       }
+    },
+    {
+      "name": "GET /api/orders/pending — all pending deliveries (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('pending deliveries load with the Success envelope', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/pending",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "pending"]
+        },
+        "description": "Loads every pending order available to any courier for acceptance. Expects HTTP 200 with { message: 'Success', data: [ ...order objects... ] }."
+      }
+    },
+    {
+      "name": "GET /api/orders — courier assigned deliveries (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier-scoped deliveries load with the Success envelope', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders?type=courier&id={{courierId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"],
+          "query": [
+            { "key": "type", "value": "courier" },
+            { "key": "id", "value": "{{courierId}}" }
+          ]
+        },
+        "description": "Lists orders assigned to the courier captured by the auth request. The client merges these with the pending list and shows only this courier's in-progress/delivered orders."
+      }
+    },
+    {
+      "name": "PUT /api/orders/{id} — pending to in progress (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('status advances to in progress', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.status).to.eql('in progress');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"order_status_id\": 2,\n  \"restaurant_rating\": null\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{orderId}}"]
+        },
+        "description": "Broad order update advancing the status to in progress. The client echoes the order's own restaurant_id, customer_id, and current restaurant_rating (from the order response, which now exposes it) so only the status changes and the rating is not erased. Courier is not part of this body, so an existing assignment is preserved. Use a disposable order ID. Step 1 of accepting a pending delivery; the client follows it with the courier assignment below."
+      }
+    },
+    {
+      "name": "PUT /api/order/{id}/courier — assign the active courier (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier is assigned to the order', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.courier_id).to.eql(Number(pm.variables.get('courierId')));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"courier_id\": {{courierId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/order/{{orderId}}/courier",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "order", "{{orderId}}", "courier"]
+        },
+        "description": "Assigns the active courier to the order. Step 2 of accepting a pending delivery; the status update above must succeed first."
+      }
+    },
+    {
+      "name": "PUT /api/orders/{id} — in progress to delivered (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('status advances to delivered and the rating is preserved', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.status).to.eql('delivered');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"restaurant_id\": {{restaurantId}},\n  \"customer_id\": {{customerId}},\n  \"order_status_id\": 3,\n  \"restaurant_rating\": null\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{orderId}}"]
+        },
+        "description": "Completes an in-progress delivery via the broad update, echoing restaurant_id, customer_id, and the current restaurant_rating. Set restaurant_rating to the value returned in the order response (null when the order has none) so it is not erased. Courier is not in this body, so the assignment is preserved."
+      }
+    },
+    {
+      "name": "GET /api/account/{id} — customer account (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('account loads with the primary email and customer role', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data).to.have.property('email');",
+              "    pm.expect(body.data.customer).to.have.property('email');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{userId}}?type=customer",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{userId}}"],
+          "query": [{ "key": "type", "value": "customer" }]
+        },
+        "description": "Loads the account for the authenticated user by user ID. The official type query is accepted and ignored by the current controller; the client selects data.customer. Set userId to the logged-in user's id (customer@gmail.com is user 2)."
+      }
+    },
+    {
+      "name": "POST /api/account/{id} — update customer email/phone (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('customer role email/phone update and the primary email is unchanged', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.customer.email).to.eql('customer.updated@example.com');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"account_type\": \"customer\",\n  \"account_email\": \"customer.updated@example.com\",\n  \"account_phone\": \"+1-555-9100\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{userId}}"]
+        },
+        "description": "Official-shape account update (POST with account_type/account_email/account_phone in the body). Updates only the customer role's email/phone; the primary user email is never changed. The existing PUT /api/account/{id}?type= is retained for compatibility."
+      }
+    },
+    {
+      "name": "GET /api/account/{id} — courier account (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('account loads with the courier role', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.courier).to.have.property('email');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{courierUserId}}?type=courier",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{courierUserId}}"],
+          "query": [{ "key": "type", "value": "courier" }]
+        },
+        "description": "Loads a courier account. Use a courier user id (user 22 is a seeded courier) and a token for that user; the client selects data.courier."
+      }
+    },
+    {
+      "name": "POST /api/account/{id} — update courier email/phone (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier role email/phone update', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.message).to.eql('Success');",
+              "    pm.expect(body.data.courier.email).to.eql('courier.updated@example.com');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"account_type\": \"courier\",\n  \"account_email\": \"courier.updated@example.com\",\n  \"account_phone\": \"+1-555-9200\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/account/{{courierUserId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "account", "{{courierUserId}}"]
+        },
+        "description": "Official-shape courier account update. Updates only the courier role's email/phone; the primary user email is unchanged. Use a courier user id and courier token."
+      }
     }
   ],
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
     { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "2" },
+    { "key": "courierUserId", "value": "22" },
     { "key": "customerId", "value": "2" },
+    { "key": "courierId", "value": "1" },
+    { "key": "orderId", "value": "1" },
     { "key": "restaurantId", "value": "1" },
     { "key": "unknownRestaurantId", "value": "999999" },
     { "key": "rating", "value": "4" },

@@ -1,10 +1,16 @@
 /**
  * File: theme.js
  * Purpose: Centralizes the exact shared palette, typography, spacing, and layout values.
- * Contents: colors, font families, spacing scale, shared layout dimensions.
+ * Contents:
+ * 1. colors
+ * 2. font families
+ * 3. spacing scale
+ * 4. shared layout dimensions
  */
 
 import { Platform } from 'react-native';
+
+import { DELIVERY_STATUS } from './deliveryStatus';
 
 // COLORS is the single source for the exact palette required by the grading wireframe.
 export const COLORS = Object.freeze({
@@ -16,10 +22,21 @@ export const COLORS = Object.freeze({
   white: '#FFFFFF',
 });
 
-// FONT_FAMILIES names both supplied headings and the platform-safe body-font fallback.
+// DELIVERY_STATUS_COLORS maps each internal courier delivery status to its required semantic
+// color: PENDING red, IN PROGRESS orange, DELIVERED green (global spec §11.1). Centralized so the
+// status pill and any future status control read one token instead of repeating palette literals.
+export const DELIVERY_STATUS_COLORS = Object.freeze({
+  [DELIVERY_STATUS.DELIVERED]: COLORS.mutedGreen,
+  [DELIVERY_STATUS.IN_PROGRESS]: COLORS.orangeRed,
+  [DELIVERY_STATUS.PENDING]: COLORS.darkRed,
+});
+
+// FONT_FAMILIES names both supplied headings and the body-font policy. iOS uses its native Arial;
+// Android has no Arial, so it uses the bundled Arimo (a metric-compatible Arial equivalent loaded
+// in app/_layout.js) rather than falsely labeling a different system font as Arial.
 export const FONT_FAMILIES = Object.freeze({
   body: Platform.select({
-    android: 'sans-serif',
+    android: 'Arimo_400Regular',
     default: 'Arial',
     ios: 'Arial',
   }),

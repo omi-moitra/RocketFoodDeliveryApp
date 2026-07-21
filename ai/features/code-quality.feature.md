@@ -1,0 +1,782 @@
+<a id="top"></a>
+
+# AI Feature Specification — Code Quality
+
+> Defines the final Module 14 code-quality audit for reuse, cleanliness, comments, dependencies, and professional folder organization. Use this document with `ai/ai-spec.md` and all implemented feature specifications.
+
+> **Implementation owner:** Claude will run and implement this specification. Claude must audit before editing, preserve intentional and passing code, present genuine minimum-change options to the user, and wait for the user's selection before any structural refactor, dependency removal, file move/rename, or ambiguous deletion.
+
+## Table of Contents
+
+1. [Feature identity](#1-feature-identity)
+2. [Feature goal](#2-feature-goal)
+3. [Feature scope](#3-feature-scope)
+4. [Requirements breakdown](#4-requirements-breakdown)
+5. [Audit and cleanup flow](#5-audit-and-cleanup-flow)
+6. [Interfaces and ownership](#6-interfaces-and-ownership)
+7. [Evidence, validation, and state](#7-evidence-validation-and-state)
+8. [Expected behavior](#8-expected-behavior)
+9. [Technical constraints](#9-technical-constraints)
+10. [Acceptance criteria](#10-acceptance-criteria)
+11. [Feature Definition of Done](#11-feature-definition-of-done)
+12. [Notes for AI tools](#12-notes-for-ai-tools)
+13. [Refactoring Implementation Record](#13-refactoring-implementation-record)
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 1. Feature identity
+
+- **Feature name:** Code Quality
+- **Related area:** Entire tracked repository, with emphasis on M14 client/backend additions and their shared boundaries
+- **Specification file:** `ai/features/code-quality.feature.md`
+- **Implementation branch:** `feature/m14-code-quality`
+- **Grading requirements:** Code reusability, code cleanliness, meaningful comments, no unused/dead/commented-out code, and clean logical folder organization
+- **Dependencies:** All functional and UI features are implemented before this final audit.
+- **Claude deliverable:** An evidence-driven cleanup/refactor pass that improves or verifies quality without changing product behavior.
+- **Completion evidence:** Inventory/caller analysis, decision records, focused checks, full diff review, regression results, and an honest list of manual/runtime gaps.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 2. Feature goal
+
+Demonstrate that the final Rocket Food Delivery repository is understandable, reusable, clean, and professionally organized.
+
+This is not permission for a wholesale rewrite. Claude must distinguish genuine duplication/dead code from intentional role separation, defensive validation, compatibility support, development-only diagnostics, and framework-required files. When more than one safe minimum solution exists, Claude presents the options and waits for the user's choice.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 3. Feature scope
+
+### 3.1 In scope
+
+- Inventory every tracked first-party source, specification, test, asset, configuration, and root deliverable.
+- Confirm route files live under `client/app/` and reusable code lives in the appropriate existing folder.
+- Audit repeated presentation, state, request, validation, storage, formatting, and theme logic for unnecessary duplication.
+- Confirm API calls remain in services rather than screens/components.
+- Confirm authentication storage/context, theme, icons, currency, validation, and result-state ownership remain centralized.
+- Audit imports, exports, callers, routes, package usage, tests, and documentation references before declaring anything unused.
+- Remove proven unused imports, variables, functions, unreachable branches, stale TODOs, debug-only experiments, and commented-out implementations.
+- Preserve meaningful development-only diagnostics when they protect contract validation and contain no sensitive data.
+- Audit comments/JSDoc/file headers for accuracy, usefulness, and synchronization with current code.
+- Remove stale or misleading comments; do not remove explanations of non-obvious invariants, races, role boundaries, data mapping, compatibility, or recovery.
+- Audit client dependencies for actual use, platform need, grading requirement, and lockfile consistency.
+- Audit generated/local artifacts and ensure ignore rules prevent them from entering commits.
+- Audit backend changes introduced for M14 for minimum scope, focused tests, compatibility, and documentation.
+- Verify test names/fixtures/assertions match current API contracts.
+- Verify canonical specification paths and eliminate stale duplicate contracts only when removal is proven safe and authorized.
+- At project completion, after this feature is implemented and no feature remains, remove the inactive `ai/features/feature-name.feature.md` template as required by `ai/ai-spec.md`.
+- Preserve the private `.omi/` implementation log as ignored/private; never stage it.
+- Update `ai/ai-spec.md`, owning feature specs, README, Postman, and implementation log only when cleanup changes their factual truth.
+
+Primary audit surfaces:
+
+- `client/app/`
+- `client/components/`
+- `client/services/`
+- `client/storage/`
+- `client/contexts/`
+- `client/constants/`
+- `client/utils/`
+- `server/src/main/java/`
+- `server/src/test/java/`
+- `ai/` and `ai/features/`
+- `README.md`, `PostmanCollection.json`, `.gitignore`, package/lock/build files, and tracked deliverable folders
+
+This is an audit boundary, not blanket edit permission. Every modification must map to a failed criterion and verified ownership/caller evidence.
+
+### 3.2 Out of scope
+
+- New product behavior, routes, APIs, fields, settings, visual redesign, or extra-mile features.
+- Business-rule changes disguised as cleanup.
+- Broad renaming, formatting, comment removal, or folder reshuffling for personal preference.
+- Replacing established architecture/frameworks/languages.
+- Changing backend schema, authentication, seed behavior, providers, or API contracts without a separate verified requirement and user-selected option.
+- Removing a dependency merely because a search finds no import when grading, Expo configuration, peer dependencies, or tooling may require it.
+- Extracting abstractions that make simple code harder to understand or couple behaviors that differ meaningfully.
+- Combining Customer/Courier route files that must remain distinct navigation destinations.
+- Deleting framework-reserved route/layout files, test fixtures, assets, or compatibility endpoints without caller/runtime evidence.
+- Treating ignored build output, dependencies, caches, local environment files, or `.DS_Store` as tracked product-code defects.
+- Editing `.omi/` planning sources except appending the required private implementation record.
+- Staging, committing, merging, pushing, or mutating external systems without explicit authorization.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 4. Requirements breakdown
+
+### 4.1 Requirement A — Evidence-first inventory
+
+- Begin with `git status --short`, `git ls-files`, `rg --files`, package manifests, and targeted symbol/import/caller searches.
+- Separate tracked first-party files from ignored dependencies, build output, caches, environment files, and private working material.
+- Record unrelated pre-existing changes and preserve them.
+- Identify route/framework files whose usage is convention-based rather than import-based.
+- Identify generated files that must remain tracked, such as lockfiles, versus generated output that must remain ignored.
+- Do not classify a file as unused from filename or import search alone.
+
+### 4.2 Requirement B — Reusable components
+
+- Confirm truly shared presentation uses shared components where behavior and data contracts match.
+- Preserve shared Account implementation behind separate Customer/Courier route wrappers.
+- Preserve shared authenticated header, result states, icons, theme, currency, validation, API client, and session boundaries.
+- Audit delivery/order rows and details for genuinely duplicated layout/formatting while recognizing their different field/status contracts.
+- Audit repeated buttons, modals, request-state UI, and form feedback for practical reuse opportunities.
+- Prefer a small shared primitive/helper only when it removes meaningful duplication without creating a configuration-heavy abstraction.
+- Do not extract one-off markup solely to increase component count.
+
+### 4.3 Requirement C — Service and state reuse
+
+- Screens/components must not call `fetch` directly when an owning service exists.
+- Shared transport behavior remains in `apiClient.js`.
+- Domain validation/mapping stays in domain services or reusable pure helpers, not duplicated across screens.
+- Authentication/session identity is read from centralized storage/context and never duplicated in route parameters/local keys.
+- Abort, generation, and duplicate-action guards remain with the state owner that needs them.
+- Do not merge distinct state machines merely because they use similar words such as loading/error/success.
+
+### 4.4 Requirement D — Clean source code
+
+- Remove imports/variables/functions/exports proven unused by static and framework-aware inspection.
+- Remove unreachable branches and superseded compatibility code only after confirming no current caller/runtime needs them.
+- Remove commented-out implementations, abandoned debug helpers, temporary logs, and stale TODO/FIXME/HACK notes.
+- Keep intentional `__DEV__` warnings only when they diagnose a real invariant safely and are documented/concise.
+- Never log tokens, credentials, passwords, private contact data, full responses, or stack traces to users.
+- Preserve error handling, defensive validation, and recovery paths that look redundant but protect different failure states.
+- Avoid cosmetic churn unrelated to a quality failure.
+
+### 4.5 Requirement E — Meaningful comments and documentation
+
+- Comments explain why, ownership, invariants, race protection, non-obvious data mapping, compatibility, and recovery.
+- Comments do not narrate imports, obvious assignments, straightforward JSX, or every line.
+- File purpose/contents headers remain accurate where established.
+- JSDoc names, arguments, return shapes, errors, and callers match implementation.
+- Remove stale implementation-plan language from completed source comments.
+- Specifications distinguish current verified behavior from pending manual checks.
+- README/API/Postman descriptions remain synchronized with current contracts.
+
+### 4.6 Requirement F — Logical folder organization
+
+- Expo routes/layouts remain in `client/app/` using framework naming.
+- Reusable visual behavior remains in `client/components/`.
+- Domain requests/normalization remain in `client/services/`.
+- Authentication persistence/context remain in `client/storage/` and `client/contexts/`.
+- Shared constants/assets/helpers remain in their established dedicated folders.
+- Java controllers, DTOs, services, repositories, models, exceptions, security, and tests retain conventional package ownership.
+- Canonical AI specs remain under `ai/` and `ai/features/`; do not recreate superseded module duplicates.
+- Documentation/reference material remains in its current documented destination and is not imported as runtime code.
+- A move/rename must update every import, route convention, documentation link, test, and Postman/reference location.
+
+### 4.7 Requirement G — Dependency and configuration hygiene
+
+- Map each direct client dependency to runtime/tooling/grading usage before proposing removal.
+- Confirm `package-lock.json` matches `package.json` after any user-selected dependency change.
+- Do not run a broad upgrade or change Expo/React Native versions in this feature.
+- Do not add lint/format/test dependencies merely to perform the audit; present options first if tooling is genuinely necessary.
+- Verify `.gitignore` covers secrets, `.env`, dependencies, Expo output, native prebuilds, Java target output, IDE/OS files, and private `.omi/` material.
+- Confirm no ignored secret/generated file is staged or tracked unexpectedly.
+
+### 4.8 Requirement H — Backend and test quality
+
+- Audit only M14-touched backend areas plus any directly shared contract owner needed for regression evidence.
+- Confirm account/notification/courier minimum changes stayed additive or deliberately compatible as documented.
+- Confirm focused tests express current camelCase notification, Account POST, rating-preservation, and existing compatibility behavior.
+- Do not clean unrelated legacy backoffice/backend code solely because a repository-wide search finds old style or diagnostics.
+- If Claude believes a backend cleanup is necessary, present evidence/options and wait for user selection before editing.
+- Distinguish infrastructure/database test failures from assertion failures and report exact counts honestly.
+
+### 4.9 Requirement I — Safe deletion
+
+Before deleting any tracked file, Claude must prove:
+
+- It has no import/caller/framework/runtime/grading/documentation role.
+- It is not required by Expo Router, Spring, Maven, npm, Postman, tests, submission, or a retained feature contract.
+- No unrelated user work would be lost.
+- The deletion is recoverable from Git and narrowly targeted.
+
+When multiple reasonable choices exist—retain with documentation, refactor callers, deprecate, or delete—Claude presents options and waits for the user.
+
+The inactive `ai/features/feature-name.feature.md` is a special explicit global-spec case: delete it only at the final successful completion of this last feature, then update `ai/ai-spec.md` so it no longer claims the file exists.
+
+### 4.10 Requirement J — Minimum-change option gate
+
+Claude must present options before any decision involving:
+
+- Shared extraction versus justified duplication.
+- File/folder move, rename, consolidation, or deletion not explicitly mandated.
+- Dependency/tool addition, removal, or replacement.
+- Public function/export/request/test contract changes.
+- Backend cleanup or compatibility removal.
+- Large comment/header rewrite or formatting sweep.
+- Any cleanup whose regression surface is materially larger than its benefit.
+
+For each option, state exact files/symbols, duplication/problem evidence, benefits, risks, compatibility/framework impact, diff size, and verification cost. Claude must stop and let the user choose; it must not choose independently.
+
+### 4.11 Requirement K — Regression and final evidence
+
+- Run focused checks for every changed owner.
+- Run available client dependency/config/export checks.
+- Run focused backend tests and full Maven tests when backend code changes and infrastructure permits.
+- Parse/inspect Postman JSON and verify documentation links/paths.
+- Re-run functional/native flows affected by any shared refactor.
+- Inspect the complete final diff for accidental behavior, secrets, generated output, and unrelated churn.
+- Append the implementation log with audit findings, options, user choices, changes, verification, and manual gaps.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 5. Audit and cleanup flow
+
+### 5.1 Establish the baseline
+
+1. Confirm branch/status and preserve unrelated changes.
+2. Inventory tracked/ignored files and current feature owners.
+3. Run baseline static/build/test commands that do not mutate product behavior.
+4. Record existing failures separately from new findings.
+
+### 5.2 Build the findings register
+
+For each potential issue record:
+
+```text
+ID | evidence | owner | callers | quality rule | risk | options needed | status
+```
+
+Classify as verified defect, justified design, ignored/generated artifact, manual uncertainty, or decision required.
+
+### 5.3 Present decision options
+
+1. Group related findings by smallest shared owner.
+2. Present viable minimum-change options with exact tradeoffs.
+3. Stop decision-dependent work.
+4. Record the user's selection in this spec/private log before implementation.
+
+### 5.4 Apply selected cleanup
+
+1. Make the smallest coherent change for the selected option.
+2. Update imports/callers/tests/docs in the same change.
+3. Read the complete diff and confirm no behavioral drift.
+4. Run focused verification before proceeding.
+
+### 5.5 Finalize the last feature
+
+1. Re-run the full quality audit and applicable regression checks.
+2. Confirm all seven originally required M14 feature areas are represented in the canonical combined spec set.
+3. Delete the inactive feature template only after the feature is genuinely complete.
+4. Reconcile `ai/ai-spec.md` and any path/tree/documentation references.
+5. Produce the final handoff without staging or committing.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 6. Interfaces and ownership
+
+### 6.1 Client architecture
+
+| Location | Ownership |
+| --- | --- |
+| `client/app/` | Expo Router routes/layouts and screen-level orchestration |
+| `client/components/` | Reusable native presentation and bounded UI behavior |
+| `client/services/` | API paths, bodies, envelopes, normalization, domain request errors |
+| `client/storage/` | Persisted authentication/session boundary |
+| `client/contexts/` | Shared in-memory session transitions/actions |
+| `client/constants/` | Theme, currency, assets, and stable labels/maps |
+| `client/utils/` | Reusable pure helpers without service/UI ownership |
+
+### 6.2 Backend architecture
+
+| Location | Ownership |
+| --- | --- |
+| `controller/api/` | REST routing, request validation, response status/envelopes |
+| `dtos/` | External request/response shapes |
+| `service/` | Domain operations and DTO mapping |
+| `repository/` | Persistence queries/mutations |
+| `models/` | JPA entities and persistence constraints |
+| `exception/` | Safe REST error mapping |
+| `src/test/java/` | Focused contract/regression evidence |
+
+### 6.3 Specifications and deliverables
+
+- `ai/ai-spec.md` is the canonical global product contract.
+- `ai/features/` contains canonical feature contracts; code quality becomes the final active feature.
+- README documents setup, structure, API, decisions, and verification truth.
+- `PostmanCollection.json` documents runnable nonsecret API requests.
+- `.omi/m14/IMPLEMENTATION_LOG.md` remains private and ignored.
+- `docVault/` and other documentation locations retain the organization established by the UI branch unless a user-selected option changes it.
+
+### 6.4 Framework-owned usage
+
+Claude must recognize non-import usage, including:
+
+- Expo Router route/layout filenames.
+- Spring annotations/component scanning/JPA repositories.
+- Maven/Expo/npm configuration and lockfiles.
+- Assets referenced through constants or application configuration.
+- Postman variables and saved request examples.
+- Grading-required files/screenshots/specifications.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 7. Evidence, validation, and state
+
+### 7.1 Finding evidence
+
+A cleanup finding is actionable only when it includes:
+
+- Exact file/symbol/location.
+- Search/import/caller/framework evidence.
+- Why current code violates a grading/global rule.
+- Regression surface.
+- Whether one safe solution exists or user options are required.
+
+### 7.2 Decision states
+
+- `candidate`: search result only; not actionable.
+- `verified`: evidence proves a quality issue.
+- `optionsPresented`: multiple viable changes documented.
+- `userSelected`: exact choice recorded.
+- `implemented`: smallest selected change complete.
+- `verifiedAfterChange`: focused/regression evidence complete.
+- `retainedJustification`: apparent duplication/diagnostic/file is intentional and documented.
+
+Claude cannot advance from `optionsPresented` to `implemented` without the user's selection.
+
+### 7.3 Reuse test
+
+Extract shared code only when:
+
+- At least two callers have substantially identical behavior/data/state contracts.
+- The shared name and API are simpler than the duplication.
+- Differences can be expressed without a sprawling flag/configuration object.
+- Ownership and tests become clearer.
+- Regression checks cover every caller.
+
+Otherwise retain the duplication and record why it is meaningful.
+
+### 7.4 Unused/dead-code test
+
+Removal requires all applicable evidence:
+
+- No static import/reference/caller.
+- No framework naming/annotation/config/runtime discovery.
+- No test, documentation, Postman, grading, asset, or compatibility role.
+- No reflection/dynamic key/string lookup.
+- Successful focused checks after removal.
+
+### 7.5 Comment test
+
+Keep a comment when deleting it would obscure a non-obvious reason or invariant. Rewrite/remove it when it is false, redundant with names, narrates syntax, references a completed temporary plan, or exposes internal/sensitive details.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 8. Expected behavior
+
+- Shared behavior has one clear owner without forcing unrelated features into one abstraction.
+- Route wrappers remain thin and role-specific while shared Account behavior remains centralized.
+- Screens orchestrate state and services own network contracts.
+- No proven unused/dead/commented-out/debug code remains in the final tracked first-party scope.
+- Meaningful diagnostics/comments remain concise, accurate, and safe.
+- Folder/package organization matches framework/domain responsibility.
+- Dependencies/configuration are justified and synchronized.
+- Generated/local/private artifacts are ignored and unstaged.
+- Functional behavior, API compatibility, UI, accessibility, persistence, and M13/M14 regressions remain unchanged.
+- Claude presents genuine options and never chooses structural tradeoffs for the user.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 9. Technical constraints
+
+- Read `ai/ai-spec.md`, this complete feature spec, all owning feature specs, and current source/tests before edits.
+- Use `rg`/`rg --files`, Git tracked/ignored views, package metadata, and framework-aware inspection.
+- Do not rely on a missing import alone to delete route/annotated/configured files.
+- Use existing tools; do not add lint/format/dependency-analysis packages without presenting options and receiving user selection.
+- Avoid repository-wide automatic formatting.
+- Preserve working tree/user changes and keep edits narrowly scoped.
+- Use `apply_patch` for manual file edits and safe, non-destructive cleanup.
+- No backend/API/schema behavior change is expected; any proposed exception requires user-selected options and updated governing documentation first.
+- Do not stage, commit, merge, push, or modify external systems.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 10. Acceptance criteria
+
+### 10.1 Inventory and evidence
+
+- [ ] Tracked first-party and ignored/generated/private scopes are distinguished.
+- [ ] Every cleanup edit has exact owner/caller/framework evidence.
+- [ ] Existing baseline failures are recorded separately from introduced regressions.
+- [ ] No file is classified unused solely from a simple import search.
+
+### 10.2 Reusability
+
+- [ ] Shared header, Account, API client, session, result, theme, currency, validation, and icon behavior remain centralized.
+- [ ] Screens/components contain no duplicated API request construction.
+- [ ] Meaningful repeated logic/presentation is shared or has a recorded retained-duplication justification.
+- [ ] Customer/Courier route separation is not mistaken for unnecessary duplication.
+- [ ] New abstractions are smaller/clearer than the code they replace.
+
+### 10.3 Cleanliness
+
+- [ ] No proven unused import, variable, function, export, file, or unreachable branch remains.
+- [ ] No commented-out implementation, temporary debug helper, stale TODO/FIXME/HACK, or accidental log remains.
+- [ ] Retained development diagnostics are intentional, safe, and limited to development where appropriate.
+- [ ] No sensitive value or raw private response is logged/exposed.
+- [ ] No broad cosmetic churn obscures the functional history.
+
+### 10.4 Comments and documentation
+
+- [ ] Comments/JSDoc/file headers match current code and explain only useful non-obvious behavior.
+- [ ] Stale plan language and misleading contract comments are removed/reconciled.
+- [ ] Global/feature specs, README, and Postman match final code paths/contracts.
+- [ ] Automated evidence and pending manual/native evidence remain clearly separated.
+
+### 10.5 Folder and dependency organization
+
+- [ ] Routes, components, services, storage/context, constants/utils, Java packages, tests, specs, and docs have clear ownership.
+- [ ] No stale canonical-spec duplicate or broken path reference remains.
+- [ ] Every direct dependency is used or has a documented grading/tooling/platform reason.
+- [ ] Package manifest and lockfile agree.
+- [ ] `.gitignore` covers secrets, builds, dependencies, caches, IDE/OS, Expo/native, and private material.
+
+### 10.6 Options and user decisions
+
+- [ ] Claude presents viable minimum-change options for every ambiguous structural/dependency/deletion/backend decision.
+- [ ] Options include exact files, evidence, benefits, risks, compatibility, diff size, and verification cost.
+- [ ] User selections are recorded before implementation.
+- [ ] No unselected option is implemented.
+
+### 10.7 Tests and regression
+
+- [ ] Focused checks pass for every changed shared owner and caller.
+- [ ] `git diff --check` passes.
+- [ ] `npm ls --depth=0` reports no invalid dependency.
+- [ ] `npx expo config --type public` succeeds without secrets.
+- [ ] `npx expo export --platform android` succeeds and generated output is removed.
+- [ ] Focused/full Maven tests run when applicable, with infrastructure versus assertion results reported accurately.
+- [ ] Postman JSON parses and no secret/live value is committed.
+- [ ] Affected Customer/Courier/M13/M14 manual regressions are recorded honestly.
+
+### 10.8 Final repository state
+
+- [ ] Complete diff contains only selected, evidence-backed quality changes.
+- [ ] No tracked secret, local environment file, build output, cache, IDE/OS artifact, private log, or temporary evidence exists.
+- [ ] No unrelated user work is modified or deleted.
+- [ ] Inactive feature template is removed only after this final feature is genuinely complete, and the global spec is reconciled.
+- [ ] Git status and final handoff identify every remaining manual/process gap.
+
+Claude must leave criteria unchecked until current evidence supports them. Search results, compilation, or export alone do not prove runtime use, absence of reflection/framework discovery, or complete regression safety.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 11. Feature Definition of Done
+
+- [ ] Every graded Code Quality requirement has current evidence.
+- [ ] Audit distinguishes verified defects, justified design, ignored artifacts, and pending decisions.
+- [ ] Claude presented minimum-change options and implemented only user-selected choices.
+- [ ] Reuse improves clarity without over-abstraction or role/feature coupling.
+- [ ] No proven dead/unused/commented-out/debug code remains in agreed scope.
+- [ ] Comments/documentation are accurate, meaningful, and synchronized.
+- [ ] Folder/package/dependency organization is logical and framework-safe.
+- [ ] All selected cleanup passes focused/static/build/test/regression checks available in the environment.
+- [ ] No business/API/UI behavior drift, secret, generated artifact, private file, or unrelated change exists.
+- [ ] Final canonical specs are complete and the inactive template is removed/reconciled only at true completion.
+- [ ] Private implementation log records findings, options, user selections, changed files, verification, retained justifications, and manual gaps.
+- [ ] Claude's handoff includes outcome, selected options, exact files, checks/results, manual gaps, scoped stage command, and copy-ready commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 12. Notes for AI tools
+
+- Claude is the implementation and verification agent for this specification.
+- Audit first; do not manufacture cleanup changes when current code already satisfies a criterion.
+- Treat route/layout, Spring-annotated, config, lock, asset, test, Postman, and grading files as potentially runtime-used without imports.
+- Present structural, dependency, deletion, or backend options and stop for the user's selection.
+- Do not decide what to extract, move, remove, or retain when multiple reasonable minimum choices exist.
+- Preserve intentional validation, race guards, role isolation, compatibility, and safe development diagnostics.
+- Do not broaden the task into legacy backend/backoffice cleanup.
+- Do not claim runtime/native/database/test success unless observed; report infrastructure blockers exactly.
+- Delete the inactive template only after the final feature actually passes, then reconcile the global spec.
+- Append the final dated handoff to `.omi/m14/IMPLEMENTATION_LOG.md`; never stage it.
+- Do not stage, commit, merge, or push.
+- Finish with outcome, user-selected options, exact files, checks/results, retained justifications, manual gaps, scoped `git add`, and a copy-ready Conventional Commit command.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## 13. Refactoring Implementation Record
+
+This is the append-only completion record for work selected from `docVault/REFACTORING_AUDIT.md`. Add an entry only after the user-selected audit item is implemented and its available verification is complete. A proposal, user selection, partial edit, or unverified change is not completed work. Entries remain chronological; if completed work is revised or reverted, append a dated correction rather than rewriting history.
+
+#### RF-19 — Remove stale `@JsonAlias` claims
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P0
+- **Reason and benefit:** Source/test comments claimed the backend accepted notification keys via `@JsonAlias`, but the DTO now uses canonical camelCase (`sendEmail` default-mapped, `sendSms` via `@JsonProperty("sendSMS")`). The stale claim contradicted the graded HTTP contract.
+- **Files affected:** `client/services/orderService.js`, `server/src/test/java/com/rocketFoodDelivery/rocketFood/order/OrderApiControllerTest.java`
+- **Change:** Rewrote both comments to describe the canonical camelCase mapping; no code/behavior change. Snake_case is intentionally not accepted (verified by the existing DTO deserialization test).
+- **Verification:** `rg JsonAlias client server` → no matches; `mvnw test` for `OrderApiControllerTest,ApiCreateOrderDTODeserializationTest` (local MySQL) → 15 passed, 0 failures.
+
+#### RF-03 — Reuse the shared email validator in Login
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Login defined a local `EMAIL_PATTERN` duplicating the `isValidEmail` rule already owned by `utils/validation.js` (used by Account). Sharing it prevents Login and Account email validation from drifting.
+- **Files affected:** `client/app/index.js`
+- **Change:** Imported `isValidEmail`, replaced `EMAIL_PATTERN.test(email)` with `!isValidEmail(email)`, and deleted the local regex. Behavior identical (empty → required message first, non-empty invalid → shape message).
+- **Verification:** `npx expo export --platform android` EXIT 0; `git diff --check` clean. Native email-field manual check pending.
+
+#### RF-04 — Route guards consume the `ROLES` constants
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Root and role tab guards repeated raw `'customer'`/`'courier'` string literals despite `authStorage.js` exporting the canonical `ROLES`. Using the constants removes typo-prone literals at the security-sensitive navigation boundary.
+- **Files affected:** `client/app/_layout.js`, `client/app/customer/_layout.js`, `client/app/courier/_layout.js`
+- **Change:** Imported `ROLES` and replaced the raw role literals in the active-role guards with `ROLES.customer` / `ROLES.courier`. No route/guard behavior change.
+- **Verification:** `rg` confirms no raw role literals remain in guards; `npx expo export --platform android` EXIT 0. Native four-way navigation (logged-out, customer-only, courier-only, dual-pending) manual check pending.
+
+#### RF-07 — Clear the confirmation modal's settled abort controller
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** `OrderConfirmationModal` stored the active `AbortController` but never cleared it in `finally`, so closing a settled modal aborted a stale controller — unlike the Login/Account request owners.
+- **Files affected:** `client/components/OrderConfirmationModal.js`
+- **Change:** In `finally`, clear `abortControllerRef.current` only when it still equals the local controller. Visible idle/processing/success/failure behavior unchanged.
+- **Verification:** `npx expo export --platform android` EXIT 0. Native confirm/failure/close-during-processing/close-after-settle manual checks pending.
+
+#### RF-08 — Emit the font-load warning from an effect
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** The dev-only font-failure warning ran during render, so unrelated re-renders could repeat it and logging became a render side effect.
+- **Files affected:** `client/app/_layout.js`
+- **Change:** Moved the `__DEV__` `console.warn` into a `useEffect` keyed by `fontError`. Font-fallback and loading behavior unchanged.
+- **Verification:** `npx expo export --platform android` EXIT 0.
+
+#### RF-20 — Correct obsolete role-scope comments
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The mandatory `_layout.js` header described only login/customer routes and `AppHeader.js` comments said only Customer tabs install it and logout returns "the customer" to Login. The app now supports Customer and Courier.
+- **Files affected:** `client/app/_layout.js`, `client/components/AppHeader.js`
+- **Change:** Updated the file header and JSDoc to reference login/account-selection/role routes and the Customer *and* Courier layouts; logout "returns the user to Login." Comments only.
+- **Verification:** Manual header review; `npx expo export --platform android` EXIT 0.
+
+#### RF-22 — Aggregate the malformed-order development warning
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** `normalizeCustomerOrders` could emit one identical warning for every malformed/duplicate row on every refresh.
+- **Files affected:** `client/services/orderService.js`
+- **Change:** Count skipped rows and emit at most one `__DEV__` warning after normalization, containing only a count — never IDs, customer data, or tokens. Valid rows still render; malformed/duplicate rows still skipped.
+- **Verification:** `npx expo export --platform android` EXIT 0. A mixed valid/invalid/duplicate response unit test remains a pending gap.
+
+#### RF-36 — Tidy the order controller test
+
+- **Completed:** 2026-07-21 14:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The test constructed two throwaway `ObjectMapper`s despite an injected one and duplicated the `createFreshOrder` fixture in the delete test.
+- **Files affected:** `server/src/test/java/com/rocketFoodDelivery/rocketFood/order/OrderApiControllerTest.java`
+- **Change:** Use the injected `objectMapper` in both create tests; reuse `createFreshOrder` in `testDeleteOrder_Success`. Assertions and endpoint coverage unchanged.
+- **Verification:** `mvnw test` for `OrderApiControllerTest,ApiCreateOrderDTODeserializationTest` (local MySQL) → 15 passed, 0 failures.
+
+#### RF-12 — Share order-date normalization/formatting
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `OrderHistoryModal.js` and `DeliveryDetailsModal.js` defined byte-identical `ORDER_DATE_FORMATTER` and `formatOrderDate` (same microsecond-trim regex, same invalid-date guard, same blank fallback). Sharing one copy guarantees the documented project-wide date format cannot drift between the two modals.
+- **Files affected:** `client/utils/orderFormatting.js` (new), `client/components/OrderHistoryModal.js`, `client/components/DeliveryDetailsModal.js`
+- **Change:** Moved the formatter/constant into `client/utils/orderFormatting.js` (matching the directory's existing one-concern-per-file convention, e.g. `validation.js`); both modals import `formatOrderDate` and deleted their local copies. No output/behavior change.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Manual ISO-milliseconds/microseconds/blank/malformed-date checks in both modals remain a native regression item.
+
+#### RF-14 — Share the base order-product normalizer
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `normalizeOrderProduct` (customer history) and `normalizeDeliveryProduct` (courier delivery) in `orderService.js` duplicated the same id/name/quantity/total-cost guard and validation; the courier variant only added `unit_cost`. A shared base prevents the common contract from drifting between the two paths.
+- **Files affected:** `client/services/orderService.js`
+- **Change:** Added a private `normalizeBaseOrderProduct` with the shared guard/validation; `normalizeOrderProduct` now returns it directly, and `normalizeDeliveryProduct` calls it then additionally parses/validates `unit_cost` and spreads it in. Same all-or-nothing null-on-failure contract; no caller changes.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0.
+
+#### RF-01 — Centralize protected HTTP failure classification
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P0
+- **Reason and benefit:** `restaurantService.js` and `productService.js` only treated HTTP 401 as an expired/invalid session, while this backend (confirmed live and documented in `orderService.js`) reports a missing/invalid/expired bearer token as 401 **or** 403. Restaurant List, Restaurant Menu, and product/menu loads were not signing the user out on a 403. `orderService.js` also had four in-file duplicates of the same correct 401/403+5xx ladder.
+- **Files affected:** `client/services/apiClient.js`, `client/services/restaurantService.js`, `client/services/productService.js`, `client/services/orderService.js`, `client/services/accountService.js`
+- **Change:** Added `classifyProtectedFailure(response, messages)` to `apiClient.js` (the shared-transport-behavior owner), throwing `unauthorized` for 401/403 and `service` for 5xx from one place. Adopted it at all 7 call sites — `restaurantService.fetchRestaurants`/`fetchRestaurantById` (fixing the 403 bug), `productService.fetchProductsForRestaurant` (fixing the 403 bug), `orderService.createOrder`/`fetchCustomerOrders`/`requestDeliveryList`/`throwForMutationFailure`, and `accountService.throwForAccountFailure` — each keeping its own subsequent domain-specific checks (404/400/`!response.ok`) unchanged and in the same relative order (safe because HTTP statuses are mutually exclusive).
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. Native confirmation that Restaurant List/Menu/product load now sign out on a 403 remains a pending manual check.
+
+#### RF-17 — Use shared success-envelope predicates/normalizers
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Four services repeated the same `{message:"Success", data:[...]}` list-envelope check and three repeated the same single-object envelope check, each with its own copy of the identical guard logic. One non-conforming variant in `restaurantService.fetchRestaurantById` also merged a transport check into its envelope check.
+- **Files affected:** `client/services/apiClient.js`, `client/services/orderService.js`, `client/services/restaurantService.js`, `client/services/productService.js`, `client/services/accountService.js`
+- **Change:** Added `requireSuccessList`/`requireSuccessObject` to `apiClient.js`. Adopted at all 7 canonical sites (`orderService.normalizeCustomerOrders`/`normalizeDeliveryList`/`normalizeCreatedOrder`/`normalizeUpdatedDelivery`, `restaurantService.normalizeRestaurants`, `productService.normalizeProducts`, `accountService.normalizeAccount`), each keeping its own subsequent field/coherence checks. Also split `fetchRestaurantById`'s merged transport+envelope check so its transport check stays a plain `!response.ok` and its envelope check routes through `requireSuccessObject` too — the observable result (same thrown `response` error) is unchanged, only detected one line earlier.
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. `rg` confirms no manual `message !== 'Success'` checks remain in the four touched services.
+
+#### RF-16 — Consolidate required-session resolution (partial, evidence-scoped)
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Five distinct session-precondition shapes existed across services; only one (role-neutral: restaurant list/detail, product/menu reads) had ≥2 real callers with an identical contract, and one in-file duplicate existed (`fetchCourierDeliveries` re-inlined the same check `requireCourierSession()` already implements). The other three shapes (order creation, customer-scoped, account dual-ID) are genuinely different security postures with a single caller each or an already-appropriate local helper, so they were intentionally left as documented duplication rather than forced into one generic helper (which the reuse test's "no sprawling flag/config object" rule argues against).
+- **Files affected:** `client/services/apiClient.js`, `client/services/restaurantService.js`, `client/services/productService.js`, `client/services/orderService.js`
+- **Change:** Added `requireSession(tokenMessage)` to `apiClient.js` for the 3 role-neutral callers; `restaurantService.fetchRestaurants`/`fetchRestaurantById` and `productService.fetchProductsForRestaurant` now call it instead of inlining `getStoredSession`+`!session` checks. `orderService.fetchCourierDeliveries` now calls the existing `requireCourierSession()` instead of re-inlining its identical check. `createOrder`'s weaker session-only check and `fetchCustomerOrders`'s customer-scoped check were deliberately left untouched (different, intentional security postures, not a bug).
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0.
+
+#### RF-09 — Extract the duplicated Customer/Courier tab shell
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `client/app/customer/_layout.js` and `client/app/courier/_layout.js` shared ~90 byte-identical lines (the `TabIcon` helper, the full `Tabs screenOptions` object, and all 5 style keys), differing only in the guard's role/ID field and the tab descriptor list.
+- **Files affected:** `client/components/RoleTabsLayout.js` (new), `client/app/customer/_layout.js`, `client/app/courier/_layout.js`
+- **Change:** Extracted the shared shell into `RoleTabsLayout` (props: `isAuthorized` boolean, a literal `screens` descriptor array). Each thin `_layout.js` keeps its own `unstable_settings` (Expo Router reads this from the route file itself), computes its own `isAuthorized` guard expression, and passes its own descriptor list; only the identical header/style/tab-registration mechanics moved.
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. Native re-verification of both tab bars (titles/icons/order/initial route/active-indicator styling, logout, wrong-role redirect both directions) remains a pending manual check.
+
+#### RF-11 — Extract the duplicated refresh-error banner
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** `customer/order-history.js` and `courier/index.js` rendered byte-identical refresh-failure banner JSX and 5 style keys, separate from the already-shared `ResultState` component.
+- **Files affected:** `client/components/RefreshErrorBanner.js` (new), `client/app/customer/order-history.js`, `client/app/courier/index.js`
+- **Change:** Extracted `RefreshErrorBanner` (props: `message`, `onRetry`; renders `null` when no message). Both screens replaced their inline banner block with it and removed the now-unused style keys.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Manual failed-refresh check on both screens remains a pending native item.
+
+#### RF-10 — Extract the duplicated focus-refresh list lifecycle
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `customer/order-history.js` and `courier/index.js` duplicated ~90 lines of identical state/refs/`useFocusEffect` lifecycle (generation-staleness guard, loading-vs-refreshing distinction, aborted/unauthorized/refresh-preserves-rows/first-load-error branches, abort-on-blur cleanup). Courier's screen additionally owns a mutation state machine (`activeMutation`, mutation refs, `runStatusMutation`, etc.) with no counterpart in the customer screen, which the extraction must not absorb.
+- **Files affected:** `client/components/useProtectedFocusList.js` (new), `client/app/customer/order-history.js`, `client/app/courier/index.js`
+- **Change:** Extracted `useProtectedFocusList({fetchItems, handleUnauthorized, messages, session})` returning `{items, requestStatus, errorMessage, refreshErrorMessage, isRefreshing, hasRows, retry, setItems}` — a raw setter, matching exactly what each screen did with local state today. `order-history.js` calls it with `fetchCustomerOrders` and keeps its own `selectedOrder`/modal logic untouched. `courier/index.js` calls it with `fetchCourierDeliveries`; its mutation state machine stays entirely in the screen, unchanged, except `applyMutationSuccess` now calls the hook's `setDeliveries`/`retry()` (aliased `handleRetry`) instead of local equivalents — the same two operations, sourced from the hook.
+- **Verification:** `git diff --check` clean; `npm ls --depth=0` clean; `npx expo config --type public` EXIT 0; `npx expo export --platform android` EXIT 0. This is the largest/highest-risk item in the batch; full native regression (first load, focus refresh, empty/failed refresh with/without rows, rapid tab switching, logout mid-request, and the courier accept/deliver/partial-retry flow against the hook's exposed `setItems`/`retry`) remains a pending manual check for both screens.
+
+#### RF-02 — Use one safe identifier rule everywhere
+
+- **Completed:** 2026-07-21 15:29 America/New_York
+- **Priority:** P0
+- **Reason and benefit:** `authService.isUsableIdentifier` and `authStorage.normalizeStoredIdentifier` each used their own `Number.isInteger`/regex-based check, which incorrectly accepts a digit string one above `Number.MAX_SAFE_INTEGER` (or an all-9s string that overflows to `Infinity`), unlike the already-shared `isPositiveSafeInteger` three other services already use. The divergence was one-directional (current code over-accepts unsafe-integer overflow); no valid seeded ID is affected.
+- **Files affected:** `client/services/authService.js`, `client/storage/authStorage.js`
+- **Change:** Both functions now route their number-producing branch through `isPositiveSafeInteger` from `utils/validation.js`, with no change to either function's name, signature, or return shape/type — zero caller changes.
+- **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Boundary values (`1`, `"1"`, `" 1 "`, `0`, `-1`, `1.5`, `""`, `"abc"`, `Number.MAX_SAFE_INTEGER`, one above it) reasoned through by inspection; native login/session-restore smoke test for customer-only/courier-only/dual-role remains a pending manual check.
+
+#### RF-05 — Key delivery metadata from the status constants
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Delivery tokens, labels, theme-map keys, backend spellings, and mutation IDs repeated the same three status names in separate owners. Centralized metadata makes a status-token change fail visibly in one module instead of silently desynchronizing UI colors, labels, response normalization, or persisted status IDs.
+- **Files affected:** `client/constants/deliveryStatus.js` (new), `client/constants/theme.js`, `client/services/orderService.js`, `client/services/orders/courierDeliveries.js`
+- **Change:** Added a dependency-light status module retaining the exact `PENDING`, `IN_PROGRESS`, and `DELIVERED` tokens, visible labels, verified lowercase backend spellings, and backend IDs 1/2/3. Theme colors now use computed `DELIVERY_STATUS` keys; courier normalization/mutations consume the same metadata; the established `orderService.js` facade still re-exports `DELIVERY_STATUS` and `DELIVERY_STATUS_LABELS` for compatibility. No backend/API change.
+- **Verification:** Focused metadata assertions passed 12/12; Babel parsed all 11 changed client files; all 42 relative import/export targets resolved; `npm ls --depth=0`, `npx expo config --type public`, and `git diff --check` passed. Native courier list/detail colors and pending → in-progress → delivered persistence remain in the deferred manual checklist.
+
+#### RF-06 — Make confirmation total arithmetic explicitly safe
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Individually valid costs and quantities could overflow during multiplication or accumulation. A pure helper now rejects unsafe arithmetic before the UI can present a misleading rounded total or submit an internally invalid extreme selection.
+- **Files affected:** `client/utils/orderTotals.js` (new), `client/components/OrderConfirmationModal.js`
+- **Change:** Added safe line multiplication and order accumulation with input validation and explicit `Number.MAX_SAFE_INTEGER` addition protection. Normal and empty selections retain their prior totals; invalid/overflow values return `null`, render through the existing safe currency placeholder, and block submission. The create-order payload is unchanged because the backend remains authoritative for totals.
+- **Verification:** Seven focused arithmetic cases passed: empty, normal multi-product, zero-cost, maximum-safe multiplication, unsafe multiplication, unsafe accumulation, and invalid negative cost. Babel parse, dependency resolution, Expo config, dependency-tree, and whitespace checks passed. Native modal display/submission regression remains deferred.
+
+#### RF-15 — Split the order service behind its stable facade
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** One 754-line service owned creation, customer history, courier retrieval, and courier mutations. Focused modules reduce review surface and make each order flow easier to maintain while keeping callers insulated from the internal layout.
+- **Files affected:** `client/services/orderService.js`, `client/services/orders/createOrder.js` (new), `client/services/orders/customerOrders.js` (new), `client/services/orders/courierDeliveries.js` (new), `client/services/orders/orderShared.js` (new), `client/constants/deliveryStatus.js` (new)
+- **Change:** Converted `orderService.js` into a small compatibility facade that re-exports the same nine public names. Moved create-order, customer-history, and courier-delivery behavior into focused modules and retained shared error messages/product normalization in `orderShared.js`. Existing component imports, endpoints, methods, query parameters, request bodies, response guards, error codes, identity checks, and mutation sequencing are unchanged. No backend/API change.
+- **Verification:** Previous and current public export names were compared; Babel parsed all 11 changed files; all 42 relative import/export targets resolved; `npm ls --depth=0`, `npx expo config --type public`, and `git diff --check` passed. Full Android export and live customer/courier request regressions are deferred under the token-efficient test policy.
+
+#### RF-18 — Replace selected lifecycle literals with local constants
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Repeated lifecycle strings in the confirmation, Account, and courier mutation owners were typo-prone and made allowed values harder to review. Frozen local constants improve transition readability without introducing global state coupling or a higher-risk reducer rewrite.
+- **Files affected:** `client/components/OrderConfirmationModal.js`, `client/components/AccountScreen.js`, `client/app/courier/index.js`
+- **Change:** Added component-local frozen constants for confirmation submission, Account load/save, courier mutation, and courier list-display states; replaced the corresponding initial values, setters, and comparisons. All existing visible states, retry paths, draft preservation, abort handling, and transition behavior remain unchanged; no reducer or backend change was introduced.
+- **Verification:** Targeted search found no remaining raw lifecycle literals in the selected setters/comparisons/phases; Babel parse, import resolution, Expo config, dependency-tree, and whitespace checks passed. Native transition-table regression for confirmation, Account, and courier mutations remains deferred.
+
+#### RF-26 — Remove React Bootstrap
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** `react-bootstrap` was declared directly but no first-party client file imported it; `npm explain` confirmed the root project was its only owner. Removing this web UI library reduces an unused dependency branch without touching the React Native presentation stack.
+- **Files affected:** `client/package.json`, `client/package-lock.json`
+- **Change:** Removed `react-bootstrap` with npm so the manifest and lockfile changed together. No component, route, icon, style, or runtime behavior changed.
+- **Verification:** Caller search found no first-party import; `npm ls --depth=0` is clean; the focused Jest suite passes 58/58; `npx expo install --check` reports dependencies up to date using Expo SDK 54's local compatibility map because network validation was unavailable. Full platform export remains deferred under the token-efficient test policy.
+
+#### RF-27 — Remove the redundant direct Expo Vector Icons declaration
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** First-party icons use the established FontAwesome SVG stack and never import `@expo/vector-icons`. Expo 54 already declares and installs it transitively, so listing the same package as an application dependency falsely implied direct ownership.
+- **Files affected:** `client/package.json`, `client/package-lock.json`
+- **Change:** Removed only the root project's direct declaration. Expo's transitive `@expo/vector-icons` installation remains in the resolved dependency tree; all FontAwesome and `react-native-svg` dependencies were retained. No icon implementation changed.
+- **Verification:** First-party caller search is empty; the lockfile confirms Expo 54 still declares `@expo/vector-icons`; `npm ls --depth=0`, 58 focused Jest assertions, and the local Expo dependency check pass. Native icon rendering remains in the deferred manual checklist.
+
+#### RF-29 — Add focused client unit-test tooling
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The client had no repeatable test command, so pure validation, total-arithmetic, route-ID, and quantity-state regressions depended on manual reasoning or a full Expo build. A narrow Jest setup provides fast, reviewer-runnable evidence without a simulator.
+- **Files affected:** `client/package.json`, `client/package-lock.json`, `client/utils/__tests__/validation.test.js` (new), `client/utils/__tests__/orderTotals.test.js` (new), `client/utils/__tests__/menuState.test.js` (new)
+- **Change:** Added the Expo SDK 54-compatible `jest-expo` preset and Jest 29 as development-only dependencies, a concise non-watch `npm test` command, an opt-in `test:watch` command, and three pure utility suites. No UI-testing library, snapshot suite, simulator, TypeScript tooling, or production dependency was added.
+- **Verification:** `npm test` → 3 suites passed, 58 tests passed, 0 snapshots, approximately 1.2 seconds; all three test files parse; `npm ls --depth=0` is clean. `npm audit --omit=dev` still reports 13 moderate advisories in the retained Expo 54 dependency tree whose proposed automatic fix is the breaking Expo 57 upgrade; no force-fix or SDK upgrade was applied.
+
+#### RF-39 — Investigate duplicate `org.json.JSONObject` providers and retain both
+
+- **Completed:** 2026-07-21 16:52 America/New_York
+- **Priority:** P3
+- **Reason and benefit:** The Maven warning needed dependency-owner evidence before any exclusion. The investigation showed the two providers serve different established owners, so retaining both avoids an unverified notification or assertion regression.
+- **Files affected:** None (read-only dependency investigation).
+- **Change:** `mvn dependency:tree` traced `com.vaadin.external.google:android-json` to Spring Boot Test → JSONassert and `org.json:json` to the compile-scoped Twilio SDK. No exclusion or backend file change was made because full provider and MySQL-backed regression evidence is unavailable; RF-37/RF-38 remain deferred per the selected zero-backend-change scope.
+- **Verification:** Focused Maven dependency-tree command completed successfully and identified both paths. A future exclusion requires the full notification/provider tests plus database-backed backend suite.
+
+#### RF-21 — Remove repeated “Read aloud” comment lines
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Pronunciation-only annotations narrated function names but did not explain ownership, invariants, contracts, or grading behavior. Removing them makes the required technical comments easier to scan without reducing useful documentation.
+- **Files affected:** 39 JavaScript files: `client/app/{_layout.js,index.js,selection.js}`, `client/app/courier/{_layout.js,account.js,index.js}`, `client/app/customer/{_layout.js,account.js,order-history.js}`, `client/app/customer/restaurant/{_layout.js,index.js,[restaurantId].js}`, `client/components/{AccountScreen.js,AppHeader.js,AppIcon.js,DeliveryDetailsModal.js,DeliveryRow.js,ErrorBoundary.js,FilterSelect.js,OrderConfirmationModal.js,OrderHistoryModal.js,OrderHistoryRow.js,RefreshErrorBanner.js,RestaurantCard.js,ResultState.js,RoleTabsLayout.js,useProtectedFocusList.js}`, `client/constants/{currency.js,restaurantImages.js}`, `client/contexts/AuthContext.js`, `client/services/{accountService.js,apiClient.js,authService.js,restaurantService.js}`, `client/services/orders/courierDeliveries.js`, `client/storage/authStorage.js`, `client/utils/{orderFormatting.js,restaurantLabels.js,validation.js}`
+- **Change:** Removed exactly 115 lines containing `Read aloud:`. Mandatory headers, JSDoc descriptions/types/throws, caller notes, race/security explanations, and non-obvious mapping/recovery comments remain. No executable code changed.
+- **Verification:** Targeted search returns zero `Read aloud:` matches; the initial zero-context client diff contained exactly 115 removals and no additions; all affected JavaScript still parses. Header normalization completed separately under RF-44.
+
+#### RF-31 — Simplify stale and redundant ignore entries
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** The general `node_modules/` rule already covered `client/node_modules`, while the ignored `ai/M14/features/feature-name.feature.md` path belonged to a removed directory and did not govern the real tracked template.
+- **Files affected:** `.gitignore`
+- **Change:** Removed only those two redundant/stale rules and their now-extra spacing. Secret, environment, dependency, Expo/native output, Java target, IDE/OS, local Spring, and private `.omi` coverage remains unchanged.
+- **Verification:** `git check-ignore --no-index` confirms representative client dependencies, `.omi`, `.env`, Expo state, Java target, and local Spring files remain ignored; the stale M14 template path is no longer ignored.
+
+#### RF-40 — Repair README structure and documentation links
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The README tree and related-document links pointed to removed root paths and omitted the current role routes and design-reference owner. Reviewers could not navigate the documented repository confidently.
+- **Files affected:** `README.md`
+- **Change:** Replaced the obsolete support-material, root Concepts, and root Research entries with `client/docs/`, `Concepts/M13/`, and `docVault/`; corrected both local links; synchronized the route tree with Account Selection, Customer Account, and Courier tabs. No product contract changed.
+- **Verification:** Every local README Markdown link resolves and every documented top-level/current client path exists.
+
+#### RF-41 — Reconcile manual-QA claims with observed evidence
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The README claimed the complete customer journey had passed on iOS and Android, while the canonical specifications still marked native coverage pending. The record now distinguishes the user's actual smoke check from unperformed scenarios.
+- **Files affected:** `README.md`, `ai/features/ui.feature.md`
+- **Change:** Recorded the 2026-07-21 Expo Go smoke check on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL: the app opened and login plus the initial authenticated view succeeded. Full iOS journeys, Android, persistence/restart, customer/courier flows, scrolling, and keyboard scenarios remain explicitly pending.
+- **Verification:** README and UI-spec statements now agree; no Android, physical-device, full-journey, or database result is claimed.
+
+#### RF-42 — Reconcile obsolete support-material paths
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Seven retained M13 feature contracts referenced a support-material directory that Git history shows was intentionally consolidated and removed after its authoritative files were ported. Current specifications now point to reviewable files instead of nonexistent paths.
+- **Files affected:** `ai/features/header-footer.feature.md`, `ai/features/login-page.feature.md`, `ai/features/menu-modal-confirmation.feature.md`, `ai/features/order-history-modal.feature.md`, `ai/features/order-history-page.feature.md`, `ai/features/restaurant-list-page.feature.md`, `ai/features/restaurant-menu-page.feature.md`
+- **Change:** Updated design references to `client/docs/m13/design/`; updated logo, menu-image, and restaurant-image requirements to their verified runtime owners; replaced obsolete copy/delete instructions with final-state preservation language. Git history and byte comparisons—not inference—establish that the current PDFs and runtime assets match the supplied originals.
+- **Verification:** Zero obsolete support-directory path references remain in README/feature specs; all 11 referenced M13 PDFs/assets are readable; focused Git comparisons confirm the design PDFs and representative runtime assets are byte-identical to their original blobs.
+
+#### RF-44 — Synchronize final headers and specification inventory
+
+- **Completed:** 2026-07-21 17:13 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** The final comment cleanup exposed one route header without a filename and 21 inline, unnumbered Contents summaries. Normalizing them preserves the detailed-comment rubric and makes source ownership consistently scannable after the preceding refactors.
+- **Files affected:** `ai/ai-spec.md`; `client/app/{_layout.js,index.js,selection.js}`, `client/app/courier/{_layout.js,account.js}`, `client/app/customer/{_layout.js,account.js}`, `client/app/customer/restaurant/_layout.js`, `client/components/{AppHeader.js,AppIcon.js,DeliveryRow.js,ErrorBoundary.js,RefreshErrorBanner.js,ResultState.js,RoleTabsLayout.js,useProtectedFocusList.js}`, `client/constants/theme.js`, `client/services/authService.js`, `client/storage/authStorage.js`, `client/utils/{orderFormatting.js,restaurantLabels.js,validation.js}`
+- **Change:** Added the missing `_layout.js` filename/purpose/numbered Contents header, converted 21 inline Contents summaries into numbered lists without changing their wording/order, and added the existing `Concepts/M13/` owner to the global canonical tree. RF-43 remains deliberately deferred: the inactive template is still tracked while full native/final completion criteria remain pending.
+- **Verification:** All 40 changed client JavaScript files parse and retain `File`, `Purpose`, and numbered `Contents` fields; the canonical paths in the global tree exist. No template file was deleted and no backend/runtime code changed.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

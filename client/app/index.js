@@ -1,7 +1,10 @@
 /**
  * File: index.js
  * Purpose: Authenticates customers from the unauthenticated root route.
- * Contents: imports and validation, Login screen behavior, wireframe styles.
+ * Contents:
+ * 1. imports and validation
+ * 2. Login screen behavior
+ * 3. wireframe styles
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -22,11 +25,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiRequestError } from '../services/apiClient';
-import { authenticateCustomer } from '../services/authService';
+import { authenticateUser } from '../services/authService';
+import { isValidEmail } from '../utils/validation';
 
-// These module constants keep validation rules and user messages identical across submissions.
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+// These module constants keep user messages identical across submissions; the email shape rule is
+// the shared isValidEmail helper so Login and Account cannot drift to different email validation.
 const FORM_MESSAGES = Object.freeze({
   emailRequired: 'Enter your email address.',
   emailShape: 'Enter a valid email address.',
@@ -38,14 +41,13 @@ const FORM_MESSAGES = Object.freeze({
 /**
  * Returns the first client-side credential problem, or null when submission may continue.
  * LoginScreen calls it before touching the network so the user gets immediate field feedback.
- * Read aloud: “validate credentials.”
  */
 function validateCredentials(email, password) {
   if (!email) {
     return { field: 'email', message: FORM_MESSAGES.emailRequired };
   }
 
-  if (!EMAIL_PATTERN.test(email)) {
+  if (!isValidEmail(email)) {
     return { field: 'email', message: FORM_MESSAGES.emailShape };
   }
 
@@ -59,7 +61,6 @@ function validateCredentials(email, password) {
 /**
  * Renders the login form and coordinates validation, authentication, and session persistence.
  * Expo Router uses it as the unauthenticated root route.
- * Read aloud: “login screen.”
  */
 export default function LoginScreen() {
   const { completeSignIn } = useAuth();
@@ -90,7 +91,6 @@ export default function LoginScreen() {
   /**
    * Moves keyboard focus to the field named by a validation result.
    * handleLogin uses it after local validation fails.
-   * Read aloud: “focus invalid field.”
    */
   function focusInvalidField(field) {
     const inputRef = field === 'email' ? emailInputRef : passwordInputRef;
@@ -100,7 +100,6 @@ export default function LoginScreen() {
   /**
    * Runs one complete login attempt while preventing duplicate or post-unmount updates.
    * The form button and password submit action both call this handler.
-   * Read aloud: “handle login.”
    */
   async function handleLogin() {
     // The ref closes the small gap before React applies the submitting state.
@@ -127,7 +126,7 @@ export default function LoginScreen() {
     activeRequestRef.current = requestController;
 
     try {
-      const session = await authenticateCustomer({
+      const session = await authenticateUser({
         email: normalizedEmail,
         password,
         signal: requestController.signal,

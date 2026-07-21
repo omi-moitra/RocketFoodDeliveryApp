@@ -149,8 +149,6 @@ vite.config.ts.timestamp-*
 
 .omi
 
-client/node_modules
-
 .claude
 
 # Operating system files

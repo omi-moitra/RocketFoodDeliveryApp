@@ -24,7 +24,6 @@ const USD_FORMATTER = new Intl.NumberFormat('en-US', {
  * A value outside the whole-dollar contract returns a visible placeholder instead of
  * throwing, because this function runs inside render paths where an exception would
  * take down the whole screen rather than one price cell.
- * Read aloud: “format product cost.”
  * @param {number} cost Whole-dollar integer from the current seeded API contract.
  * @returns {string} A value such as `$9.00`, or `—` for an out-of-contract value.
  */

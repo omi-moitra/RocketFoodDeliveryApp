@@ -19,7 +19,6 @@ const RESTAURANT_IMAGES = Object.freeze([
 /**
  * Returns the same bundled image whenever the same positive restaurant ID is supplied.
  * RestaurantCard uses it so list filtering never changes a restaurant's visual identity.
- * Read aloud: “get restaurant image.”
  * @param {number} restaurantId Public restaurant identifier returned by the API.
  * @returns {import('react-native').ImageSourcePropType} Bundled image source for a card.
  */

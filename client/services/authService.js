@@ -1,14 +1,18 @@
 /**
  * File: authService.js
- * Purpose: Authenticates customer credentials and maps the backend session response.
- * Contents: login messages, response validation, customer authentication request.
+ * Purpose: Authenticates credentials and maps the role-capable backend session response.
+ * Contents:
+ * 1. login messages
+ * 2. identifier validation
+ * 3. role-aware authentication request
  */
 
 import { ApiRequestError, requestJson } from './apiClient';
+import { isPositiveSafeInteger } from '../utils/validation';
 
 // Screens receive stable, user-safe messages instead of backend or network implementation details.
 export const LOGIN_ERROR_MESSAGES = Object.freeze({
-  accountAccess: 'This account cannot access the customer application.',
+  accountAccess: 'This account is not set up for the customer or courier app.',
   credentials: 'The email or password is incorrect. Please try again.',
   requestValidation: 'Please check your email and password, then try again.',
   response: 'The login service returned an unexpected response. Please try again.',
@@ -17,23 +21,26 @@ export const LOGIN_ERROR_MESSAGES = Object.freeze({
 
 /**
  * Accepts only positive whole-number identifiers returned as numbers or numeric strings.
- * authenticateCustomer uses it before trusting backend user/customer IDs.
- * Read aloud: “is usable identifier.”
+ * authenticateUser uses it before trusting backend user/customer/courier IDs.
  */
 function isUsableIdentifier(value) {
   if (typeof value === 'number') {
-    return Number.isInteger(value) && value > 0;
+    return isPositiveSafeInteger(value);
   }
 
-  return typeof value === 'string' && /^\d+$/.test(value.trim()) && Number(value) > 0;
+  return (
+    typeof value === 'string' &&
+    /^\d+$/.test(value.trim()) &&
+    isPositiveSafeInteger(Number(value.trim()))
+  );
 }
 
 /**
- * Submits credentials and maps a successful backend payload into the client session shape.
- * LoginScreen calls it before AuthProvider persists the authenticated customer.
- * Read aloud: “authenticate customer.”
+ * Submits credentials and maps a successful payload into a role-capable client session shape.
+ * A response with at least one supported role ID is accepted; neither role is rejected safely.
+ * LoginScreen calls it before AuthProvider persists the authenticated session.
  */
-export async function authenticateCustomer({ email, password, signal }) {
+export async function authenticateUser({ email, password, signal }) {
   const { data, response } = await requestJson('/api/auth', {
     body: JSON.stringify({ email, password }),
     headers: {
@@ -63,17 +70,28 @@ export async function authenticateCustomer({ email, password, signal }) {
     throw new ApiRequestError('response', LOGIN_ERROR_MESSAGES.response, response.status);
   }
 
-  if (!isUsableIdentifier(data.customer_id)) {
-    throw new ApiRequestError('account-access', LOGIN_ERROR_MESSAGES.accountAccess, response.status);
-  }
-
   if (typeof data.accessToken !== 'string' || !data.accessToken.trim()) {
     throw new ApiRequestError('response', LOGIN_ERROR_MESSAGES.response, response.status);
   }
 
+  // The user ID is always returned for a successful login and anchors the persisted session.
+  if (!isUsableIdentifier(data.user_id)) {
+    throw new ApiRequestError('response', LOGIN_ERROR_MESSAGES.response, response.status);
+  }
+
+  // Both role IDs are optional; the backend omits the role an account does not have.
+  const customerId = isUsableIdentifier(data.customer_id) ? data.customer_id : null;
+  const courierId = isUsableIdentifier(data.courier_id) ? data.courier_id : null;
+
+  // An account with neither supported role cannot enter either app; reject it safely.
+  if (!customerId && !courierId) {
+    throw new ApiRequestError('account-access', LOGIN_ERROR_MESSAGES.accountAccess, response.status);
+  }
+
   return {
     accessToken: data.accessToken.trim(),
-    customerId: data.customer_id,
-    userId: isUsableIdentifier(data.user_id) ? data.user_id : null,
+    courierId,
+    customerId,
+    userId: data.user_id,
   };
 }

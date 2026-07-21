@@ -65,7 +65,6 @@ const LIST_MESSAGES = Object.freeze({
 /**
  * Loads and filters nearby restaurants, renders every result state, and opens selected menus.
  * Expo Router uses it as the authenticated restaurant stack's initial screen.
- * Read aloud: “restaurant list screen.”
  */
 export default function RestaurantListScreen() {
   const router = useRouter();
@@ -99,7 +98,6 @@ export default function RestaurantListScreen() {
     /**
      * Fetches one filter combination and commits it only if it is still the newest request.
      * The data-loading effect calls it whenever filters or retry state change.
-     * Read aloud: “load restaurants.”
      */
     async function loadRestaurants() {
       try {
@@ -161,7 +159,6 @@ export default function RestaurantListScreen() {
   /**
    * Advances a request-only sequence value so the loading effect runs again.
    * Error and unfiltered-empty states expose it through their Retry buttons.
-   * Read aloud: “handle retry.”
    */
   function handleRetry() {
     setRetrySequence((currentSequence) => currentSequence + 1);
@@ -170,7 +167,6 @@ export default function RestaurantListScreen() {
   /**
    * Returns both controlled filters to the deliberate unselected state.
    * The list header and filtered-empty state call it.
-   * Read aloud: “handle clear filters.”
    */
   function handleClearFilters() {
     setRating(null);
@@ -180,7 +176,6 @@ export default function RestaurantListScreen() {
   /**
    * Opens one valid restaurant menu while absorbing rapid duplicate image taps.
    * RestaurantCard supplies the API restaurant ID to this handler.
-   * Read aloud: “handle restaurant press.”
    */
   function handleRestaurantPress(restaurantId) {
     if (!Number.isInteger(restaurantId) || restaurantId <= 0 || navigationLockRef.current) {
@@ -204,7 +199,6 @@ export default function RestaurantListScreen() {
   /**
    * Wraps one restaurant card in the two-column spacing container required by FlatList.
    * FlatList calls it once for every normalized restaurant item.
-   * Read aloud: “render restaurant.”
    */
   function renderRestaurant({ item }) {
     return (
@@ -256,7 +250,6 @@ export default function RestaurantListScreen() {
   /**
    * Selects the loading, empty, or error body shown when no restaurant cards are rendered.
    * FlatList uses it as ListEmptyComponent.
-   * Read aloud: “render result state.”
    */
   function renderResultState() {
     if (requestStatus === 'loading' || requestStatus === 'idle') {

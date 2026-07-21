@@ -2,9 +2,8 @@
  * File: OrderHistoryModal.js
  * Purpose: Presents one selected order's full details from the already-loaded history object.
  * Contents:
- * 1. Order-date formatting helper
- * 2. Order history detail modal component
- * 3. Modal styles
+ * 1. Order history detail modal component
+ * 2. Modal styles
  */
 
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -12,44 +11,13 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import AppIcon from './AppIcon';
 import { formatProductCost } from '../constants/currency';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
-
-const ORDER_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
-
-/**
- * Formats the normalized ISO `createdOn` value as one documented human-readable date.
- * The wireframe leaves its sample date value blank, so `July 15, 2026` is the recorded
- * project-wide format decision; an unparseable value returns a safe blank so the header can
- * never show `Invalid Date`, `NaN`, or a raw ISO string.
- * Read aloud: “format order date.”
- * @param {string} createdOn ISO date-time string from the normalized order object.
- * @returns {string} A value such as `July 15, 2026`, or an empty string when unparseable.
- */
-function formatOrderDate(createdOn) {
-  if (typeof createdOn !== 'string' || !createdOn.trim()) {
-    return '';
-  }
-
-  // The backend sends microsecond fractions (…T13:01:38.705432); the standard ISO profile stops
-  // at milliseconds, so longer fractions are trimmed before parsing to stay engine-portable.
-  const parsedDate = new Date(createdOn.trim().replace(/(\.\d{3})\d+/, '$1'));
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return '';
-  }
-
-  return ORDER_DATE_FORMATTER.format(parsedDate);
-}
+import { formatOrderDate } from '../utils/orderFormatting';
 
 /**
  * Displays the detail modal for the order object selected on the Order History page.
  * The host page owns `visible` and the selected order; this component is presentation-only and
  * renders everything from that already-validated list object — the backend provides no
  * per-order detail endpoint, so no request or storage read ever happens here.
- * Read aloud: “order history modal.”
  */
 export default function OrderHistoryModal({ onClose, order, visible }) {
   const orderDate = order ? formatOrderDate(order.createdOn) : '';

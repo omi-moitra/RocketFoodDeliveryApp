@@ -21,6 +21,10 @@ public class ApiOrderDTO {
     Integer courier_id;
     String courier_name;
     String status;
+    // Exposed so a client can read the current rating and echo it back through the broad order
+    // update (PUT /api/orders/{id}), which overwrites this field. Without it a courier status
+    // change would have to send null and erase the rating. Nullable: an order may have no rating.
+    Integer restaurant_rating;
     List <ApiProductForOrderApiDTO> products;
     long total_cost;
     LocalDateTime created_on;

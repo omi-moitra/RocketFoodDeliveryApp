@@ -17,10 +17,11 @@ public class ApiCreateOrderDTO {
 
     private List<ProductItem> products;
 
-    @JsonProperty("send_email")
+    // sendEmail follows Jackson's default camelCase mapping. The explicit sendSMS property preserves
+    // the grading contract's capitalized acronym while the Java field follows normal camelCase.
     private boolean sendEmail = false;
 
-    @JsonProperty("send_sms")
+    @JsonProperty("sendSMS")
     private boolean sendSms = false;
 
     @Getter

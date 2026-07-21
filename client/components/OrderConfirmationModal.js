@@ -15,6 +15,14 @@ import { formatProductCost } from '../constants/currency';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { createOrder } from '../services/orderService';
+import { calculateLineTotal, calculateOrderTotal } from '../utils/orderTotals';
+
+const SUBMISSION_STATE = Object.freeze({
+  ERROR: 'error',
+  IDLE: 'idle',
+  PROCESSING: 'processing',
+  SUCCESS: 'success',
+});
 
 // The wireframe result copy is graded verbatim, so it lives here as fixed strings.
 const RESULT_MESSAGES = Object.freeze({
@@ -25,10 +33,35 @@ const RESULT_MESSAGES = Object.freeze({
 });
 
 /**
+ * Renders one accessible opt-in checkbox row built from primitives (no checkbox dependency).
+ * The checked state is shown by a filled box plus a check mark, so it is distinct without relying
+ * on color alone; the whole row is one touch target that toggles exactly one choice.
+ */
+function NotificationCheckbox({ accessibilityLabel, checked, disabled, label, onToggle }) {
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked, disabled }}
+      disabled={disabled}
+      onPress={onToggle}
+      style={({ pressed }) => [
+        styles.checkboxRow,
+        pressed && !disabled && styles.checkboxRowPressed,
+      ]}
+    >
+      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+        {checked ? <AppIcon color={COLORS.white} name="check" size={16} /> : null}
+      </View>
+      <Text style={styles.checkboxLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
+/**
  * Shows the accurate positive-quantity selection and owns one order submission at a time.
  * RestaurantMenuScreen controls `visible` and the selection; the modal reports a confirmed
  * order back through `onOrderCreated` when the customer closes the success state.
- * Read aloud: “order confirmation modal.”
  */
 export default function OrderConfirmationModal({
   onClose,
@@ -42,7 +75,13 @@ export default function OrderConfirmationModal({
   // One explicit value models the request lifecycle (idle → processing → success, or error →
   // processing on retry). Independent booleans are avoided because they can express impossible
   // combinations such as “processing and success at the same time”.
-  const [submissionState, setSubmissionState] = useState('idle');
+  const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.IDLE);
+
+  // Independent notification opt-ins, camelCase per the graded terminology. Both default to false
+  // for a fresh order and reset only when a confirmed order is consumed (see handleClose), so a
+  // close-before-success preserves the draft choices.
+  const [sendSMS, setSendSMS] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
 
   // submitLockRef blocks a second request synchronously, before React re-renders the disabled
   // button, so rapid double taps cannot race the state update. abortControllerRef lets close and
@@ -54,7 +93,7 @@ export default function OrderConfirmationModal({
     if (visible) {
       // Every open starts a fresh idle submission built from the menu's current selection.
       submitLockRef.current = false;
-      setSubmissionState('idle');
+      setSubmissionState(SUBMISSION_STATE.IDLE);
       return undefined;
     }
 
@@ -78,32 +117,41 @@ export default function OrderConfirmationModal({
   /**
    * Validates preconditions, submits exactly one create-order request, and resolves the state.
    * The Confirm Order button calls it in the idle and error states.
-   * Read aloud: “handle confirm order.”
    */
   async function handleConfirmOrder() {
     // The guard lives in the handler, not only in the disabled prop, so a stale enabled button
     // or a double-fired press event can never start a second request.
     if (
       submitLockRef.current ||
-      submissionState === 'processing' ||
-      submissionState === 'success'
+      submissionState === SUBMISSION_STATE.PROCESSING ||
+      submissionState === SUBMISSION_STATE.SUCCESS
     ) {
       return;
     }
 
     const restaurantId = Number(restaurant?.id);
 
-    // A failed precondition (no restaurant ID or an empty selection) shows the failure state
-    // without making a network request; the session itself is validated inside the service.
-    if (!Number.isSafeInteger(restaurantId) || restaurantId <= 0 || selectedProducts.length === 0) {
-      setSubmissionState('error');
+    // A failed precondition (bad restaurant ID, empty selection, or unsafe calculated total) shows
+    // the failure state without a request; the session itself is validated inside the service.
+    if (
+      !Number.isSafeInteger(restaurantId) ||
+      restaurantId <= 0 ||
+      selectedProducts.length === 0 ||
+      totalCost === null
+    ) {
+      setSubmissionState(SUBMISSION_STATE.ERROR);
       return;
     }
+
+    // Freeze the notification choices for this attempt so a race cannot desync UI and request; the
+    // checkboxes are also disabled while processing.
+    const notifyBySMS = sendSMS;
+    const notifyByEmail = sendEmail;
 
     submitLockRef.current = true;
     const requestController = new AbortController();
     abortControllerRef.current = requestController;
-    setSubmissionState('processing');
+    setSubmissionState(SUBMISSION_STATE.PROCESSING);
 
     try {
       // customer_id and the bearer token are read from stored session data inside the service,
@@ -111,6 +159,8 @@ export default function OrderConfirmationModal({
       await createOrder({
         restaurantId,
         selectedProducts,
+        sendEmail: notifyByEmail,
+        sendSMS: notifyBySMS,
         signal: requestController.signal,
       });
 
@@ -119,7 +169,7 @@ export default function OrderConfirmationModal({
         return;
       }
 
-      setSubmissionState('success');
+      setSubmissionState(SUBMISSION_STATE.SUCCESS);
     } catch (error) {
       if (requestController.signal.aborted || error?.code === 'aborted') {
         return;
@@ -132,8 +182,14 @@ export default function OrderConfirmationModal({
         return;
       }
 
-      setSubmissionState('error');
+      setSubmissionState(SUBMISSION_STATE.ERROR);
     } finally {
+      // Clear the settled controller only if it is still the active one, matching the Login/Account
+      // request owners so closing a settled modal never aborts a stale controller.
+      if (abortControllerRef.current === requestController) {
+        abortControllerRef.current = null;
+      }
+
       submitLockRef.current = false;
     }
   }
@@ -142,28 +198,27 @@ export default function OrderConfirmationModal({
    * Applies the per-state close contract shared by the X control and the Android back action.
    * Closing from success notifies the host so the menu resets quantities; every other state
    * preserves the menu selection, and a pending request is aborted best-effort.
-   * Read aloud: “handle close.”
    */
   function handleClose() {
-    const wasOrderCreated = submissionState === 'success';
+    const wasOrderCreated = submissionState === SUBMISSION_STATE.SUCCESS;
 
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
 
     // The quantity reset is a host responsibility; this callback only reports the outcome so the
-    // consumed selection cannot remain orderable by an accidental second confirmation.
+    // consumed selection cannot remain orderable by an accidental second confirmation. The
+    // notification choices reset with the consumed order so the next fresh order starts false/false.
     if (wasOrderCreated) {
       onOrderCreated?.();
+      setSendSMS(false);
+      setSendEmail(false);
     }
 
     onClose();
   }
 
-  const totalCost = selectedProducts.reduce(
-    (total, product) => total + product.cost * product.quantity,
-    0,
-  );
-  const isProcessing = submissionState === 'processing';
+  const totalCost = calculateOrderTotal(selectedProducts);
+  const isProcessing = submissionState === SUBMISSION_STATE.PROCESSING;
 
   return (
     <Modal
@@ -200,30 +255,58 @@ export default function OrderConfirmationModal({
 
           {/* Only the product rows scroll so a long selection never hides the total or action. */}
           <ScrollView contentContainerStyle={styles.summaryContent} style={styles.summaryScroll}>
-            {selectedProducts.map((product) => (
-              <View
-                accessible
-                accessibilityLabel={`${product.quantity} of ${product.name}, ${formatProductCost(
-                  product.cost * product.quantity,
-                )}`}
-                key={product.id}
-                style={styles.summaryRow}
-              >
-                <Text style={[styles.summaryText, styles.productName]}>{product.name}</Text>
-                <Text style={styles.summaryText}>x{product.quantity}</Text>
-                <Text style={styles.summaryText}>
-                  {formatProductCost(product.cost * product.quantity)}
-                </Text>
-              </View>
-            ))}
+            {selectedProducts.map((product) => {
+              const lineTotal = calculateLineTotal(product.cost, product.quantity);
+
+              return (
+                <View
+                  accessible
+                  accessibilityLabel={`${product.quantity} of ${product.name}, ${formatProductCost(
+                    lineTotal,
+                  )}`}
+                  key={product.id}
+                  style={styles.summaryRow}
+                >
+                  <Text style={[styles.summaryText, styles.productName]}>{product.name}</Text>
+                  <Text style={styles.summaryText}>x{product.quantity}</Text>
+                  <Text style={styles.summaryText}>{formatProductCost(lineTotal)}</Text>
+                </View>
+              );
+            })}
           </ScrollView>
 
           <View style={styles.footer}>
+            {/* Notification opt-ins sit between the summary and the total so focus order is
+                summary → choices → total → confirm. Hidden once the order is consumed on success. */}
+            {submissionState !== SUBMISSION_STATE.SUCCESS ? (
+              <View style={styles.notifications}>
+                <Text style={styles.notificationsTitle}>
+                  Would you like to receive your order confirmation by email and/or text?
+                </Text>
+                <View style={styles.notificationChoices}>
+                  <NotificationCheckbox
+                    accessibilityLabel="Receive order confirmation by email"
+                    checked={sendEmail}
+                    disabled={isProcessing}
+                    label="By Email"
+                    onToggle={() => setSendEmail((current) => !current)}
+                  />
+                  <NotificationCheckbox
+                    accessibilityLabel="Receive order confirmation by SMS"
+                    checked={sendSMS}
+                    disabled={isProcessing}
+                    label="By Phone (SMS)"
+                    onToggle={() => setSendSMS((current) => !current)}
+                  />
+                </View>
+              </View>
+            ) : null}
+
             <View style={styles.totalRow}>
               <Text style={styles.totalText}>TOTAL: {formatProductCost(totalCost)}</Text>
             </View>
 
-            {submissionState === 'success' ? (
+            {submissionState === SUBMISSION_STATE.SUCCESS ? (
               // Success removes the action button entirely; closing is the only interaction left.
               <View
                 accessibilityLiveRegion="polite"
@@ -252,7 +335,7 @@ export default function OrderConfirmationModal({
                     {isProcessing ? 'Processing Order…' : 'Confirm Order'}
                   </Text>
                 </Pressable>
-                {submissionState === 'error' ? (
+                {submissionState === SUBMISSION_STATE.ERROR ? (
                   <View
                     accessibilityLiveRegion="assertive"
                     accessibilityRole="alert"
@@ -348,6 +431,52 @@ const styles = StyleSheet.create({
   footer: {
     padding: SPACING.md,
     paddingTop: 0,
+  },
+  notifications: {
+    marginTop: SPACING.md,
+  },
+  notificationsTitle: {
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 15,
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
+  },
+  notificationChoices: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.md,
+    justifyContent: 'center',
+  },
+  checkboxRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexGrow: 1,
+    gap: SPACING.sm,
+    justifyContent: 'center',
+    minWidth: 132,
+    minHeight: LAYOUT.minimumTouchTarget,
+  },
+  checkboxRowPressed: {
+    opacity: 0.7,
+  },
+  checkbox: {
+    alignItems: 'center',
+    borderColor: COLORS.charcoal,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    height: 26,
+    justifyContent: 'center',
+    width: 26,
+  },
+  checkboxChecked: {
+    backgroundColor: COLORS.orangeRed,
+    borderColor: COLORS.orangeRed,
+  },
+  checkboxLabel: {
+    color: COLORS.charcoal,
+    fontFamily: FONT_FAMILIES.body,
+    fontSize: 17,
   },
   totalRow: {
     alignItems: 'flex-end',

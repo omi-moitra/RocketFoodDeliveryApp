@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 # Rocket Food Delivery Mobile App
 
 ## Table of Contents
@@ -10,17 +12,22 @@
 - [Installation / Setup](#installation--setup)
 - [Environment Variables](#environment-variables)
 - [API Documentation](#api-documentation)
+- [Backend Compatibility and Minimum-Change Policy](#backend-compatibility-and-minimum-change-policy)
 - [Examples from This Project](#examples-from-this-project)
 - [Seeded Development Data](#seeded-development-data)
 - [Verification](#verification)
 - [Related Documentation](#related-documentation)
 - [Author / Contributors](#author--contributors)
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Project Description
 
 Rocket Food Delivery is a cross-platform customer app for browsing restaurants, filtering by rating and price, choosing menu quantities, placing an order, and reviewing order history. It gives customers one mobile workflow while the existing Java API manages authentication, restaurant data, products, and orders.
 
 This repository is the Module 13 mobile-development project. It contains the Expo/React Native client, the existing Spring Boot backend used by the client, project specifications, research, concept documentation, and an importable Postman collection.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Features
 
@@ -32,6 +39,8 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 - Customer order history and order-detail modal, including pending orders without a courier
 - Shared loading, empty, error, and session-expiry handling
 - iOS, Android, simulator, and physical-device development through Expo and ngrok
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Tech Stack
 
@@ -49,6 +58,8 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 
 Expo SDK 54 is intentional. A coach confirmed that the repository's current `expo ~54.0.34` baseline is acceptable for this submission.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Project Structure
 
 ```text
@@ -59,10 +70,11 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   ├── components/             # Reusable interface components and modals
 │   ├── constants/              # Theme, assets, labels, and currency rules
 │   ├── contexts/               # Authentication/session context
+│   ├── docs/                   # Supplied M13/M14 design references
 │   ├── images/restaurants/     # Six bundled restaurant images
 │   ├── services/               # API requests and response validation
 │   ├── storage/                # AsyncStorage session boundary
-│   ├── utils/                  # Menu, label, and validation helpers
+│   ├── utils/                  # Pure helpers and focused client unit tests
 │   ├── .env.example            # Safe client environment template
 │   ├── app.json                # Expo application configuration
 │   ├── package.json            # Client scripts and dependencies
@@ -74,11 +86,11 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   └── pom.xml                 # Java and Spring dependencies
 ├── scripts/ngrok-phone.sh           # Physical-phone API tunnel helper
 ├── ai/                              # Project rules and feature specifications
-├── support_materials_13/            # Supplied wireframes, palette, and images
+├── Concepts/M13/                    # Module 13 concepts and code references
+├── docVault/                        # Research and implementation audit documents
 ├── LeetCode-Challenges/              # Required SQL challenge solution screenshots
 ├── PostmanCollection.json           # Importable mobile API request collection
-├── CONCEPTS.md                      # Three project concepts and code references
-└── RESEARCH.md                      # Required mobile-development research
+└── README.md                        # Setup, API, verification, and project overview
 ```
 
 The mobile route hierarchy is:
@@ -86,13 +98,20 @@ The mobile route hierarchy is:
 ```text
 Root Stack
 ├── Login
-└── Customer Tabs
-    ├── Restaurants
-    │   └── Restaurant Stack
-    │       ├── Restaurant List
-    │       └── Restaurant Menu
-    └── Order History
+├── Account Selection
+├── Customer Tabs
+│   ├── Restaurants
+│   │   └── Restaurant Stack
+│   │       ├── Restaurant List
+│   │       └── Restaurant Menu
+│   ├── Order History
+│   └── Account
+└── Courier Tabs
+    ├── Order Delivery
+    └── Account
 ```
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Prerequisites
 
@@ -102,6 +121,8 @@ Root Stack
 - MySQL 8
 - Expo Go for physical-device testing, or an iOS/Android simulator
 - ngrok and a free ngrok account only when testing the API from a physical phone
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Installation / Setup
 
@@ -190,6 +211,8 @@ From the repository root, run:
 
 The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL to `client/.env`, and restores the previous file when stopped with `Ctrl+C`. Follow its prompt to start Expo. If the phone and computer cannot connect directly for Expo's development traffic, use `npx expo start -c --tunnel` from `client/`.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Environment Variables
 
 | Setting | Location | Required | Purpose |
@@ -203,6 +226,8 @@ The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL
 
 `EXPO_PUBLIC_*` values are embedded in the client bundle and must never contain secrets. Backend notification settings for Twilio and Notify.EU are optional and are not needed for the Module 13 customer flow because order requests send both notification flags as `false`. Those optional provider settings are therefore not part of the required local setup above.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## API Documentation
 
 The client reads the configured base URL, adds the path below, and expects JSON. Except for login, `/api/**` routes require `Authorization: Bearer <accessToken>`.
@@ -215,6 +240,75 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
 | `POST` | `/api/orders` | Create an order with restaurant, customer, and product quantities |
 | `GET` | `/api/orders?type=customer&id={id}` | Load the authenticated customer's order history |
+| `GET` | `/api/orders/pending` | Load all pending orders for courier acceptance |
+| `GET` | `/api/orders?type=courier&id={id}` | Load the authenticated courier's assigned orders |
+| `PUT` | `/api/orders/{id}` | Update an order; courier progression echoes `restaurant_id`, `customer_id`, and the current `restaurant_rating`, changing only `order_status_id` (`2`\|`3`) |
+| `PUT` | `/api/order/{id}/courier` | Assign a courier to an order; body `{ "courier_id": {id} }` |
+| `GET` | `/api/account/{userId}?type={role}` | Load the account (primary email + nested role details); `type` is accepted and ignored, client selects the active role |
+| `POST` | `/api/account/{userId}` | Update the active role's email/phone; body `{ "account_type", "account_email", "account_phone" }` (primary email never changed) |
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
+## Backend Compatibility and Minimum-Change Policy
+
+Module 14 uses the existing Spring Boot API by default. Frontend services should adapt verified backend request and response shapes into stable client models whenever that can satisfy the feature safely.
+
+A backend adjustment is allowed only when repository/live evidence proves that a required frontend behavior cannot be implemented through an adapter without data loss, guessed values, or a missing operation. The adjustment must:
+
+- Change the smallest possible controller/DTO/service surface and preserve existing API compatibility.
+- Avoid unrelated cleanup, renaming, schema changes, broad refactors, or speculative redesign.
+- Include focused backend tests and updated Postman requests when API-facing.
+- Be integrated through the frontend service boundary rather than directly from screen code.
+- Be documented in `ai/ai-spec.md`, the relevant feature specification, this README, and the private implementation log before it is considered complete.
+
+Before editing backend code, Claude must present the viable minimum-change options with their exact API/file impact, benefits, risks, compatibility/grading implications, and verification cost. The user selects the option; Claude must not make that product/contract decision independently.
+
+Each documented backend adjustment must identify the source discrepancy, why a frontend-only adapter was unsafe or insufficient, the exact method/path/body/response, changed server and client files, compatibility impact, tests, Postman/database evidence, and any remaining manual verification.
+
+### Module 14 backend adjustment record
+
+| Status | Feature | Verified discrepancy | Minimum authorized resolution |
+|---|---|---|---|
+| Implemented | Courier Delivery status progression | The broad `PUT /api/orders/{id}` requires `restaurant_rating`, but `ApiOrderDTO` (the order response) did **not** return that value, and `OrderService.updateOrderFromDTO` overwrites the stored rating with whatever is sent. A courier client could not read the current rating to round-trip it and would erase it by sending `null`. | Add `restaurant_rating` to the response DTO `ApiOrderDTO` (one field + one mapping line) so the client can read the current rating and echo it back through the **existing** broad `PUT /api/orders/{id}`. No new endpoint, DTO, or service method. |
+| Implemented (user-selected) | Account Details update | The grading sheet labels the account update as **POST `/api/account/{id}`**; the backend implements **PUT `/api/account/{id}?type=`**. A frontend-only PUT works but does not match the official verb/shape. | Add a **POST `/api/account/{id}`** endpoint using the official body shape `{ account_type, account_email, account_phone }` (existing scaffolded `ApiPostAccountDTO`), delegating to the same `updateAccount` service. The existing PUT is retained unchanged. GET stays frontend-only (the official `?type=` query is accepted and ignored). |
+| Implemented (user-selected, revised) | Order Confirmation notifications | The grading sheet requires **`sendSMS`/`sendEmail`**, while the original DTO exposed **`send_sms`/`send_email`**. | Make the official camelCase spellings canonical: Jackson derives `sendEmail` from the Java field and `@JsonProperty("sendSMS")` preserves the grading sheet's capitalized acronym for `sendSms`. Legacy snake-case notification keys are intentionally no longer accepted. |
+
+**Implemented change (canonical camelCase notification contract — user-selected revision)**
+
+- **Server change:** `dtos/order/ApiCreateOrderDTO.java` — `sendEmail` uses Jackson's default Java property name; `sendSms` carries `@JsonProperty("sendSMS")`. The previous snake-case `@JsonProperty` and camelCase `@JsonAlias` annotations were removed.
+- **Endpoint used:** the existing `POST /api/orders` (unchanged). The client sends the official camelCase `sendSMS`/`sendEmail` inside the one order-creation request; there is no separate notification request.
+- **Behavior:** request deserialization and DTO serialization both use `sendEmail` and `sendSMS`; both flags still default to `false` when absent.
+- **Why the earlier alias approach was revised:** aliases accepted the official input but kept snake case as the primary serialized contract. The revised mapping makes the grading-sheet names the API's actual canonical names instead of compatibility aliases.
+- **Compatibility impact:** callers using `send_email` or `send_sms` must migrate to camelCase. The database columns remain `send_email`/`send_sms`; this change affects only the HTTP JSON contract. No endpoint, schema, entity, service, or frontend change was required.
+- **Frontend integration:** UI state stays camelCase `sendSMS`/`sendEmail` in `OrderConfirmationModal`; `orderService.createOrder` transmits them with a strict `=== true` check so a non-boolean can never become an unintended opt-in. Both booleans travel in the order POST for all four combinations.
+- **Tests:** `order/ApiCreateOrderDTODeserializationTest` verifies camelCase input/output, ignored legacy snake-case input, and missing → false; `order/OrderApiControllerTest.testCreateOrder_AcceptsCamelCaseNotificationKeys` covers the controller request.
+- **Postman:** `PostmanCollection.json` has all four create-order combinations (neither, SMS only, email only, both) with camelCase keys.
+- **DBeaver / native:** persistence of both booleans and native checkbox interaction remain operator manual checks.
+
+**Implemented change (account POST endpoint — user-selected Option 3)**
+
+- **Server change:** `controller/api/UserApiController.java` — added `@PostMapping("/api/account/{id}")` taking `ApiPostAccountDTO { account_type, account_email, account_phone }`, validating `account_type` in `customer|courier|employee`, and delegating to the existing `userService.updateAccount(id, type, new ApiUpdateAccountDTO(email, phone))`. Wires the previously unused `ApiPostAccountDTO`. No service/schema/entity change.
+- **Endpoints:** `POST /api/account/{id}` (new, official body shape) and `PUT /api/account/{id}?type=` (retained, unchanged). `GET /api/account/{id}` is unchanged; the client sends the official `?type={role}` query, which the controller accepts and ignores.
+- **Response:** both update paths return `200 { message:"Success", data: ApiAccountDTO }` (primary email + nested role details); only the selected role's email/phone change. The primary user email is never modified.
+- **Why a frontend-only adapter was insufficient:** functionally the existing PUT is sufficient, but the user chose Option 3 to match the official POST verb and body shape for grading alignment. The change is additive and backward compatible.
+- **Compatibility impact:** additive only — a new POST mapping plus wiring an already-present DTO. PUT/GET and all other endpoints, entities, schema, security, and seeders are unchanged. `testUpdateOrder_Success` and the rest of the suite still pass.
+- **Frontend integration:** `client/services/accountService.js` builds `GET /api/account/{userId}?type={role}` and `POST /api/account/{userId}` with the official body; `client/components/AccountScreen.js` (shared by both role wrappers) owns the form/validation/save; screens never build request bodies.
+- **Tests:** `server/.../user/AccountApiControllerTest.java` (6 tests: GET success + ignored type query, GET 404, POST customer success + primary-email preserved, POST courier success, POST invalid type 400, POST 404). `./mvnw test` → **115 passed, 0 failures** (DB-verified against MySQL).
+- **DBeaver / native:** database before/after inspection for both role tables and on-device Account interaction remain manual checks for the operator with a running device.
+
+**Implemented change (DTO field addition)**
+
+- **Server change:** `dtos/order/ApiOrderDTO.java` — added nullable `Integer restaurant_rating`; `service/OrderService.java#mapOrderToDTO` — `dto.setRestaurant_rating(order.getRestaurantRating())`. That is the entire production change.
+- **Endpoint used:** the existing `PUT /api/orders/{id}` (unchanged). Courier progression sends `{ restaurant_id, customer_id, order_status_id: 2|3, restaurant_rating: <current value> }`, changing only the status. Courier is not in this body, so an existing assignment is preserved.
+- **Response:** `ApiOrderDTO` now includes `restaurant_rating` (nullable). All other fields unchanged.
+- **Why a frontend-only adapter was insufficient:** the response never exposed `restaurant_rating`, so no adapter could rebuild the required broad-update body without guessing it; the broad update then overwrites it, causing silent data loss. Exposing the field in the response is the smallest change that removes the guess.
+- **Compatibility impact:** additive only. Adding a field to a response breaks no existing consumer; the broad update, creation, retrieval, assignment, and rating endpoints, and all entities/schema/security/seeders are unchanged.
+- **Frontend integration:** `client/services/orderService.js` normalizes `restaurantId`, `customerId`, and `restaurantRating`, then `acceptDelivery` (status 2 via broad update, then assign courier), `markDelivered` (status 3 via broad update), and `assignActiveCourier` (partial-acceptance recovery) build the body; screens never build it.
+- **Tests:** `server/.../order/OrderApiControllerTest.java` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`. (Backend test run pending on the operator's machine; not re-run in the latest pass.)
+- **Postman:** `PostmanCollection.json` includes pending, courier-scoped, broad-update→in progress, courier assignment, and broad-update→delivered requests.
+- **DBeaver / native:** database before/after inspection and on-device courier interaction remain manual checks for the operator with a running device.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Examples from This Project
 
@@ -249,7 +343,7 @@ The screen keeps the selected filter values in component state, shows a delibera
 
 ### Create an order
 
-After the customer chooses menu quantities and confirms the modal, the client sends the backend's snake-case request contract:
+After the customer chooses menu quantities and confirms the modal, the client sends the backend's mixed contract: existing order identifiers remain snake case, while the grading-sheet notification fields are canonical camelCase:
 
 ```json
 {
@@ -261,12 +355,14 @@ After the customer chooses menu quantities and confirms the modal, the client se
       "quantity": 2
     }
   ],
-  "send_email": false,
-  "send_sms": false
+  "sendEmail": false,
+  "sendSMS": false
 }
 ```
 
 The actual IDs come from the authenticated customer and loaded restaurant/menu data. The order modal accepts only a valid HTTP `201` Success response before displaying its success state. Returning to Order History refreshes the list and lets the customer open the persisted order details.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Seeded Development Data
 
@@ -301,6 +397,8 @@ The request flow is: screen/component → client service → shared API client �
 
 Import [PostmanCollection.json](PostmanCollection.json) into Postman for the preconfigured mobile requests. Replace its safe collection variables with local test values as needed; never commit a live token. The exported collection is included, but a final unchanged collection run is tracked separately from this README.
 
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
+
 ## Verification
 
 Backend tests:
@@ -318,14 +416,18 @@ npx expo-doctor
 npm install
 ```
 
-The completed manual QA covers the customer journey on iOS and Android: login and persistence, navigation, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, keyboard behavior, and restart behavior.
+Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL, and login plus the initial authenticated app view succeeded. The complete customer/courier journeys, Android, persistence/restart, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, and keyboard behavior remain pending manual verification.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Related documentation
 
-- [CONCEPTS.md](CONCEPTS.md) explains mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
-- [RESEARCH.md](RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
+- [Module 13 concepts](Concepts/M13/CONCEPTS.md) explain mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
+- [Research](docVault/RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
 - [ai/ai-spec.md](ai/ai-spec.md) records repository-wide implementation rules and decisions.
 - [`ai/features/`](ai/features/) contains the feature-level behavior contracts.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Author / Contributors
 
@@ -335,3 +437,5 @@ Created by **Omoitra** for CodeBoxx Full-Stack Development Module 13.
 - [Project repository](https://github.com/omoitra-droid/M13-rocketFoodDelivery)
 
 No additional contributors are listed for this student project.
+
+<p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
