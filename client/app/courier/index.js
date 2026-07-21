@@ -35,6 +35,19 @@ const ORDER_DELIVERY_MESSAGES = Object.freeze({
   response: 'Deliveries could not be loaded. Please try again.',
 });
 
+const MUTATION_PHASE = Object.freeze({
+  ERROR: 'error',
+  PARTIAL: 'partial',
+  UPDATING: 'updating',
+});
+
+const LIST_STATUS = Object.freeze({
+  EMPTY: 'empty',
+  ERROR: 'error',
+  LOADING: 'loading',
+  RESOLVING: 'resolving',
+});
+
 /**
  * Converts a mutation failure into one user-safe message without exposing raw server details.
  * Read aloud: “mutation error message.”
@@ -76,7 +89,7 @@ export default function OrderDeliveryScreen() {
 
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   // activeMutation tracks the one in-flight/failed per-order status change: { orderId, phase, message }
-  // where phase is 'updating' | 'partial' | 'error'. Only one mutation runs at a time.
+  // where phase is one of MUTATION_PHASE. Only one mutation runs at a time.
   const [activeMutation, setActiveMutation] = useState(null);
 
   // The mutation refs lock out concurrent status changes and cancel an in-flight one on unmount.
@@ -123,7 +136,7 @@ export default function OrderDeliveryScreen() {
     mutationLockRef.current = true;
     const requestController = new AbortController();
     mutationControllerRef.current = requestController;
-    setActiveMutation({ orderId, phase: 'updating' });
+    setActiveMutation({ orderId, phase: MUTATION_PHASE.UPDATING });
 
     try {
       const updatedDelivery = await runner(requestController.signal);
@@ -146,11 +159,15 @@ export default function OrderDeliveryScreen() {
       // A partial acceptance persisted status 2 but not the assignment. Keep the row visible with a
       // retry-assignment action instead of refreshing it away or claiming acceptance succeeded.
       if (error?.code === 'partial') {
-        setActiveMutation({ orderId, phase: 'partial' });
+        setActiveMutation({ orderId, phase: MUTATION_PHASE.PARTIAL });
         return;
       }
 
-      setActiveMutation({ message: mutationErrorMessage(error), orderId, phase: 'error' });
+      setActiveMutation({
+        message: mutationErrorMessage(error),
+        orderId,
+        phase: MUTATION_PHASE.ERROR,
+      });
     } finally {
       if (mutationControllerRef.current === requestController) {
         mutationControllerRef.current = null;
@@ -218,18 +235,18 @@ export default function OrderDeliveryScreen() {
   }
 
   function renderResultState() {
-    if (requestStatus === 'resolving' || requestStatus === 'loading') {
+    if (requestStatus === LIST_STATUS.RESOLVING || requestStatus === LIST_STATUS.LOADING) {
       return <ResultState kind="loading" message="Loading deliveries…" />;
     }
 
     // A valid empty array is a deliberate no-deliveries state, never an error.
-    if (requestStatus === 'empty' || (isRefreshing && deliveries.length === 0)) {
+    if (requestStatus === LIST_STATUS.EMPTY || (isRefreshing && deliveries.length === 0)) {
       return (
         <ResultState kind="info" message={ORDER_DELIVERY_MESSAGES.empty} title="No deliveries" />
       );
     }
 
-    if (requestStatus === 'error') {
+    if (requestStatus === LIST_STATUS.ERROR) {
       return (
         <ResultState
           actionLabel="Retry"

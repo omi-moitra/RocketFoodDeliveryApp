@@ -41,6 +41,19 @@ const ACCOUNT_MESSAGES = Object.freeze({
   saved: 'Your details were saved.',
 });
 
+const REQUEST_STATUS = Object.freeze({
+  ERROR: 'error',
+  LOADING: 'loading',
+  READY: 'ready',
+});
+
+const SAVE_STATUS = Object.freeze({
+  ERROR: 'error',
+  IDLE: 'idle',
+  SAVING: 'saving',
+  SUCCESS: 'success',
+});
+
 /**
  * Renders the shared Account Settings experience for one validated active role.
  * The Customer and Courier route wrappers pass their `expectedRole`; the service verifies it
@@ -55,13 +68,13 @@ export default function AccountScreen({ expectedRole }) {
   // requestStatus is the initial-load lifecycle; savedAccount is the authoritative snapshot and the
   // draft fields are the editable copy. Field errors and saveStatus are tracked independently so
   // impossible states (saving with invalid fields, success while dirty) cannot be represented.
-  const [requestStatus, setRequestStatus] = useState('loading');
+  const [requestStatus, setRequestStatus] = useState(REQUEST_STATUS.LOADING);
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   const [savedAccount, setSavedAccount] = useState(null);
   const [emailDraft, setEmailDraft] = useState('');
   const [phoneDraft, setPhoneDraft] = useState('');
   const [fieldErrors, setFieldErrors] = useState({ email: '', phone: '' });
-  const [saveStatus, setSaveStatus] = useState('idle');
+  const [saveStatus, setSaveStatus] = useState(SAVE_STATUS.IDLE);
   const [saveErrorMessage, setSaveErrorMessage] = useState('');
   const [retrySequence, setRetrySequence] = useState(0);
 
@@ -107,7 +120,7 @@ export default function AccountScreen({ expectedRole }) {
       newestRequestRef.current = requestId;
 
       if (!hasLoadedOnceRef.current) {
-        setRequestStatus('loading');
+        setRequestStatus(REQUEST_STATUS.LOADING);
       }
 
       async function loadAccount() {
@@ -123,8 +136,8 @@ export default function AccountScreen({ expectedRole }) {
           setEmailDraft(account.roleEmail);
           setPhoneDraft(account.rolePhone);
           setFieldErrors({ email: '', phone: '' });
-          setSaveStatus('idle');
-          setRequestStatus('ready');
+          setSaveStatus(SAVE_STATUS.IDLE);
+          setRequestStatus(REQUEST_STATUS.READY);
         } catch (error) {
           if (
             requestController.signal.aborted ||
@@ -145,7 +158,7 @@ export default function AccountScreen({ expectedRole }) {
             return;
           }
 
-          setRequestStatus('error');
+          setRequestStatus(REQUEST_STATUS.ERROR);
           setLoadErrorMessage(
             error instanceof ApiRequestError ? error.message : ACCOUNT_MESSAGES.loadError,
           );
@@ -166,7 +179,7 @@ export default function AccountScreen({ expectedRole }) {
 
   function handleChangeEmail(value) {
     setEmailDraft(value);
-    setSaveStatus('idle');
+    setSaveStatus(SAVE_STATUS.IDLE);
     if (fieldErrors.email) {
       setFieldErrors((current) => ({ ...current, email: '' }));
     }
@@ -174,7 +187,7 @@ export default function AccountScreen({ expectedRole }) {
 
   function handleChangePhone(value) {
     setPhoneDraft(value);
-    setSaveStatus('idle');
+    setSaveStatus(SAVE_STATUS.IDLE);
     if (fieldErrors.phone) {
       setFieldErrors((current) => ({ ...current, phone: '' }));
     }
@@ -197,14 +210,14 @@ export default function AccountScreen({ expectedRole }) {
 
     if (nextErrors.email || nextErrors.phone) {
       setFieldErrors(nextErrors);
-      setSaveStatus('idle');
+      setSaveStatus(SAVE_STATUS.IDLE);
       return;
     }
 
     saveLockRef.current = true;
     setFieldErrors({ email: '', phone: '' });
     setSaveErrorMessage('');
-    setSaveStatus('saving');
+    setSaveStatus(SAVE_STATUS.SAVING);
     const requestController = new AbortController();
     saveControllerRef.current = requestController;
 
@@ -224,7 +237,7 @@ export default function AccountScreen({ expectedRole }) {
       setSavedAccount(updated);
       setEmailDraft(updated.roleEmail);
       setPhoneDraft(updated.rolePhone);
-      setSaveStatus('success');
+      setSaveStatus(SAVE_STATUS.SUCCESS);
     } catch (error) {
       if (!isMountedRef.current || requestController.signal.aborted || error?.code === 'aborted') {
         return;
@@ -236,7 +249,7 @@ export default function AccountScreen({ expectedRole }) {
       }
 
       // Preserve the user's drafts and the saved snapshot; only surface a safe retry message.
-      setSaveStatus('error');
+      setSaveStatus(SAVE_STATUS.ERROR);
       setSaveErrorMessage(
         error instanceof ApiRequestError ? error.message : ACCOUNT_MESSAGES.loadError,
       );
@@ -249,7 +262,7 @@ export default function AccountScreen({ expectedRole }) {
     }
   }
 
-  if (requestStatus === 'loading') {
+  if (requestStatus === REQUEST_STATUS.LOADING) {
     return (
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <ResultState kind="loading" message="Loading your account…" />
@@ -257,7 +270,7 @@ export default function AccountScreen({ expectedRole }) {
     );
   }
 
-  if (requestStatus === 'error') {
+  if (requestStatus === REQUEST_STATUS.ERROR) {
     return (
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <ResultState
@@ -270,8 +283,8 @@ export default function AccountScreen({ expectedRole }) {
     );
   }
 
-  const isSaving = saveStatus === 'saving';
-  const showSuccess = saveStatus === 'success' && !isDirty;
+  const isSaving = saveStatus === SAVE_STATUS.SAVING;
+  const showSuccess = saveStatus === SAVE_STATUS.SUCCESS && !isDirty;
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>

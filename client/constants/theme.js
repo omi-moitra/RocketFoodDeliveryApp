@@ -6,6 +6,8 @@
 
 import { Platform } from 'react-native';
 
+import { DELIVERY_STATUS } from './deliveryStatus';
+
 // COLORS is the single source for the exact palette required by the grading wireframe.
 export const COLORS = Object.freeze({
   charcoal: '#222126',
@@ -20,9 +22,9 @@ export const COLORS = Object.freeze({
 // color: PENDING red, IN PROGRESS orange, DELIVERED green (global spec §11.1). Centralized so the
 // status pill and any future status control read one token instead of repeating palette literals.
 export const DELIVERY_STATUS_COLORS = Object.freeze({
-  DELIVERED: COLORS.mutedGreen,
-  IN_PROGRESS: COLORS.orangeRed,
-  PENDING: COLORS.darkRed,
+  [DELIVERY_STATUS.DELIVERED]: COLORS.mutedGreen,
+  [DELIVERY_STATUS.IN_PROGRESS]: COLORS.orangeRed,
+  [DELIVERY_STATUS.PENDING]: COLORS.darkRed,
 });
 
 // FONT_FAMILIES names both supplied headings and the body-font policy. iOS uses its native Arial;

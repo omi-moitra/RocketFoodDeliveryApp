@@ -20,6 +20,7 @@
 10. [Acceptance criteria](#10-acceptance-criteria)
 11. [Feature Definition of Done](#11-feature-definition-of-done)
 12. [Notes for AI tools](#12-notes-for-ai-tools)
+13. [Refactoring Implementation Record](#13-refactoring-implementation-record)
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
@@ -651,5 +652,41 @@ This is the append-only completion record for work selected from `docVault/REFAC
 - **Files affected:** `client/services/authService.js`, `client/storage/authStorage.js`
 - **Change:** Both functions now route their number-producing branch through `isPositiveSafeInteger` from `utils/validation.js`, with no change to either function's name, signature, or return shape/type — zero caller changes.
 - **Verification:** `git diff --check` clean; `npx expo export --platform android` EXIT 0. Boundary values (`1`, `"1"`, `" 1 "`, `0`, `-1`, `1.5`, `""`, `"abc"`, `Number.MAX_SAFE_INTEGER`, one above it) reasoned through by inspection; native login/session-restore smoke test for customer-only/courier-only/dual-role remains a pending manual check.
+
+#### RF-05 — Key delivery metadata from the status constants
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Delivery tokens, labels, theme-map keys, backend spellings, and mutation IDs repeated the same three status names in separate owners. Centralized metadata makes a status-token change fail visibly in one module instead of silently desynchronizing UI colors, labels, response normalization, or persisted status IDs.
+- **Files affected:** `client/constants/deliveryStatus.js` (new), `client/constants/theme.js`, `client/services/orderService.js`, `client/services/orders/courierDeliveries.js`
+- **Change:** Added a dependency-light status module retaining the exact `PENDING`, `IN_PROGRESS`, and `DELIVERED` tokens, visible labels, verified lowercase backend spellings, and backend IDs 1/2/3. Theme colors now use computed `DELIVERY_STATUS` keys; courier normalization/mutations consume the same metadata; the established `orderService.js` facade still re-exports `DELIVERY_STATUS` and `DELIVERY_STATUS_LABELS` for compatibility. No backend/API change.
+- **Verification:** Focused metadata assertions passed 12/12; Babel parsed all 11 changed client files; all 42 relative import/export targets resolved; `npm ls --depth=0`, `npx expo config --type public`, and `git diff --check` passed. Native courier list/detail colors and pending → in-progress → delivered persistence remain in the deferred manual checklist.
+
+#### RF-06 — Make confirmation total arithmetic explicitly safe
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Individually valid costs and quantities could overflow during multiplication or accumulation. A pure helper now rejects unsafe arithmetic before the UI can present a misleading rounded total or submit an internally invalid extreme selection.
+- **Files affected:** `client/utils/orderTotals.js` (new), `client/components/OrderConfirmationModal.js`
+- **Change:** Added safe line multiplication and order accumulation with input validation and explicit `Number.MAX_SAFE_INTEGER` addition protection. Normal and empty selections retain their prior totals; invalid/overflow values return `null`, render through the existing safe currency placeholder, and block submission. The create-order payload is unchanged because the backend remains authoritative for totals.
+- **Verification:** Seven focused arithmetic cases passed: empty, normal multi-product, zero-cost, maximum-safe multiplication, unsafe multiplication, unsafe accumulation, and invalid negative cost. Babel parse, dependency resolution, Expo config, dependency-tree, and whitespace checks passed. Native modal display/submission regression remains deferred.
+
+#### RF-15 — Split the order service behind its stable facade
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** One 754-line service owned creation, customer history, courier retrieval, and courier mutations. Focused modules reduce review surface and make each order flow easier to maintain while keeping callers insulated from the internal layout.
+- **Files affected:** `client/services/orderService.js`, `client/services/orders/createOrder.js` (new), `client/services/orders/customerOrders.js` (new), `client/services/orders/courierDeliveries.js` (new), `client/services/orders/orderShared.js` (new), `client/constants/deliveryStatus.js` (new)
+- **Change:** Converted `orderService.js` into a small compatibility facade that re-exports the same nine public names. Moved create-order, customer-history, and courier-delivery behavior into focused modules and retained shared error messages/product normalization in `orderShared.js`. Existing component imports, endpoints, methods, query parameters, request bodies, response guards, error codes, identity checks, and mutation sequencing are unchanged. No backend/API change.
+- **Verification:** Previous and current public export names were compared; Babel parsed all 11 changed files; all 42 relative import/export targets resolved; `npm ls --depth=0`, `npx expo config --type public`, and `git diff --check` passed. Full Android export and live customer/courier request regressions are deferred under the token-efficient test policy.
+
+#### RF-18 — Replace selected lifecycle literals with local constants
+
+- **Completed:** 2026-07-21 16:35 America/New_York
+- **Priority:** P2
+- **Reason and benefit:** Repeated lifecycle strings in the confirmation, Account, and courier mutation owners were typo-prone and made allowed values harder to review. Frozen local constants improve transition readability without introducing global state coupling or a higher-risk reducer rewrite.
+- **Files affected:** `client/components/OrderConfirmationModal.js`, `client/components/AccountScreen.js`, `client/app/courier/index.js`
+- **Change:** Added component-local frozen constants for confirmation submission, Account load/save, courier mutation, and courier list-display states; replaced the corresponding initial values, setters, and comparisons. All existing visible states, retry paths, draft preservation, abort handling, and transition behavior remain unchanged; no reducer or backend change was introduced.
+- **Verification:** Targeted search found no remaining raw lifecycle literals in the selected setters/comparisons/phases; Babel parse, import resolution, Expo config, dependency-tree, and whitespace checks passed. Native transition-table regression for confirmation, Account, and courier mutations remains deferred.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
