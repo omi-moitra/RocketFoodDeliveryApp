@@ -74,9 +74,9 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   ├── contexts/               # Authentication/session context
 │   ├── docs/                   # Supplied M13/M14 design references
 │   ├── images/restaurants/     # Six bundled restaurant images
-│   ├── services/               # API requests and response validation
-│   ├── storage/                # AsyncStorage session boundary
-│   ├── utils/                  # Pure helpers and focused client unit tests
+│   ├── services/               # API boundaries plus service/workflow tests
+│   ├── storage/                # AsyncStorage session boundary and tests
+│   ├── utils/                  # Pure helpers, formatting, and focused tests
 │   ├── .env.example            # Safe client environment template
 │   ├── app.json                # Expo application configuration
 │   ├── package.json            # Client scripts and dependencies
@@ -423,6 +423,8 @@ npm test
 npm ls --depth=0
 npx expo config --type public
 ```
+
+The client suite covers pure validation and totals, authentication response classification, API transport and timeout handling, persisted-session coherence, account/restaurant/product ownership checks, order request normalization, and courier delivery transitions. Screen rendering and native navigation remain manual/device-level coverage because no UI-rendering test dependency is installed.
 
 Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL, and login plus the initial authenticated app view succeeded. The complete customer/courier journeys, Android, persistence/restart, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, and keyboard behavior remain pending manual verification.
 
