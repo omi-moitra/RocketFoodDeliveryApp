@@ -296,7 +296,7 @@ M13-rocketFoodDelivery/
 │   └── M14/
 ├── README.md
 ├── PostmanCollection.json
-└── docVault/                  # Research and point-in-time audit findings
+└── docVault/                  # Research, audit findings, and refactoring records
 ```
 
 This tree reflects the current canonical organization. Claude must verify it with `rg --files` before relying on a path and update this section whenever an authorized implementation creates, removes, or renames a listed path. The inactive `feature-name.feature.md` template is intentionally omitted because it is not a deliverable.
@@ -929,10 +929,11 @@ Sections 23.1–23.5 are the **agent-verifiable** Definition of Done: Claude can
 Refactoring records have three distinct owners:
 
 - `docVault/REFACTORING_AUDIT.md` is a point-in-time inventory of candidate findings. It supplies investigation evidence but is neither a feature contract nor proof of completion.
-- `ai/features/code-quality.feature.md` §13 is the canonical, append-only committed completion record. Its entry format, implementation evidence, and honest remaining gaps live there so completion status has one source of truth.
+- `docVault/REFACTORING_IMPLEMENTATION_RECORD.md` is the canonical, append-only committed completion record. Its entry format, implementation evidence, and honest remaining gaps live there so completion status has one source of truth.
+- `ai/features/` contains feature requirements and acceptance criteria. Feature specifications link to supporting records when useful but do not contain the refactoring history.
 - `.omi/m14/IMPLEMENTATION_LOG.md` is an ignored private handoff log for individual work passes. It must never override or replace a committed specification record.
 
-Do not duplicate completion entries in this global specification or `docVault`. Add or correct them only in the feature specification after the selected work and its available verification are complete.
+Do not duplicate completion entries in this global specification, feature specifications, or the candidate audit. Add or correct them only in `docVault/REFACTORING_IMPLEMENTATION_RECORD.md` after the selected work and its available verification are complete.
 
 ### 23.1 Repository and specifications
 
