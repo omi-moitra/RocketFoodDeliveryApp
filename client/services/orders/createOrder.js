@@ -25,6 +25,8 @@ function buildCreateOrderRequestBody({
   sendSMS,
   sendEmail,
 }) {
+  // Validate the entire selection before mapping it so one malformed row cannot produce a
+  // partially valid order body with different products from the summary the customer approved.
   const hasValidSelection =
     Array.isArray(selectedProducts) &&
     selectedProducts.length > 0 &&
@@ -81,6 +83,8 @@ export async function createOrder({
     throw new ApiRequestError('unauthorized', ORDER_ERROR_MESSAGES.token, 401);
   }
 
+  // Read customer identity at submission time rather than trusting a screen prop that could belong
+  // to a previous role/session after logout or account switching.
   const requestBody = buildCreateOrderRequestBody({
     customerId: Number(session.customerId),
     restaurantId,
@@ -105,6 +109,7 @@ export async function createOrder({
     throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.invalid, response.status);
   }
 
+  // A generic 2xx is not enough: only 201 proves the create endpoint accepted a new order.
   if (response.status !== 201) {
     throw new ApiRequestError('response', ORDER_ERROR_MESSAGES.response, response.status);
   }

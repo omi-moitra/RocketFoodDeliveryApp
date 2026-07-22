@@ -35,6 +35,8 @@ async function requireAccountSession(expectedRole) {
   const session = await getStoredSession();
   const role = session?.activeRole;
   const userId = Number(session?.userId);
+  // Resolve the ownership ID from the active role itself; using whichever ID happens to exist
+  // would let a dual-role session validate the wrong nested account record.
   const roleId = Number(role === ROLES.customer ? session?.customerId : session?.courierId);
 
   const isUsable =
@@ -79,10 +81,13 @@ function normalizeAccount(responseData, userId, role, roleId) {
   const account = requireSuccessObject(responseData, ACCOUNT_ERROR_MESSAGES.response);
 
   const primaryEmail = typeof account.email === 'string' ? account.email.trim() : '';
+  // The backend returns multiple optional nested roles. Index only the already-validated active
+  // role instead of falling back to the first nested object present in the response.
   const roleDetail = account[role] ?? null;
   const roleEmail = typeof roleDetail?.email === 'string' ? roleDetail.email.trim() : '';
   const rolePhone = typeof roleDetail?.phone === 'string' ? roleDetail.phone.trim() : '';
 
+  // Both IDs must match the stored identity before any contact fields cross the service boundary.
   const isCoherent =
     Number(account.id) === userId &&
     roleDetail &&
@@ -145,6 +150,8 @@ export async function updateAccount({ email, phone, expectedRole, signal }) {
     throw new ApiRequestError('invalid', ACCOUNT_ERROR_MESSAGES.invalid);
   }
 
+  // The POST body carries the role because the official update route has no `type` query. The
+  // primary login email is deliberately omitted so this operation cannot modify authentication.
   const { data, response } = await requestJson(`/api/account/${encodeURIComponent(userId)}`, {
     body: JSON.stringify({
       account_email: trimmedEmail,

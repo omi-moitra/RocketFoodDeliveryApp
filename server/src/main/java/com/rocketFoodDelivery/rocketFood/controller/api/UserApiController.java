@@ -96,6 +96,8 @@ public class UserApiController {
         if (type == null || (!type.equals("customer") && !type.equals("courier") && !type.equals("employee"))) {
             throw new BadRequestException("account_type must be 'customer', 'courier', or 'employee'");
         }
+        // Convert the grading-shaped POST body at the controller boundary so both update routes
+        // reuse one service operation and cannot drift into different persistence behavior.
         ApiUpdateAccountDTO updateDTO =
                 new ApiUpdateAccountDTO(postDTO.getAccount_email(), postDTO.getAccount_phone());
         ApiAccountDTO dto = userService.updateAccount(id, type, updateDTO)

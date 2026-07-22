@@ -74,6 +74,8 @@ export function AuthProvider({ children }) {
   const completeSignIn = useCallback(async (authValues) => {
     try {
       const savedSession = await saveAuthSession(authValues);
+      // Expose the session only after every identity key is persisted, so a fast route change can
+      // never render protected content backed by an incomplete on-disk session.
       setSession(savedSession);
     } catch (error) {
       // A failed multi-key write must not leave a restorable partial session behind.
@@ -91,6 +93,7 @@ export function AuthProvider({ children }) {
   const selectRole = useCallback(async (role) => {
     // Storage validates the role against the session's available IDs before it becomes active.
     const updatedSession = await saveRoleSelection(role);
+    // Updating context after the awaited write makes the root guard and relaunch behavior agree.
     setSession(updatedSession);
   }, []);
 
