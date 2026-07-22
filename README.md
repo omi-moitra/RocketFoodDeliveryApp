@@ -23,7 +23,7 @@
 
 ## Project Description
 
-Rocket Food Delivery is a cross-platform customer app for browsing restaurants, filtering by rating and price, choosing menu quantities, placing an order, and reviewing order history. It gives customers one mobile workflow while the existing Java API manages authentication, restaurant data, products, and orders.
+Rocket Food Delivery is a cross-platform customer and courier app. Customers can browse restaurants, filter menus, place orders, and review order history; couriers can accept deliveries and advance their status. The existing Java API manages authentication, restaurant data, products, accounts, and orders.
 
 This repository is the Module 13 mobile-development project. It contains the Expo/React Native client, the existing Spring Boot backend used by the client, project specifications, research, concept documentation, and an importable Postman collection.
 
@@ -31,12 +31,13 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 
 ## Features
 
-- Customer login with a persisted session and protected navigation
+- Role-capable login with persisted sessions and protected Customer/Courier navigation
 - File-based nested navigation: root stack, customer tabs, and restaurant stack
 - Restaurant browsing with combined rating and price-range filters
 - Restaurant menus with guarded quantity controls and calculated totals
 - Order confirmation with processing, failure/retry, and success states
 - Customer order history and order-detail modal, including pending orders without a courier
+- Courier delivery acceptance, status progression, details, and account management
 - Shared loading, empty, error, and session-expiry handling
 - iOS, Android, simulator, and physical-device development through Expo and ngrok
 
@@ -234,7 +235,7 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 
 | Method | Path | Mobile use |
 |---|---|---|
-| `POST` | `/api/auth` | Validate email/password and return the customer session |
+| `POST` | `/api/auth` | Validate email/password and return the available Customer/Courier role identifiers |
 | `GET` | `/api/restaurants` | List restaurants; optional `rating` and `price_range` filters |
 | `GET` | `/api/restaurants/{id}` | Load the selected restaurant |
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
@@ -312,16 +313,17 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 
 ## Examples from This Project
 
-### Seeded customer login
+### Seeded role logins
 
-The Postman collection and mobile demo use this development-only customer account:
+The mobile demo includes three deterministic development accounts:
 
-```text
-Email: customer@gmail.com
-Password: password
-```
+| Account | Email | Password | Login result |
+|---|---|---|---|
+| Customer | `customer@gmail.com` | `password` | Opens the Customer application directly |
+| Courier | `courier@gmail.com` | `password` | Opens the Courier application directly |
+| Customer and Courier | `both@gmail.com` | `password` | Opens Account Selection to choose a role |
 
-The Login screen sends those credentials to `POST /api/auth`. A successful response supplies the customer identity and bearer token used by the protected customer routes. These are local seed credentials, not production credentials.
+The Login screen sends the selected credentials to `POST /api/auth`. A successful response supplies the available role identifier or identifiers and the bearer token used by protected routes. These are local seed credentials, not production credentials.
 
 ### Browse and filter restaurants
 
@@ -376,8 +378,8 @@ The actual IDs come from the authenticated customer and loaded restaurant/menu d
 | Courier statuses | `free`, `busy`, `full`, and `offline` |
 | Restaurants | 8 active restaurants with generated names and price ranges from 1–3 |
 | Employees | 5 generated employee records |
-| Customers | 8 baseline customers, followed by 5 append-only Avatar demo customers |
-| Couriers | 8 active couriers with randomly assigned courier statuses |
+| Customers | 8 baseline customers, including the stable Customer and dual-role accounts, followed by 5 append-only Avatar demo customers |
+| Couriers | 8 active couriers, including the stable Courier and dual-role accounts, with seeded courier statuses |
 | Products | 5–7 generated menu products per restaurant, normally 40–56 total |
 | Orders | 10 generated orders with 2–4 product rows each, varied statuses, optional ratings, and no courier while pending |
 
@@ -391,7 +393,7 @@ The five stable Avatar customer accounts are:
 | Toph Beifong | `toph@gmail.com` | `password` |
 | Zuko | `zuko@gmail.com` | `password` |
 
-Most seed methods skip a table when it already contains data. The Avatar accounts are different: any missing Avatar user/customer is appended without rewriting an existing account. Restaurant names, addresses, product details, prices, assignments, statuses, and ratings use Faker or random values, so they can differ between fresh databases. Existing or partially seeded databases can also have totals different from the fresh-database table above.
+Most seed methods skip a table when it already contains data. The stable Courier and dual-role courier assignments are append-safe, so either missing assignment is added without rewriting existing couriers. The Avatar accounts behave similarly: any missing Avatar user/customer is appended without rewriting an existing account. Restaurant names, addresses, product details, prices, assignments, statuses, and ratings use Faker or random values, so they can differ between fresh databases. Existing or partially seeded databases can also have totals different from the fresh-database table above.
 
 The request flow is: screen/component → client service → shared API client → Spring Security JWT filter → controller → service → repository/MySQL → JSON response → client validation → interface state.
 
