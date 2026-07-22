@@ -91,7 +91,7 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 ├── Concepts/
 │   ├── M13/                         # Module 13 concepts and code references
 │   └── M14/                         # Module 14 concepts and code references
-├── docVault/                        # Research and implementation audit documents
+├── docVault/                        # Research and point-in-time audit findings
 ├── LeetCode-Challenges/
 │   ├── M13/                         # Module 13 SQL challenge screenshots
 │   └── M14/                         # Module 14 challenge screenshots
@@ -433,6 +433,7 @@ Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on 
 - [Module 13 concepts](Concepts/M13/CONCEPTS.md) explain mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
 - [Module 14 concepts](Concepts/M14/CONCEPTS.md) explain role-aware session states, recoverable courier transitions, and shared role-specific Account forms.
 - [Research](docVault/RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
+- [Refactoring audit](docVault/REFACTORING_AUDIT.md) preserves point-in-time candidate findings; completed refactors are recorded canonically in [`ai/features/code-quality.feature.md` §13](ai/features/code-quality.feature.md#13-refactoring-implementation-record).
 - [ai/ai-spec.md](ai/ai-spec.md) records repository-wide implementation rules and decisions.
 - [`ai/features/`](ai/features/) contains the feature-level behavior contracts.
 

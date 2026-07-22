@@ -7,6 +7,8 @@
 **Scope:** Tracked first-party client, M14-touched backend/API tests, configuration, and repository documentation  
 **Purpose:** Identify every evidence-backed refactoring opportunity currently visible without weakening a grading requirement
 
+**Record role:** This document is a point-in-time inventory of candidate findings, not a feature contract or proof that an item was completed. Canonical implementation requirements and the committed completion history live in [`ai/features/code-quality.feature.md`](../ai/features/code-quality.feature.md); private per-pass handoff notes belong only in the ignored `.omi/m14/IMPLEMENTATION_LOG.md`.
+
 ## Table of Contents
 
 - [Executive conclusion](#executive-conclusion)

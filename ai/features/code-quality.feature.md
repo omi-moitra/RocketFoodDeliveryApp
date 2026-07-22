@@ -498,7 +498,7 @@ Claude must leave criteria unchecked until current evidence supports them. Searc
 
 ## 13. Refactoring Implementation Record
 
-This is the append-only completion record for work selected from `docVault/REFACTORING_AUDIT.md`. Add an entry only after the user-selected audit item is implemented and its available verification is complete. A proposal, user selection, partial edit, or unverified change is not completed work. Entries remain chronological; if completed work is revised or reverted, append a dated correction rather than rewriting history.
+This section is the canonical, append-only committed completion record for work selected from the point-in-time candidate inventory in `docVault/REFACTORING_AUDIT.md`. The audit identifies possible work but does not establish requirements or completion; the ignored `.omi/m14/IMPLEMENTATION_LOG.md` contains private per-pass handoff notes and is never normative. Add an entry here only after the user-selected audit item is implemented and its available verification is complete. A proposal, user selection, partial edit, or unverified change is not completed work. Entries remain chronological; if completed work is revised or reverted, append a dated correction rather than rewriting history.
 
 #### RF-19 — Remove stale `@JsonAlias` claims
 
@@ -778,5 +778,14 @@ This is the append-only completion record for work selected from `docVault/REFAC
 - **Files affected:** `ai/ai-spec.md`; `client/app/{_layout.js,index.js,selection.js}`, `client/app/courier/{_layout.js,account.js}`, `client/app/customer/{_layout.js,account.js}`, `client/app/customer/restaurant/_layout.js`, `client/components/{AppHeader.js,AppIcon.js,DeliveryRow.js,ErrorBoundary.js,RefreshErrorBanner.js,ResultState.js,RoleTabsLayout.js,useProtectedFocusList.js}`, `client/constants/theme.js`, `client/services/authService.js`, `client/storage/authStorage.js`, `client/utils/{orderFormatting.js,restaurantLabels.js,validation.js}`
 - **Change:** Added the missing `_layout.js` filename/purpose/numbered Contents header, converted 21 inline Contents summaries into numbered lists without changing their wording/order, and added the existing `Concepts/M13/` owner to the global canonical tree. RF-43 remains deliberately deferred: the inactive template is still tracked while full native/final completion criteria remain pending.
 - **Verification:** All 40 changed client JavaScript files parse and retain `File`, `Purpose`, and numbered `Contents` fields; the canonical paths in the global tree exist. No template file was deleted and no backend/runtime code changed.
+
+#### RF-45 — Clarify authentication boundaries and remove proven dead declarations
+
+- **Completed:** 2026-07-22 16:07 America/New_York
+- **Priority:** P1
+- **Reason and benefit:** Authentication crossed transport, payload validation, durable storage, context publication, and protected navigation with too little explanation at the transition points. Separately, a cost-unit export and account DTO had no callers, while repository comments repeated behavior already expressed by `JpaRepository`.
+- **Files affected:** `client/app/_layout.js`, `client/app/index.js`, `client/constants/currency.js`, `client/services/authService.js`, `client/storage/authStorage.js`, `server/src/main/java/com/rocketFoodDelivery/rocketFood/dtos/user/ApiGetAccountDTO.java`, all 11 files in `server/src/main/java/com/rocketFoodDelivery/rocketFood/repository/`, `README.md`, `ai/ai-spec.md`, `ai/features/code-quality.feature.md`, `docVault/REFACTORING_AUDIT.md`
+- **Change:** Added tightly inline comments at the login request-lifecycle, response-validation, persistence commit, session-restoration, role-selection, and route-guard boundaries. Removed the unreferenced `PRODUCT_COST_UNIT` export and `ApiGetAccountDTO`, preserving the whole-dollar contract beside the formatter. Removed comments that merely narrated repository inheritance. Defined `docVault/REFACTORING_AUDIT.md` as the point-in-time candidate inventory, this section as the canonical committed completion record, and `.omi/m14/IMPLEMENTATION_LOG.md` as a private non-normative handoff log.
+- **Verification:** Caller searches return no runtime, test, framework, or documentation consumer for either removed declaration; stale repository-comment and debug-marker searches are empty; `git diff --check` passes; the client Jest suite passes 58/58; `./mvnw -q -DskipTests compile` passes. Native authentication and relaunch behavior remain unchanged and were not re-run because executable authentication logic did not change.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

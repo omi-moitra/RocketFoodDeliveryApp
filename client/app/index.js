@@ -122,10 +122,15 @@ export default function LoginScreen() {
 
     submissionLockRef.current = true;
     setLoginState('submitting');
+    // One controller owns this attempt from transport through session persistence. Unmounting the
+    // screen aborts it, and the identity check in `finally` prevents an older attempt from clearing
+    // a newer controller if the lifecycle changes unexpectedly.
     const requestController = new AbortController();
     activeRequestRef.current = requestController;
 
     try {
+      // This service validates the token, user ID, and optional role IDs but does not mutate storage;
+      // no authenticated route can open from an unverified backend payload.
       const session = await authenticateUser({
         email: normalizedEmail,
         password,
@@ -137,6 +142,8 @@ export default function LoginScreen() {
       }
 
       try {
+        // Persistence is the commit point for login. AuthContext publishes the session only after
+        // all identity keys are written, which makes the root route guard and relaunch state agree.
         await completeSignIn(session);
       } catch {
         throw new ApiRequestError('storage', FORM_MESSAGES.session);

@@ -296,7 +296,7 @@ M13-rocketFoodDelivery/
 │   └── M14/
 ├── README.md
 ├── PostmanCollection.json
-└── docVault/
+└── docVault/                  # Research and point-in-time audit findings
 ```
 
 This tree reflects the current canonical organization. Claude must verify it with `rg --files` before relying on a path and update this section whenever an authorized implementation creates, removes, or renames a listed path. The inactive `feature-name.feature.md` template is intentionally omitted because it is not a deliverable.
@@ -924,26 +924,15 @@ The Module 14 project is complete only when every applicable baseline item passe
 
 Sections 23.1–23.5 are the **agent-verifiable** Definition of Done: Claude can confirm each from code, commands, or committed artifacts, and is responsible for them. Section 23.6 lists **human/process** items that depend on GitHub settings, external uploads, coach interaction, or wall-clock deadlines; Claude cannot perform or verify these and must never check them on the student's behalf.
 
-### 23.0 Refactoring Implementation Record
+### 23.0 Refactoring record ownership
 
-This is the append-only completion record for work selected from `docVault/REFACTORING_AUDIT.md`. Add an entry only after the user-selected audit item is implemented and its available verification is complete. A proposal, user selection, partial edit, or unverified change is not completed work.
+Refactoring records have three distinct owners:
 
-Each entry records the audit ID/title, priority, completion date and time with time zone, reason and practical benefit, every affected file, exact behavior-preserving change, verification evidence, and any honest remaining gap. Closely coupled items may share one entry only when implemented and verified as one inseparable change.
+- `docVault/REFACTORING_AUDIT.md` is a point-in-time inventory of candidate findings. It supplies investigation evidence but is neither a feature contract nor proof of completion.
+- `ai/features/code-quality.feature.md` §13 is the canonical, append-only committed completion record. Its entry format, implementation evidence, and honest remaining gaps live there so completion status has one source of truth.
+- `.omi/m14/IMPLEMENTATION_LOG.md` is an ignored private handoff log for individual work passes. It must never override or replace a committed specification record.
 
-```markdown
-#### RF-XX — Refactor title
-
-- **Completed:** YYYY-MM-DD HH:mm America/New_York
-- **Priority:** P0 | P1 | P2 | P3
-- **Reason and benefit:** Why the refactor was selected and what it improves.
-- **Files affected:** `path/to/file`, `path/to/other-file`
-- **Change:** Exact behavior-preserving implementation and anything retained for grading or compatibility.
-- **Verification:** Focused checks, builds, tests, manual coverage, and any honest remaining gap.
-```
-
-Entries remain chronological. If completed work is revised or reverted, append a dated correction rather than rewriting history.
-
-**Completed audit refactors:** Recorded in the Refactoring Implementation Record in `ai/features/code-quality.feature.md` (§13).
+Do not duplicate completion entries in this global specification or `docVault`. Add or correct them only in the feature specification after the selected work and its available verification are complete.
 
 ### 23.1 Repository and specifications
 
