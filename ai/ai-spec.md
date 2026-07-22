@@ -217,7 +217,7 @@ The eight specifications under `ai/features/` remain regression contracts for re
 - FontAwesome/vector icons for native UI icons.
 - Shared environment-driven API URL.
 - ngrok for physical-phone access to the local Java API.
-- React Bootstrap may remain installed because it is a grading/dependency requirement, but browser-only DOM components must not be used in native screens.
+- React Bootstrap is not part of the native client dependency tree; use React Native components and the established shared primitives rather than browser-only DOM components.
 
 ### 6.2 Backend baseline
 
@@ -288,8 +288,12 @@ M13-rocketFoodDelivery/
 │   └── .env.example
 ├── server/                     # Existing Java API; only documented minimum changes are allowed
 ├── scripts/ngrok-phone.sh
-├── Concepts/M13/
+├── Concepts/
+│   ├── M13/CONCEPTS.md
+│   └── M14/CONCEPTS.md
 ├── LeetCode-Challenges/
+│   ├── M13/
+│   └── M14/
 ├── README.md
 ├── PostmanCollection.json
 └── docVault/
@@ -484,7 +488,7 @@ Status IDs are confirmed as `1 = PENDING`, `2 = IN PROGRESS`, and `3 = DELIVERED
 - Endpoint used: the existing `PUT /api/orders/{id}` (unchanged). Courier progression sends `{ restaurant_id, customer_id, order_status_id: 2|3, restaurant_rating: <current value from the response> }`, changing only the status. Courier is not in the body, so the assignment is preserved.
 - Confirmed sequence: acceptance is broad-update to status 2, then `PUT /api/order/{id}/courier`; completion is broad-update to status 3 without reassigning the courier.
 - Compatibility: additive only — a new response field breaks no existing consumer; broad update, assignment, creation, retrieval, and rating endpoints and all entities/schema/security/seeders are unchanged.
-- Frontend integration: `orderService.js` normalizes `restaurantId`/`customerId`/`restaurantRating` and builds the echoed body in `acceptDelivery` (status 2, then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery). On a partial acceptance (status 2 persisted, assignment failed), the client retains a retry-assignment action rather than refreshing the row away or claiming success. Screens never build the body.
+- Frontend integration: `services/orders/courierDeliveries.js` normalizes `restaurantId`/`customerId`/`restaurantRating` and builds the echoed body in `acceptDelivery` (status 2, then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery); `services/orderService.js` remains the stable re-export facade used by screens. On a partial acceptance (status 2 persisted, assignment failed), the client retains a retry-assignment action rather than refreshing the row away or claiming success. Screens never build the body.
 - Tests: `OrderApiControllerTest` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`; `PostmanCollection.json` updated. Backend test execution and DBeaver/native checks are operator manual steps.
 
 ### 10.5 Order confirmation notifications
@@ -847,7 +851,7 @@ If local services prevent a check, report the exact failure and safest substitut
 Required committed deliverables include:
 
 - `README.md` with title/description, tech stack, actual structure, setup, environment variables, API documentation, and author.
-- `CONCEPTS.md` with three genuinely challenging M14 concepts, purpose, personal explanation of difficulty, and exact usage locations.
+- `Concepts/M14/CONCEPTS.md` with three genuinely challenging M14 concepts, purpose, personal explanation of difficulty, and exact usage locations. The module folder is the user-confirmed repository location; `Concepts/M13/CONCEPTS.md` remains the retained M13 deliverable.
 - `PostmanCollection.json` covering every retained and M14 endpoint with preconfigured values.
 - The global M14 specification and all seven M14 feature specs at the canonical committed `ai/` paths.
 - Five readable accepted-solution screenshots under `LeetCode-Challenges/` for:

@@ -20,7 +20,7 @@ const USD_FORMATTER = new Intl.NumberFormat('en-US', {
 
 /**
  * Formats one validated non-negative backend cost as US dollars with two decimal places.
- * Menu, confirmation, and later order-history features share this display boundary.
+ * Menu, confirmation, order-history, and courier-detail surfaces share this display boundary.
  * A value outside the whole-dollar contract returns a visible placeholder instead of
  * throwing, because this function runs inside render paths where an exception would
  * take down the whole screen rather than one price cell.

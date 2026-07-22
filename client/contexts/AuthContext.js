@@ -20,11 +20,13 @@ import {
 const AuthContext = createContext(null);
 
 /**
- * Restores and owns the in-memory customer session shared by protected routes.
+ * Restores and owns the in-memory role-capable session shared by every protected route.
  * RootLayout wraps the route tree with this provider at application startup.
  */
 export function AuthProvider({ children }) {
-  // session is the credential/customer snapshot; loading blocks routing until storage resolves.
+  // `session` is the single validated identity snapshot (token, user ID, available role IDs, and
+  // active role). Keeping it together prevents navigation from observing a newly selected role with
+  // stale IDs; `isSessionLoading` blocks every route until the persisted snapshot is reconstructed.
   const [session, setSession] = useState(null);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
 

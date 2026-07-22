@@ -552,7 +552,7 @@ This feature is complete only when:
 - Every in-scope sub-requirement and acceptance criterion passes against the existing Java API.
 - The Restaurant List UI is the real authenticated grid and filter implementation.
 - The unfiltered, rating-only, price-only, and combined flows are verified with real or contract-accurate responses.
-- Restaurant image assignment is stable, all six required assets are verified in the graded runtime path, and their six support-material originals have then been deleted without removing unrelated support files.
+- Restaurant image assignment is stable, all six required runtime assets remain in the graded path, and obsolete duplicate support-material copies remain absent after the verified repository consolidation.
 - The correct restaurant ID reaches the dynamic Menu route through image navigation.
 - Loading, empty, no-match, error, retry, stale-response, and expired-session paths behave deliberately.
 - Every changed human-authored file has an accurate purpose/Contents header, and the required detailed inline comments remain next to the non-obvious logic they explain.

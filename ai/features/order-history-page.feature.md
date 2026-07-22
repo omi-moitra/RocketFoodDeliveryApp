@@ -51,7 +51,7 @@ Orders load for the stored authenticated `customer_id` (never `user_id`) with th
 - Protected loading of the current customer's orders via `GET /api/orders?type=customer&id={customerId}` through the shared `apiClient`.
 - Reading `customerId` and the access token only through the shared session boundary (`client/storage/authStorage.js`).
 - Validation and normalization of the API's `{ message, data }` envelope and each returned order object at the service boundary.
-- Extending `client/services/orderService.js` with a `fetchCustomerOrders` function alongside the existing order-creation logic.
+- Loading through the stable `client/services/orderService.js` facade while `client/services/orders/customerOrders.js` owns the focused history request and normalization logic.
 - The `MY ORDERS` page heading and the structured table with exact column headings `ORDER`, `STATUS`, and `VIEW`.
 - One row per order showing the restaurant name, the order status in the wireframe's uppercase presentation, and the View (magnifier) action.
 - Opening the Order History Detail modal with the complete selected order object when View is pressed.
@@ -231,7 +231,7 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 
 | File | Responsibility |
 | --- | --- |
-| `client/app/customer/order-history.js` | Owns the order-history request state, validated order list, table rendering, focus refresh, and detail-modal visibility/selection. |
+| `client/app/customer/order-history.js` | Composes the shared protected-list lifecycle with order-history table rendering and detail-modal visibility/selection. |
 | `client/app/customer/_layout.js` | Supplies the shared authenticated header and the persistent Restaurants / Order History footer tabs. |
 
 ### Components
@@ -242,7 +242,9 @@ GET ${API_BASE_URL}/api/orders?type=customer&id={customerId}
 
 ### Services and Configuration
 
-- `client/services/orderService.js` — extended with `fetchCustomerOrders({ signal })` owning query construction, envelope/array validation, per-order normalization, and error classification; order creation already lives here. Like `createOrder`, it reads `customerId` and the token from the shared session boundary at request time instead of taking them as parameters.
+- `client/services/orderService.js` — stable public facade exporting `fetchCustomerOrders({ signal })` for existing callers.
+- `client/services/orders/customerOrders.js` — owns history query construction, envelope/array validation, per-order normalization, and error classification. It reads `customerId` and the token from the shared session boundary at request time instead of taking them as parameters.
+- `client/components/useProtectedFocusList.js` — owns the focus-driven loading, refresh, stale-response, empty, and retry lifecycle shared with Courier Order Delivery.
 - `client/services/apiClient.js` — existing shared transport: environment base URL, bounded JSON requests, bearer-token header, abort/timeout, and error classification.
 - `client/constants/theme.js` — exact palette, Oswald/body font families, spacing, and minimum touch targets.
 - `client/constants/currency.js` — shared formatter available to the detail modal; the table itself displays no prices.
@@ -388,7 +390,7 @@ ready → modal-open → ready
 - Keep the implemented screen inside the existing tab route `client/app/customer/order-history.js`; do not move or rename the route.
 - Use the existing Spring Boot API as-is; do not modify `server/`.
 - Route the request through the shared `apiClient`; do not call `fetch` directly or duplicate token/timeout handling.
-- Extend the existing `client/services/orderService.js` rather than creating a second overlapping order service.
+- Preserve `client/services/orderService.js` as the stable facade and keep history behavior in `client/services/orders/customerOrders.js`; do not create a second overlapping public service.
 - Build the table with React Native components (a virtualized list such as `FlatList` with a fixed header row is appropriate); do not render browser-only React Bootstrap DOM components.
 - Key rows by order `id`; never by array index.
 - Preserve backend snake_case keys at the service boundary and map to client camelCase once if beneficial, per the global naming rules.
@@ -466,7 +468,7 @@ This feature is complete only when:
 - A `null` courier is a valid pending order, required by the grading sheet to display safely; never coerce it to the string `undefined` or crash.
 - The detail modal's data source is the selected returned order object; do not invent a detail endpoint.
 - The table shows no prices; costs and `created_on` are preserved for the modal, which reuses the shared `formatProductCost` and its `whole-dollars` rule.
-- Reuse `client/services/orderService.js` from the confirmation feature; add `fetchCustomerOrders` beside `createOrder` rather than creating a parallel service.
+- Reuse the `client/services/orderService.js` facade from the confirmation feature; keep `fetchCustomerOrders` in the focused `services/orders/customerOrders.js` module rather than creating a parallel public service.
 - Preserve unrelated user changes and do not modify the Java backend.
 - If implementation evidence changes an endpoint, field, envelope, or lifecycle behavior, update this feature spec before continuing.
 

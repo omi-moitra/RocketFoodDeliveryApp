@@ -5,6 +5,7 @@
  * 1. Static Restaurant Menu image registration
  */
 
-// Expo resolves literal require calls at bundle time. The support-material original is preserved,
-// while this verified runtime copy supplies the same image to every menu product as graded.
+// Metro can bundle this image only from a statically analyzable literal require. Keeping the
+// registration in one constant also prevents menu rows from inventing paths that work on one
+// platform but fail after an Expo production export.
 export const RESTAURANT_MENU_IMAGE = require('../assets/RestaurantMenu.jpg');

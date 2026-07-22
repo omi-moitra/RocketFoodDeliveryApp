@@ -80,6 +80,7 @@ Expected frontend and documentation files:
 
 - `client/app/courier/index.js`
 - `client/services/orderService.js`
+- `client/services/orders/courierDeliveries.js`
 - `client/components/DeliveryRow.js` or one equivalently named reusable delivery-row component, only if extraction improves clarity
 - `client/components/DeliveryDetailsModal.js` or a verified extension/reuse of the existing order-details modal
 - `client/constants/theme.js` only for centralized missing status/style tokens
@@ -282,13 +283,14 @@ Claude must inspect but should not modify unless a demonstrated feature defect r
 
 ### 6.1 Route and screen files
 
-- `client/app/courier/index.js` — owns screen-level fetch state, refresh generation, selected order, per-order mutation state, and composition.
+- `client/app/courier/index.js` — composes the shared protected-list lifecycle with selected-order and courier-specific mutation state.
 - `client/app/courier/_layout.js` — existing protected Courier tabs and shared header; inspect and preserve.
 - `client/app/_layout.js` — existing root session/role guards; inspect and preserve.
 
 ### 6.2 Shared components and modules
 
-- `client/services/orderService.js` — owns backend paths, body construction, response normalization, eligibility filtering, deduplication, transition validation, and error classification.
+- `client/services/orderService.js` — stable public facade re-exporting the courier delivery operations used by screens.
+- `client/services/orders/courierDeliveries.js` — owns backend paths, body construction, response normalization, eligibility filtering, deduplication, transition validation, and courier-specific error classification.
 - `client/services/apiClient.js` — existing timeout, abort, base URL, and JSON transport boundary.
 - `client/storage/authStorage.js` — supplies the current validated token, courier ID, and active role at request time.
 - `client/contexts/AuthContext.js` — supplies shared unauthorized/session-expiry handling.
@@ -466,7 +468,7 @@ Never show raw server details, tokens, IDs that are not useful to the user, or s
 - Use existing Expo SDK 54, Expo Router 6, React Native, JavaScript, Context, AsyncStorage, and API client patterns.
 - Add no dependency unless an existing required behavior is impossible and the user explicitly approves it.
 - Prefer a frontend adapter. Change the backend only when the documented gate proves it necessary, and then touch only the minimum status-contract surface with focused tests and backward compatibility.
-- Keep backend snake_case and broad-update compatibility inside `orderService.js`; UI code consumes normalized camelCase data.
+- Keep backend snake_case and broad-update compatibility inside `services/orders/courierDeliveries.js`; expose operations through the `orderService.js` facade so UI code consumes normalized camelCase data without knowing the internal module layout.
 - Reuse existing order normalization carefully or extract shared pure helpers; do not regress Customer Order History.
 - Keep token and courier identity in session/service boundaries, never props, route parameters, logs, or local UI input.
 - Use abort/generation guards for asynchronous reads and per-order locks for mutations.

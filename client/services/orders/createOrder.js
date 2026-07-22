@@ -40,7 +40,9 @@ function buildCreateOrderRequestBody({
     throw new ApiRequestError('invalid', ORDER_ERROR_MESSAGES.invalid);
   }
 
-  // These canonical notification keys and strict booleans preserve the graded request contract.
+  // Use the exact HTTP contract: `sendEmail` follows Jackson's normal camelCase mapping, while
+  // `sendSMS` matches the DTO's explicit @JsonProperty capitalization. Strict comparisons prevent
+  // truthy strings or numbers from becoming an unintended notification opt-in.
   return {
     restaurant_id: restaurantId,
     customer_id: customerId,

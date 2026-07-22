@@ -109,6 +109,9 @@ function normalizeAccount(responseData, userId, role, roleId) {
 export async function fetchAccount({ expectedRole, signal }) {
   const { role, roleId, session, userId } = await requireAccountSession(expectedRole);
 
+  // The official client contract includes `type`, while the retained GET controller accepts but
+  // does not bind it. Role isolation therefore cannot rely on the query: normalizeAccount below
+  // verifies both the top-level user ID and the selected nested role ID before exposing any fields.
   const { data, response } = await requestJson(
     `/api/account/${encodeURIComponent(userId)}?type=${encodeURIComponent(role)}`,
     {

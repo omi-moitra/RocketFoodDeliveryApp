@@ -81,7 +81,7 @@ The grading sheet requires that the modal shows the correct date, status, courie
 ### Requirement A — Modal Contract with the Order History Page
 
 - The modal remains a controlled component receiving props only: `visible`, `onClose`, and `order` — the complete normalized order object selected on the Order History page.
-- The normalized order shape is owned by `client/services/orderService.js` and already provides: `id`, `restaurantName`, `status` (raw lowercase), `createdOn` (ISO date-time string), `courierId`/`courierName` (`null` when unassigned), `totalCost` (raw integer), and `products` entries with `productId`, `productName`, `quantity`, `unitCost`, and `totalCost`.
+- The normalized order shape is owned by `client/services/orders/customerOrders.js` and exported through the `orderService.js` facade. It provides: `id`, `restaurantName`, `status` (raw lowercase), `createdOn` (ISO date-time string), `courierId`/`courierName` (`null` when unassigned), `totalCost` (raw integer), and `products` entries with `productId`, `productName`, `quantity`, `unitCost`, and `totalCost`.
 - Render only from this prop; make no network request and read no storage.
 - Render nothing order-specific when `order` is absent (closed state); never crash on a `null` order while the modal is hidden.
 - Do not mutate the order object; it belongs to the page's list state.
@@ -175,7 +175,8 @@ The grading sheet requires that the modal shows the correct date, status, courie
 
 ### Services and Configuration
 
-- `client/services/orderService.js` — already owns the normalized order shape consumed by this modal; this feature adds no service functions.
+- `client/services/orderService.js` — stable public facade through which the screen loads customer orders; this modal adds no service functions.
+- `client/services/orders/customerOrders.js` — owns the normalized order shape consumed by this modal.
 - `client/constants/currency.js` — existing shared `formatProductCost` and the single `whole-dollars` cost-unit rule for every displayed price.
 - `client/constants/theme.js` — exact palette, Oswald/body font families, spacing, and minimum touch targets.
 - A small date-formatting helper (local to the component or a shared constant module if reused) owning the one documented `createdOn` display format and its safe-blank fallback.
@@ -349,7 +350,7 @@ This feature is complete only when:
 - Read `ai/ai-spec.md` and this entire feature file before implementation.
 - The grading sheet is authoritative: the modal shows the correct date, status, courier name, products, prices, and totals, and a missing courier is a valid pending state that must display safely.
 - `client/components/OrderHistoryModal.js` owns the complete presentation-only order detail panel, including the header, rows, total, and close behavior.
-- The data source is the normalized order object from `client/services/orderService.js` (`restaurantName`, `createdOn`, `status`, nullable `courierName`/`courierId`, `totalCost`, and `products[].productId/productName/quantity/totalCost`); do not re-read snake_case keys inside the component and do not invent a detail endpoint.
+- The data source is the normalized order object from `client/services/orders/customerOrders.js`, exposed through the `orderService.js` facade (`restaurantName`, `createdOn`, `status`, nullable `courierName`/`courierId`, `totalCost`, and `products[].productId/productName/quantity/totalCost`); do not re-read snake_case keys inside the component and do not invent a detail endpoint.
 - The wireframe header spells the label `Courrier:`; the grading sheet says "courier name." Use the standard spelling `Courier:` and record the wireframe typo — if a coach confirms the exact wireframe text is graded literally, change only the label string.
 - The wireframe's sample leaves the `Order Date:` value blank, so the exact date format is a documented project decision; pick one readable format, comment it, and keep it consistent.
 - Status arrives lowercase (`pending`); uppercase is a display transform, matching the Order History table's rule.

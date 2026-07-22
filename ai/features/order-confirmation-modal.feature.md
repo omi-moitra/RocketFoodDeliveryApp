@@ -70,6 +70,7 @@ Expected frontend/documentation files:
 
 - `client/components/OrderConfirmationModal.js`
 - `client/services/orderService.js`
+- `client/services/orders/createOrder.js`
 - `client/constants/theme.js` only if an existing token cannot style the checkbox accessibly
 - `client/components/AppIcon.js` only if the established icon owner lacks a required existing icon mapping
 - `PostmanCollection.json`
@@ -173,7 +174,7 @@ Claude must stop after presenting the options. The user chooses. Only the record
 ### 4.5 Requirement E — Request-body accuracy
 
 - `createOrder` accepts explicit booleans from the modal; missing/nonboolean values must not silently become true.
-- Request construction remains in `orderService.js`, never the modal.
+- Request construction remains in `services/orders/createOrder.js` behind the `orderService.js` facade, never the modal.
 - Every order POST includes both final selected boolean values.
 - Neither: false/false.
 - SMS only: true/false.
@@ -278,7 +279,8 @@ Claude must stop after presenting the options. The user chooses. Only the record
 
 ### 6.2 Service and session boundaries
 
-- `client/services/orderService.js` validates boolean inputs and maps them to the user-selected final transport keys.
+- `client/services/orderService.js` remains the stable public facade used by the modal.
+- `client/services/orders/createOrder.js` validates boolean inputs and maps them to the selected canonical request keys.
 - `client/services/apiClient.js` retains JSON transport, timeout, abort, and base-URL responsibilities.
 - `client/storage/authStorage.js` supplies current bearer token/customer ID at submission time.
 - `client/contexts/AuthContext.js` supplies shared unauthorized handling.
@@ -326,7 +328,7 @@ No notification-contract code change may precede the user's selection. If live a
 - **Options presented:** (A) backend `@JsonAlias("sendSMS")/("sendEmail")` — client sends camelCase, backend accepts camelCase + snake_case, backward compatible, +tests; (B) frontend-only — client transmits `send_sms`/`send_email` (wire keys not the official camelCase), no backend change; (C) backend rename to camelCase — breaks snake_case consumers, not backward compatible.
 - **Initial selection:** Option A was implemented as an additive alias compatibility layer.
 - **Revised user selection:** make camelCase canonical rather than retaining snake case as the primary property. `sendEmail` therefore uses its default Jackson name and `sendSms` uses `@JsonProperty("sendSMS")`; `@JsonAlias` is removed.
-- **Final JSON contract:** `POST /api/orders` includes `"sendSMS"` and `"sendEmail"` booleans alongside `restaurant_id`, `customer_id`, and `products`. The two notification values default to `false`. `send_sms`/`send_email` are no longer accepted HTTP keys. Client UI state and `orderService.js` remain camelCase with a strict `=== true` check.
+- **Final JSON contract:** `POST /api/orders` includes `"sendSMS"` and `"sendEmail"` booleans alongside `restaurant_id`, `customer_id`, and `products`. The two notification values default to `false`. `send_sms`/`send_email` are no longer accepted HTTP keys. Client UI state and `services/orders/createOrder.js` remain camelCase with a strict `=== true` check; `orderService.js` re-exports the operation.
 - **Server files:** `dtos/order/ApiCreateOrderDTO.java`; focused DTO contract tests and the existing controller camelCase test. No new endpoint/DTO/service, and no database column change.
 - **Envelopes/errors:** success `201 { message:"Success", data: <order> }`; invalid product/body `400`; `401/403` unauthorized (client routes to shared sign-out); `5xx` service. Unchanged from M13.
 - **Verification:** focused DTO tests cover canonical input/output, ignored legacy keys, and default false. Postman has all four camelCase combinations. Full integration, DBeaver persistence, and native checkbox interaction remain operator checks for this revision.
@@ -426,7 +428,7 @@ The design must prevent contradictory states such as editable checkboxes during 
 - Use existing React Native primitives, icons, theme, JavaScript, Context, session, and API-client patterns.
 - Add no checkbox/state dependency without explicit approval.
 - Present contract options and wait for the user's selection; do not choose JSON compatibility policy independently.
-- Keep client state camelCase and perform selected transport mapping once in `orderService.js`.
+- Keep client state camelCase and perform the canonical request-key mapping once in `services/orders/createOrder.js`.
 - Preserve the existing order endpoint and backward compatibility unless the selected option explicitly documents otherwise.
 - Do not expose secrets or add provider configuration to `EXPO_PUBLIC_*`.
 - Do not stage, commit, merge, push, or mutate external systems without explicit user authorization.
@@ -533,7 +535,7 @@ Claude must leave criteria unchecked until current evidence supports them. Sourc
 - Preserve the M13 modal; add the smallest cohesive notification extension.
 - Investigate `sendSMS`/`sendEmail` versus `send_sms`/`send_email`, present options, and stop for the user's selection.
 - Do not decide the transport compatibility approach or edit server/client notification mapping before selection.
-- Keep UI state camelCase; centralize the selected transport mapping in `orderService.js`.
+- Keep UI state camelCase; centralize the canonical request-key mapping in `services/orders/createOrder.js`.
 - Test all four combinations and preserve duplicate, abort, retry, reset, and unauthorized behavior.
 - Do not implement or claim direct provider delivery as baseline work.
 - Do not claim live/Postman/database/native results unless observed.

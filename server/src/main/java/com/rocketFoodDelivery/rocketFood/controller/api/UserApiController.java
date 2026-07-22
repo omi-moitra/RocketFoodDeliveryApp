@@ -60,6 +60,9 @@ public class UserApiController {
         return ResponseBuilder.buildOkResponse(null);
     }
 
+    // The official mobile URL also sends ?type=customer|courier. Spring safely ignores that
+    // unbound query for this retained endpoint; the client then verifies the requested nested
+    // role ID against its authenticated session before displaying role-specific contact data.
     @GetMapping("/api/account/{id}")
     public ResponseEntity<Object> getAccount(@PathVariable int id) {
         ApiAccountDTO dto = userService.getAccountDTO(id)

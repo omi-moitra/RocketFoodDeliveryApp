@@ -55,7 +55,7 @@ The Restaurant Menu feature already opens the modal with only positive-quantity 
 - Standard currency formatting through the one shared formatter in `client/constants/currency.js` (for example `$20.95`).
 - The `CONFIRM ORDER` action button and construction of the exact `POST /api/orders` request body from the current selection, stored `customer_id`, and selected `restaurant_id`.
 - Protected submission through the shared `apiClient` with the bearer token and bounded timeout/abort behavior.
-- A new focused order service, `client/services/orderService.js`, owning request-body creation, envelope validation, and error classification for order creation.
+- The stable `client/services/orderService.js` facade and focused `client/services/orders/createOrder.js` owner for request-body creation, envelope validation, and order-creation error classification.
 - Explicit modal submission states: `idle`, `processing`, `success`, and `error`.
 - The disabled `Processing Order…` button state while the request is pending.
 - The success state: action button hidden, green checkmark, success message.
@@ -154,7 +154,7 @@ The Restaurant Menu feature already opens the modal with only positive-quantity 
   - HTTP 401/403 for a missing/expired token (the current backend emits 403; see above).
   - Network/timeout/abort failures with no HTTP response.
   - HTTP 5xx or malformed envelopes as service/response failures.
-- Classify failures in `orderService.js` into user-safe categories; never surface raw server messages, stack traces, or the token.
+- Classify failures in `services/orders/createOrder.js` into user-safe categories; never surface raw server messages, stack traces, or the token.
 
 ### Requirement E — Explicit Submission States
 
@@ -278,7 +278,8 @@ idle → processing → success
 
 ### Services and Configuration
 
-- `client/services/orderService.js` — new focused service owning `createOrder`: request-body construction, `POST /api/orders` submission, HTTP 201 envelope validation, and failure classification.
+- `client/services/orderService.js` — stable public facade exporting `createOrder` for existing callers.
+- `client/services/orders/createOrder.js` — focused owner of request-body construction, `POST /api/orders` submission, HTTP 201 envelope validation, and failure classification.
 - `client/services/apiClient.js` — existing shared transport: environment base URL, bounded JSON requests, bearer-token header, abort/timeout, and `ApiRequestError` classification.
 - `client/constants/currency.js` — existing shared `formatProductCost` and the single `whole-dollars` cost-unit rule.
 - `client/constants/theme.js` — exact palette, Oswald/body font families, spacing, and minimum touch targets.
