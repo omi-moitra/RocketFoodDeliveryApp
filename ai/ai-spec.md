@@ -57,8 +57,8 @@ For each conflict, Claude must quote or identify both conflicting sources, state
 
 The following conflicts are explicit implementation gates. Claude must prefer a frontend service adapter when the existing backend can satisfy the requirement safely. When verified evidence proves that the frontend cannot meet a required behavior without data loss, unsafe guesses, or a missing operation, Claude may make the smallest backend adjustment that closes only that gap. The discrepancy, rejected frontend-only option, exact backend and frontend changes, compatibility impact, and verification must be documented in this file and `README.md` before the change is treated as complete:
 
-- The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query.
-- The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`.
+- The grading sheet requires `GET /api/account/{id}?type={user_type}`. The current controller exposes `GET /api/account/{id}` without a `type` query. **Resolved:** the frontend-only option was selected — `GET /api/account/{id}` is retained unchanged; the client sends the official `?type={role}` query, which Spring safely ignores, and the client verifies the requested role against its authenticated session. See `controller/api/UserApiController.java:63-71` and the README backend-adjustment record.
+- The grading sheet labels the account update as a POST to `/api/account/{id}`. The current controller exposes `PUT /api/account/{id}?type={type}`. **Resolved (user-selected Option 3):** an additive `POST /api/account/{id}` endpoint using the official body shape `{ account_type, account_email, account_phone }` was added, delegating to the same `updateAccount` service; the existing `PUT` is retained unchanged for compatibility. See `controller/api/UserApiController.java:87-107`, `AccountApiControllerTest.java`, and the README backend-adjustment record.
 - The grading sheet names order fields `sendSMS` and `sendEmail`, while the original Java DTO mapped `send_sms` and `send_email`. **Resolved and subsequently revised by the user:** the official camelCase spellings are now canonical for both deserialization and serialization. `sendEmail` uses Jackson's default property name and `sendSms` uses `@JsonProperty("sendSMS")`; legacy snake-case notification keys are no longer accepted. See §10.5 and the README backend-adjustment record.
 - The current order API separates courier assignment from a broad order update whose DTO requires unrelated order fields. The project decision fixes the operation order, but the Courier feature must still verify and document the exact safe request bodies and responses before implementation. **Resolved:** `restaurant_rating` was added to the response DTO `ApiOrderDTO` (minimum-change policy) so the client can echo the current rating back through the existing broad `PUT /api/orders/{id}` without erasing it; no new endpoint. See §10.4 and the README backend-adjustment record.
 
@@ -937,11 +937,11 @@ Do not duplicate completion entries in this global specification, feature specif
 
 ### 23.1 Repository and specifications
 
-- [ ] History clearly follows `feature/*` → `dev` → `main`; final stable work is on `main`.
+- [ ] History clearly follows `feature/*` → `dev` → `main`; final stable work is on `main`. (Prior M14 work did follow this flow into `main` at `9cb3bdb`. Current work sits on branch `documentation`, 8 commits ahead of `main` — including a feature commit and a refactor commit — and has not yet been merged.)
 - [x] The global spec and all seven exact M14 feature specs exist at the canonical `ai/` paths and describe the implemented contracts.
-- [ ] Known API-contract mismatches are resolved and recorded from live evidence.
-- [ ] Every backend adjustment is the verified minimum, preserves compatibility where possible, has focused tests, and is documented in this specification and `README.md` with its final contract and verification.
-- [ ] No secrets, local environment files, generated output, debug helpers, or submission summary are committed.
+- [x] Known API-contract mismatches are resolved and recorded from live evidence. (All four §1.1 gates now carry a **Resolved** annotation with code/test citations: GET `?type=` ignored by design, POST `/api/account/{id}` added, camelCase `sendSMS`/`sendEmail`, and `restaurant_rating` echoed through the broad order update.)
+- [x] Every backend adjustment is the verified minimum, preserves compatibility where possible, has focused tests, and is documented in this specification and `README.md` with its final contract and verification. (README's "Module 14 backend adjustment record" documents all three adjustments with exact files, compatibility impact, and tests; `./mvnw test` → 120/120 passed, 0 failures, confirming the focused tests actually run.)
+- [ ] No secrets, local environment files, generated output, debug helpers, or submission summary are committed. (**Violation found:** `docVault/submission-summary.txt` is tracked and contains the student name, repo SSH URL, video links, and a demo customer email/password — §23.6 explicitly requires the submission summary to be non-committed.)
 
 ### 23.2 Authentication and navigation
 
@@ -959,8 +959,8 @@ Do not duplicate completion entries in this global specification, feature specif
 - [x] Both roles share the Account implementation showing read-only user email plus active-role email/phone.
 - [x] Backend tests verify valid role email/phone persistence and preservation of primary email; invalid/failed client states preserve the draft/display.
 - [x] Account form is shared, scrollable, keyboard-aware, and duplicate-save protected.
-- [ ] Courier sees all pending and only their assigned in-progress/delivered orders.
-- [ ] Status colors and progression are exactly correct and persist in the database.
+- [x] Courier sees all pending and only their assigned in-progress/delivered orders. (Eligibility filter in `courierDeliveries.js` proven by a merge test that specifically excludes a foreign courier's non-pending order; confirmed live by the operator's native run.)
+- [x] Status colors and progression are exactly correct and persist in the database. (Colors implemented via `DELIVERY_STATUS_COLORS`; status→3 persistence DB-proven by `./mvnw test`; status→2 persistence confirmed by the operator's DBeaver check and native run.)
 - [x] Delivered orders are locked in both service and component behavior.
 - [x] Every delivery View action targets the selected order and opens the reusable scrollable Delivery Details modal.
 
@@ -969,16 +969,16 @@ Do not duplicate completion entries in this global specification, feature specif
 - [x] SMS/email choices work independently and all four combinations map to accurate canonical booleans.
 - [x] Every order POST carries canonical SMS/email booleans in the single creation request; there is no separate baseline client notification request.
 - [x] Confirmation submission is duplicate-safe and preserves the specified retry/reset behavior.
-- [ ] The full M13 customer journey passes without regression.
+- [x] The full M13 customer journey passes without regression. (Confirmed by the operator's native regression run; 170/170 client and 120/120 backend automated tests also pass.)
 
 ### 23.5 Design, quality, and delivery
 
-- [ ] New and retained UI follows the palette, Arial/Oswald rules, wireframes, safe areas, and scrolling requirements.
+- [x] New and retained UI follows the palette, Arial/Oswald rules, wireframes, safe areas, and scrolling requirements. (Wireframe-visual comparison and native safe-area/scrolling verification completed by the operator across all screens.)
 - [x] Shared Account, delivery, result-state, session, API, validation, status, and typography owners avoid unnecessary duplication.
 - [ ] No dead code, unused imports, commented-out implementations, stale comments, or debug logs remain.
-- [ ] Postman runs all required requests without query editing and DBeaver evidence matches mutations.
-- [ ] Applicable Expo, dependency, export, server, manual, iOS, and Android checks pass or have honestly recorded blockers.
-- [ ] README, CONCEPTS, and LeetCode screenshots are committed, complete, and accurate.
+- [x] Postman runs all required requests without query editing and DBeaver evidence matches mutations. (Confirmed by the operator: Postman collection run against a live server and DBeaver evidence checked for orders, account updates, and courier status/assignment.)
+- [x] Applicable Expo, dependency, export, server, manual, iOS, and Android checks pass or have honestly recorded blockers. (`npx expo config --type public` and `npx expo export --platform android` both exit 0; `npm ls --depth=0` reports a clean tree; `./mvnw test` → 120/120 passed; every outstanding manual/iOS/Android item carries an explicit "native pending" annotation in its owning feature spec rather than being silently skipped.)
+- [x] README, CONCEPTS, and LeetCode screenshots are committed, complete, and accurate. (`README.md`, `Concepts/M13/CONCEPTS.md`, `Concepts/M14/CONCEPTS.md` are tracked and substantive; `LeetCode-Challenges/M13/` and `/M14/` contain committed screenshots for both modules; spot-checked README's backend-adjustment record against the actual controller code and corrected one stale test count.)
 
 ### 23.6 Human and process items (not agent-verifiable)
 

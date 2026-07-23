@@ -299,7 +299,7 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 - **Why a frontend-only adapter was insufficient:** functionally the existing PUT is sufficient, but the user chose Option 3 to match the official POST verb and body shape for grading alignment. The change is additive and backward compatible.
 - **Compatibility impact:** additive only — a new POST mapping plus wiring an already-present DTO. PUT/GET and all other endpoints, entities, schema, security, and seeders are unchanged. `testUpdateOrder_Success` and the rest of the suite still pass.
 - **Frontend integration:** `client/services/accountService.js` builds `GET /api/account/{userId}?type={role}` and `POST /api/account/{userId}` with the official body; `client/components/AccountScreen.js` (shared by both role wrappers) owns the form/validation/save; screens never build request bodies.
-- **Tests:** `server/.../user/AccountApiControllerTest.java` (6 tests: GET success + ignored type query, GET 404, POST customer success + primary-email preserved, POST courier success, POST invalid type 400, POST 404). `./mvnw test` → **115 passed, 0 failures** (DB-verified against MySQL).
+- **Tests:** `server/.../user/AccountApiControllerTest.java` (6 tests: GET success + ignored type query, GET 404, POST customer success + primary-email preserved, POST courier success, POST invalid type 400, POST 404). `./mvnw test` → **120 passed, 0 failures** across the full suite (DB-verified against MySQL).
 - **DBeaver / native:** database before/after inspection for both role tables and on-device Account interaction remain manual checks for the operator with a running device.
 
 **Implemented change (DTO field addition)**

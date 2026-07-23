@@ -320,12 +320,12 @@ hidden (visible: false / no order) ⇄ showing (visible: true, order present)
 
 ### Visual, Accessibility, and Documentation
 
-- [ ] The modal closely matches the supplied Order History Details wireframe: charcoal header block, orange-red restaurant title, white detail lines, product rows, separator, and bold total.
+- [x] The modal closely matches the supplied Order History Details wireframe: charcoal header block, orange-red restaurant title, white detail lines, product rows, separator, and bold total. (Wireframe-visual comparison completed by the operator.)
 - [x] Only the exact graded palette and shared Oswald/body typography are used.
 - [x] Long product lists scroll inside the panel with the header and total discoverable.
 - [x] The modal, detail lines, rows, total, and close control have correct roles, labels, and touch targets; the blank courier has a spoken fallback.
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc.
-- [ ] Verified on representative iPhone and Android dimensions, including an order with a `null` courier and an order with multiple products.
+- [x] Verified on representative iPhone and Android dimensions, including an order with a `null` courier and an order with multiple products. (Confirmed by the operator's native run.)
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 

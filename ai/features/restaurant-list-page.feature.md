@@ -532,7 +532,7 @@ idle → loading → success
 - [x] Long lists, long names, and small phone screens remain scrollable and readable.
 - [x] Filter controls, image actions, state messages, and retry actions have correct accessibility behavior and touch targets.
 - [x] The page uses the exact supplied palette and shared fonts on iOS and Android.
-- [ ] Postman verifies no-filter, rating-only, price-only, combined, and no-match/boundary behavior against the existing API.
+- [x] Postman verifies no-filter, rating-only, price-only, combined, and no-match/boundary behavior against the existing API. (Run against a live server by the operator.)
 
 ### Documentation and Code Readability
 

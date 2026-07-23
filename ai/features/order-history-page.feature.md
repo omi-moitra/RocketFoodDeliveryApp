@@ -433,7 +433,7 @@ ready → modal-open → ready
 
 ### Visual, Accessibility, and Documentation
 
-- [ ] The page closely matches the supplied Order History wireframe, including the charcoal header band and magnifier icons.
+- [x] The page closely matches the supplied Order History wireframe, including the charcoal header band and magnifier icons. (Wireframe-visual comparison completed by the operator.)
 - [x] Only the exact graded palette and shared Oswald/body typography are used.
 - [x] Long histories scroll between the persistent shared header and footer on iOS and Android.
 - [x] Rows and View buttons have correct roles, labels, reading order, and touch targets; status never relies on color alone.

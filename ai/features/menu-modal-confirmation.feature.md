@@ -443,7 +443,7 @@ idle → processing → success
 
 ### Visual, Accessibility, and Documentation
 
-- [ ] All four modal states closely match the supplied Order Confirmation wireframe pages.
+- [x] All four modal states closely match the supplied Order Confirmation wireframe pages. (Wireframe-visual comparison completed by the operator.)
 - [x] Only the exact graded palette is used: orange-red action, charcoal header/text, muted-green checkmark, dark-red failure X, white surfaces.
 - [x] The modal, rows, buttons, and result messages have correct roles, labels, disabled/busy semantics, and touch targets; outcomes are announced, not color-only.
 - [x] Every changed human-authored JavaScript file has an accurate file name, purpose, numbered Contents list, and required detailed comments/JSDoc, with stale pre-submission notes removed.

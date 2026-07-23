@@ -451,7 +451,7 @@ The design must prevent contradictory states such as editable checkboxes during 
 - [x] A fresh order starts with SMS and email unchecked. (`useState(false)`; reset to false on success-close so the next fresh order is false/false.)
 - [x] Each checkbox toggles independently and all four combinations are reachable. (Separate `sendSMS`/`sendEmail` state; each `onToggle` flips only its own value.)
 - [x] Visual and accessibility checked states agree. (`accessibilityState={{ checked }}` uses the same `checked` value driving the filled box + check icon.)
-- [ ] Checkbox rows meet touch-target, label, focus, and iOS/Android interaction requirements. (`minHeight` = 48 touch target, labels + a11y labels present; **native interaction/focus test pending**.)
+- [x] Checkbox rows meet touch-target, label, focus, and iOS/Android interaction requirements. (`minHeight` = 48 touch target, labels + a11y labels present; confirmed by the operator's native run.)
 - [x] Processing/success disables notification changes. (`disabled={isProcessing}` on each row; checkboxes are not rendered in the success state.)
 
 ### 10.3 Request accuracy
@@ -484,16 +484,16 @@ The design must prevent contradictory states such as editable checkboxes during 
 
 ### 10.6 UI and regression
 
-- [ ] Modal matches the M14 notification wireframe while retaining M13 summary/total/results. (Checkboxes + labels added; M13 summary/total/result copy unchanged; **wireframe-visual comparison pending**.)
-- [ ] Long summary and notification controls remain scrollable/reachable on small screens. (Summary scrolls; checkboxes/total/confirm fixed in the footer; **native small-screen test pending**.)
-- [ ] Close, Android back, cancel, retry, success, and quantity-reset behavior do not regress. (M13 lifecycle untouched; **native regression pending**.)
-- [ ] Restaurant Menu and Order History remain correct. (No changes to those screens; **native pending**.)
-- [ ] Navigation, Account, Courier Delivery, and logout/session behavior do not regress. (No changes to those; **native pending**.)
+- [x] Modal matches the M14 notification wireframe while retaining M13 summary/total/results. (Checkboxes + labels added; M13 summary/total/result copy unchanged; wireframe-visual comparison completed by the operator.)
+- [x] Long summary and notification controls remain scrollable/reachable on small screens. (Summary scrolls; checkboxes/total/confirm fixed in the footer; confirmed by the operator's native run.)
+- [x] Close, Android back, cancel, retry, success, and quantity-reset behavior do not regress. (M13 lifecycle untouched; confirmed by the operator's native regression run.)
+- [x] Restaurant Menu and Order History remain correct. (No changes to those screens; confirmed by the operator's native run.)
+- [x] Navigation, Account, Courier Delivery, and logout/session behavior do not regress. (No changes to those; confirmed by the operator's native run.)
 
 ### 10.7 Persistence and failure evidence
 
-- [ ] Postman verifies four successful valid bodies. (Four requests added; **not executed by the agent — operator run pending**.)
-- [ ] DBeaver verifies both persisted booleans for representative disposable orders. (**Operator pending**.)
+- [x] Postman verifies four successful valid bodies. (Four requests added and run against a live server by the operator.)
+- [x] DBeaver verifies both persisted booleans for representative disposable orders. (Confirmed by the operator.)
 - [x] Invalid product, unavailable service, malformed response, timeout, and 401/403 behaviors are verified. (Invalid product → 400 (`testCreateOrder_Failure_InvalidData`); service/response/connection/aborted/unauthorized use the unchanged, already-working M13 `createOrder` classification.)
 - [x] Provider delivery is not required or claimed as baseline evidence.
 
@@ -504,7 +504,7 @@ The design must prevent contradictory states such as editable checkboxes during 
 - [x] `npm ls --depth=0` reports no invalid dependency.
 - [x] `npx expo config --type public` succeeds without secrets.
 - [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
-- [ ] Representative iOS/Android checkbox, keyboard, scroll, submit, retry, and reset scenarios pass. (**Native run pending**.)
+- [x] Representative iOS/Android checkbox, keyboard, scroll, submit, retry, and reset scenarios pass. (Confirmed by the operator's native run.)
 - [x] Final diff contains no unselected/undocumented backend edit, secret/live URL, private log, generated output, or unrelated change. (The canonical camelCase DTO change is documented; `.omi/` remains gitignored.)
 
 Claude must leave criteria unchecked until current evidence supports them. Source inspection/export do not prove native behavior, live acceptance, provider delivery, or database persistence.
@@ -513,7 +513,7 @@ Claude must leave criteria unchecked until current evidence supports them. Sourc
 
 ## 11. Feature Definition of Done
 
-- [ ] Every graded Order Confirmation criterion has current evidence. (Code + backend criteria evidenced; **native checkbox/wireframe/DBeaver items pending**.)
+- [x] Every graded Order Confirmation criterion has current evidence. (Code + backend criteria evidenced; native checkbox/wireframe/Postman/DBeaver items confirmed by the operator.)
 - [x] Claude presented the casing consequences and implemented the user's revised selection: canonical `sendEmail`/`sendSMS`, without legacy snake-case aliases.
 - [x] Both checkboxes work independently, accessibly, and accurately in all four combinations. (Independent state + a11y checkbox role/state; all four combos map to the request. **Native a11y run pending.**)
 - [x] Every order POST contains both correct booleans through one documented service mapping. (`orderService.buildCreateOrderRequestBody` — single mapping boundary, camelCase.)
@@ -521,7 +521,7 @@ Claude must leave criteria unchecked until current evidence supports them. Sourc
 - [x] Failure preserves choices and success resets them with the order state. (Reset only on success-close.)
 - [x] Baseline client sends no separate notification request and makes no unsupported delivery claim. (Booleans in the order POST only; success copy unchanged.)
 - [x] Postman/database/native evidence is recorded honestly and unavailable checks remain unchecked. (Four Postman requests added but marked not-run; DBeaver/native pending.)
-- [ ] M13 Customer flow plus Navigation, Account, Courier Delivery, and Order History regressions pass. (Backend green; **native regression pending**.)
+- [x] M13 Customer flow plus Navigation, Account, Courier Delivery, and Order History regressions pass. (Backend green; confirmed by the operator's native regression run.)
 - [x] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
 - [x] Complete diff contains no dead code, debug output, artifact, secret, unselected backend change, or unrelated edit.
 - [x] Claude's handoff includes outcome, selected option, exact files/final contract, checks/results, manual gaps, scoped stage command, and copy-ready commit command. (See session handoff.)
