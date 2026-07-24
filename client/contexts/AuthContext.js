@@ -20,11 +20,13 @@ import {
 const AuthContext = createContext(null);
 
 /**
- * Restores and owns the in-memory customer session shared by protected routes.
+ * Restores and owns the in-memory role-capable session shared by every protected route.
  * RootLayout wraps the route tree with this provider at application startup.
  */
 export function AuthProvider({ children }) {
-  // session is the credential/customer snapshot; loading blocks routing until storage resolves.
+  // `session` is the single validated identity snapshot (token, user ID, available role IDs, and
+  // active role). Keeping it together prevents navigation from observing a newly selected role with
+  // stale IDs; `isSessionLoading` blocks every route until the persisted snapshot is reconstructed.
   const [session, setSession] = useState(null);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
 
@@ -72,6 +74,8 @@ export function AuthProvider({ children }) {
   const completeSignIn = useCallback(async (authValues) => {
     try {
       const savedSession = await saveAuthSession(authValues);
+      // Expose the session only after every identity key is persisted, so a fast route change can
+      // never render protected content backed by an incomplete on-disk session.
       setSession(savedSession);
     } catch (error) {
       // A failed multi-key write must not leave a restorable partial session behind.
@@ -89,6 +93,7 @@ export function AuthProvider({ children }) {
   const selectRole = useCallback(async (role) => {
     // Storage validates the role against the session's available IDs before it becomes active.
     const updatedSession = await saveRoleSelection(role);
+    // Updating context after the awaited write makes the root guard and relaunch behavior agree.
     setSession(updatedSession);
   }, []);
 

@@ -71,6 +71,9 @@ function RootNavigator() {
     <>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
+        {/* Stack.Protected removes unauthorized destinations from navigator state, not merely from
+            view rendering. Logout or a role decision therefore cannot leave a protected screen in
+            back history, and the mutually exclusive guards expose exactly one root branch. */}
         <Stack.Protected guard={!session}>
           <Stack.Screen name="index" />
         </Stack.Protected>

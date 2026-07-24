@@ -23,20 +23,22 @@
 
 ## Project Description
 
-Rocket Food Delivery is a cross-platform customer app for browsing restaurants, filtering by rating and price, choosing menu quantities, placing an order, and reviewing order history. It gives customers one mobile workflow while the existing Java API manages authentication, restaurant data, products, and orders.
+Rocket Food Delivery is a cross-platform customer and courier app. Customers can browse restaurants, filter menus, place orders, and review order history; couriers can accept deliveries and advance their status. The existing Java API manages authentication, restaurant data, products, accounts, and orders.
 
-This repository is the Module 13 mobile-development project. It contains the Expo/React Native client, the existing Spring Boot backend used by the client, project specifications, research, concept documentation, and an importable Postman collection.
+This repository continues the completed Module 13 customer app for Module 14 Mobile Development 2. It contains the role-aware Expo/React Native client, its Spring Boot backend, canonical project specifications, research, module-specific concept documentation, and an importable Postman collection.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
 ## Features
 
-- Customer login with a persisted session and protected navigation
+- Role-capable login with persisted sessions and protected Customer/Courier navigation
 - File-based nested navigation: root stack, customer tabs, and restaurant stack
 - Restaurant browsing with combined rating and price-range filters
 - Restaurant menus with guarded quantity controls and calculated totals
 - Order confirmation with processing, failure/retry, and success states
+- Independent SMS and email confirmation choices carried in the order-creation request
 - Customer order history and order-detail modal, including pending orders without a courier
+- Courier delivery acceptance, status progression, details, and account management
 - Shared loading, empty, error, and session-expiry handling
 - iOS, Android, simulator, and physical-device development through Expo and ngrok
 
@@ -53,7 +55,7 @@ This repository is the Module 13 mobile-development project. It contains the Exp
 | Data | MySQL 8, Spring Data JPA/Hibernate |
 | Authentication | Stateless bearer-token API authentication with JWT |
 | Local connectivity | Environment-based API URL and optional ngrok tunnel |
-| Testing/inspection | Maven test suite, Expo device QA, Postman, DBeaver |
+| Testing/inspection | Jest, Maven test suite, Expo device QA, Postman, DBeaver |
 | Version control | Git with feature branches merged through `dev` into `main` |
 
 Expo SDK 54 is intentional. A coach confirmed that the repository's current `expo ~54.0.34` baseline is acceptable for this submission.
@@ -72,9 +74,9 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   ├── contexts/               # Authentication/session context
 │   ├── docs/                   # Supplied M13/M14 design references
 │   ├── images/restaurants/     # Six bundled restaurant images
-│   ├── services/               # API requests and response validation
-│   ├── storage/                # AsyncStorage session boundary
-│   ├── utils/                  # Pure helpers and focused client unit tests
+│   ├── services/               # API boundaries plus service/workflow tests
+│   ├── storage/                # AsyncStorage session boundary and tests
+│   ├── utils/                  # Pure helpers, formatting, and focused tests
 │   ├── .env.example            # Safe client environment template
 │   ├── app.json                # Expo application configuration
 │   ├── package.json            # Client scripts and dependencies
@@ -86,9 +88,13 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   └── pom.xml                 # Java and Spring dependencies
 ├── scripts/ngrok-phone.sh           # Physical-phone API tunnel helper
 ├── ai/                              # Project rules and feature specifications
-├── Concepts/M13/                    # Module 13 concepts and code references
-├── docVault/                        # Research and implementation audit documents
-├── LeetCode-Challenges/              # Required SQL challenge solution screenshots
+├── Concepts/
+│   ├── M13/                         # Module 13 concepts and code references
+│   └── M14/                         # Module 14 concepts and code references
+├── docVault/                        # Research, audit findings, and refactoring records
+├── LeetCode-Challenges/
+│   ├── M13/                         # Module 13 SQL challenge screenshots
+│   └── M14/                         # Module 14 challenge screenshots
 ├── PostmanCollection.json           # Importable mobile API request collection
 └── README.md                        # Setup, API, verification, and project overview
 ```
@@ -224,7 +230,7 @@ The helper opens an HTTPS tunnel to port 8080, temporarily writes its public URL
 | `app.jwt.secret` | backend properties | Yes | Local key used to sign and validate JWTs |
 | ngrok authtoken | ngrok user config | Physical phone only | Allows the local API tunnel to start |
 
-`EXPO_PUBLIC_*` values are embedded in the client bundle and must never contain secrets. Backend notification settings for Twilio and Notify.EU are optional and are not needed for the Module 13 customer flow because order requests send both notification flags as `false`. Those optional provider settings are therefore not part of the required local setup above.
+`EXPO_PUBLIC_*` values are embedded in the client bundle and must never contain secrets. The Module 14 client sends both notification choices as booleans in the order-creation request but never talks directly to Twilio or Notify.EU. Backend provider credentials remain optional local configuration; when they are absent, provider delivery is skipped while the order and its selected boolean values remain the API's responsibility.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
 
@@ -234,7 +240,7 @@ The client reads the configured base URL, adds the path below, and expects JSON.
 
 | Method | Path | Mobile use |
 |---|---|---|
-| `POST` | `/api/auth` | Validate email/password and return the customer session |
+| `POST` | `/api/auth` | Validate email/password and return the available Customer/Courier role identifiers |
 | `GET` | `/api/restaurants` | List restaurants; optional `rating` and `price_range` filters |
 | `GET` | `/api/restaurants/{id}` | Load the selected restaurant |
 | `GET` | `/api/products?restaurant={id}` | Load products for one restaurant menu |
@@ -293,7 +299,7 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 - **Why a frontend-only adapter was insufficient:** functionally the existing PUT is sufficient, but the user chose Option 3 to match the official POST verb and body shape for grading alignment. The change is additive and backward compatible.
 - **Compatibility impact:** additive only — a new POST mapping plus wiring an already-present DTO. PUT/GET and all other endpoints, entities, schema, security, and seeders are unchanged. `testUpdateOrder_Success` and the rest of the suite still pass.
 - **Frontend integration:** `client/services/accountService.js` builds `GET /api/account/{userId}?type={role}` and `POST /api/account/{userId}` with the official body; `client/components/AccountScreen.js` (shared by both role wrappers) owns the form/validation/save; screens never build request bodies.
-- **Tests:** `server/.../user/AccountApiControllerTest.java` (6 tests: GET success + ignored type query, GET 404, POST customer success + primary-email preserved, POST courier success, POST invalid type 400, POST 404). `./mvnw test` → **115 passed, 0 failures** (DB-verified against MySQL).
+- **Tests:** `server/.../user/AccountApiControllerTest.java` (6 tests: GET success + ignored type query, GET 404, POST customer success + primary-email preserved, POST courier success, POST invalid type 400, POST 404). `./mvnw test` → **120 passed, 0 failures** across the full suite (DB-verified against MySQL).
 - **DBeaver / native:** database before/after inspection for both role tables and on-device Account interaction remain manual checks for the operator with a running device.
 
 **Implemented change (DTO field addition)**
@@ -303,7 +309,7 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 - **Response:** `ApiOrderDTO` now includes `restaurant_rating` (nullable). All other fields unchanged.
 - **Why a frontend-only adapter was insufficient:** the response never exposed `restaurant_rating`, so no adapter could rebuild the required broad-update body without guessing it; the broad update then overwrites it, causing silent data loss. Exposing the field in the response is the smallest change that removes the guess.
 - **Compatibility impact:** additive only. Adding a field to a response breaks no existing consumer; the broad update, creation, retrieval, assignment, and rating endpoints, and all entities/schema/security/seeders are unchanged.
-- **Frontend integration:** `client/services/orderService.js` normalizes `restaurantId`, `customerId`, and `restaurantRating`, then `acceptDelivery` (status 2 via broad update, then assign courier), `markDelivered` (status 3 via broad update), and `assignActiveCourier` (partial-acceptance recovery) build the body; screens never build it.
+- **Frontend integration:** `client/services/orders/courierDeliveries.js` normalizes `restaurantId`, `customerId`, and `restaurantRating`, then `acceptDelivery` (status 2 via broad update, then assign courier), `markDelivered` (status 3), and `assignActiveCourier` (partial-acceptance recovery) build the requests; `client/services/orderService.js` remains the stable public re-export facade and screens never build API bodies.
 - **Tests:** `server/.../order/OrderApiControllerTest.java` adds `testOrderResponse_ExposesRestaurantRating` and `testUpdateOrder_PreservesRatingAndCourierWhenEchoed`. (Backend test run pending on the operator's machine; not re-run in the latest pass.)
 - **Postman:** `PostmanCollection.json` includes pending, courier-scoped, broad-update→in progress, courier assignment, and broad-update→delivered requests.
 - **DBeaver / native:** database before/after inspection and on-device courier interaction remain manual checks for the operator with a running device.
@@ -312,16 +318,17 @@ Each documented backend adjustment must identify the source discrepancy, why a f
 
 ## Examples from This Project
 
-### Seeded customer login
+### Seeded role logins
 
-The Postman collection and mobile demo use this development-only customer account:
+The mobile demo includes three deterministic development accounts:
 
-```text
-Email: customer@gmail.com
-Password: password
-```
+| Account | Email | Password | Login result |
+|---|---|---|---|
+| Customer | `customer@gmail.com` | `password` | Opens the Customer application directly |
+| Courier | `courier@gmail.com` | `password` | Opens the Courier application directly |
+| Customer and Courier | `both@gmail.com` | `password` | Opens Account Selection to choose a role |
 
-The Login screen sends those credentials to `POST /api/auth`. A successful response supplies the customer identity and bearer token used by the protected customer routes. These are local seed credentials, not production credentials.
+The Login screen sends the selected credentials to `POST /api/auth`. A successful response supplies the available role identifier or identifiers and the bearer token used by protected routes. These are local seed credentials, not production credentials.
 
 ### Browse and filter restaurants
 
@@ -376,8 +383,8 @@ The actual IDs come from the authenticated customer and loaded restaurant/menu d
 | Courier statuses | `free`, `busy`, `full`, and `offline` |
 | Restaurants | 8 active restaurants with generated names and price ranges from 1–3 |
 | Employees | 5 generated employee records |
-| Customers | 8 baseline customers, followed by 5 append-only Avatar demo customers |
-| Couriers | 8 active couriers with randomly assigned courier statuses |
+| Customers | 8 baseline customers, including the stable Customer and dual-role accounts, followed by 5 append-only Avatar demo customers |
+| Couriers | 8 active couriers, including the stable Courier and dual-role accounts, with seeded courier statuses |
 | Products | 5–7 generated menu products per restaurant, normally 40–56 total |
 | Orders | 10 generated orders with 2–4 product rows each, varied statuses, optional ratings, and no courier while pending |
 
@@ -391,7 +398,7 @@ The five stable Avatar customer accounts are:
 | Toph Beifong | `toph@gmail.com` | `password` |
 | Zuko | `zuko@gmail.com` | `password` |
 
-Most seed methods skip a table when it already contains data. The Avatar accounts are different: any missing Avatar user/customer is appended without rewriting an existing account. Restaurant names, addresses, product details, prices, assignments, statuses, and ratings use Faker or random values, so they can differ between fresh databases. Existing or partially seeded databases can also have totals different from the fresh-database table above.
+Most seed methods skip a table when it already contains data. The stable Courier and dual-role courier assignments are append-safe, so either missing assignment is added without rewriting existing couriers. The Avatar accounts behave similarly: any missing Avatar user/customer is appended without rewriting an existing account. Restaurant names, addresses, product details, prices, assignments, statuses, and ratings use Faker or random values, so they can differ between fresh databases. Existing or partially seeded databases can also have totals different from the fresh-database table above.
 
 The request flow is: screen/component → client service → shared API client → Spring Security JWT filter → controller → service → repository/MySQL → JSON response → client validation → interface state.
 
@@ -412,9 +419,12 @@ Client configuration and dependency checks:
 
 ```bash
 cd client
-npx expo-doctor
-npm install
+npm test
+npm ls --depth=0
+npx expo config --type public
 ```
+
+The client suite covers pure validation and totals, authentication response classification, API transport and timeout handling, persisted-session coherence, account/restaurant/product ownership checks, order request normalization, and courier delivery transitions. Screen rendering and native navigation remain manual/device-level coverage because no UI-rendering test dependency is installed.
 
 Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on an iPhone 17 Pro Max iOS Simulator using the ngrok-backed API URL, and login plus the initial authenticated app view succeeded. The complete customer/courier journeys, Android, persistence/restart, filters, menu quantities, confirmation states, order creation, history/details, logout, scrolling, and keyboard behavior remain pending manual verification.
 
@@ -423,7 +433,10 @@ Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on 
 ## Related documentation
 
 - [Module 13 concepts](Concepts/M13/CONCEPTS.md) explain mobile testing/tunnels, nested Expo Router navigation, and request race conditions.
+- [Module 14 concepts](Concepts/M14/CONCEPTS.md) explain role-aware session states, recoverable courier transitions, and shared role-specific Account forms.
 - [Research](docVault/RESEARCH.md) compares native and cross-platform development, React and React Native, and optional notification providers.
+- [Refactoring audit](docVault/REFACTORING_AUDIT.md) preserves point-in-time candidate findings.
+- [Refactoring Implementation Record](docVault/REFACTORING_IMPLEMENTATION_RECORD.md) is the canonical append-only history of completed refactors.
 - [ai/ai-spec.md](ai/ai-spec.md) records repository-wide implementation rules and decisions.
 - [`ai/features/`](ai/features/) contains the feature-level behavior contracts.
 
@@ -431,7 +444,7 @@ Observed native smoke evidence on 2026-07-21: the app opened through Expo Go on 
 
 ## Author / Contributors
 
-Created by **Omoitra** for CodeBoxx Full-Stack Development Module 13.
+Created by **Omoitra** for CodeBoxx Full-Stack Development Modules 13 and 14.
 
 - [GitHub profile](https://github.com/omoitra-droid)
 - [Project repository](https://github.com/omoitra-droid/M13-rocketFoodDelivery)

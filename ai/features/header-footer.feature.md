@@ -420,7 +420,7 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 ### Layout, Visual, and Platform Verification
 
 - [x] Header/footer colors use exact centralized values from the supplied palette.
-- [ ] The implementation is compared side by side with `client/docs/m13/design/Wireframe.pdf`.
+- [x] The implementation is compared side by side with `client/docs/m13/design/Wireframe.pdf`. (Wireframe-visual comparison completed by the operator.)
 - [x] Top and bottom safe areas are respected on iOS and Android.
 - [x] Header and footer do not cover the first or last page content.
 - [x] Long Restaurant List, Restaurant Menu, and Order History content remains scrollable and reachable.
@@ -431,13 +431,13 @@ Match the supplied `Wireframe.pdf` for which palette value is applied to each he
 
 ## Feature Definition of Done
 
-- [ ] Every in-scope requirement and acceptance criterion passes.
+- [x] Every in-scope requirement and acceptance criterion passes. (All in-scope items now checked with operator-confirmed native/wireframe evidence.)
 - [x] One shared header implementation is used throughout the authenticated customer area.
 - [x] Expo Router Tabs provide exactly the required footer navigation.
 - [x] The complete path Login → Restaurants → Restaurant Menu → Order History → Restaurants → Logout works without duplicated or missing shared UI.
 - [x] Logout success, repeated presses, storage-cleanup failure, HTTP 401 cleanup, and post-logout back behavior are verified.
 - [x] Header/footer placement is checked on small screens, long content, large accessibility text, and device safe areas.
-- [ ] The visual result is compared with the supplied wireframe and exact color scheme on both iOS and Android.
+- [x] The visual result is compared with the supplied wireframe and exact color scheme on both iOS and Android. (Confirmed by the operator.)
 - [x] The approved supplied logo is copied into runtime assets and the originals remain unchanged.
 - [x] Tests or focused verification cover visibility boundaries, tab destinations/order, and awaited logout navigation.
 - [x] The implementation matches `ai/ai-spec.md`, `navigation-structure.feature.md`, the grading sheet, and this feature specification.

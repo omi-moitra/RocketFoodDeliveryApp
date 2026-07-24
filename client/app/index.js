@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AppIcon from '../components/AppIcon';
 import { COLORS, FONT_FAMILIES, LAYOUT, SPACING } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiRequestError } from '../services/apiClient';
@@ -70,6 +71,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loginState, setLoginState] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   // Refs retain controls and request locks without scheduling a render when they change.
   const emailInputRef = useRef(null);
@@ -122,10 +124,15 @@ export default function LoginScreen() {
 
     submissionLockRef.current = true;
     setLoginState('submitting');
+    // One controller owns this attempt from transport through session persistence. Unmounting the
+    // screen aborts it, and the identity check in `finally` prevents an older attempt from clearing
+    // a newer controller if the lifecycle changes unexpectedly.
     const requestController = new AbortController();
     activeRequestRef.current = requestController;
 
     try {
+      // This service validates the token, user ID, and optional role IDs but does not mutate storage;
+      // no authenticated route can open from an unverified backend payload.
       const session = await authenticateUser({
         email: normalizedEmail,
         password,
@@ -137,6 +144,8 @@ export default function LoginScreen() {
       }
 
       try {
+        // Persistence is the commit point for login. AuthContext publishes the session only after
+        // all identity keys are written, which makes the root route guard and relaunch state agree.
         await completeSignIn(session);
       } catch {
         throw new ApiRequestError('storage', FORM_MESSAGES.session);
@@ -204,21 +213,36 @@ export default function LoginScreen() {
             />
 
             <Text style={styles.inputLabel}>Password</Text>
-            <TextInput
-              accessibilityLabel="Password"
-              autoCapitalize="none"
-              autoComplete="current-password"
-              editable={!isSubmitting}
-              onChangeText={setPassword}
-              onSubmitEditing={handleLogin}
-              placeholder="Enter your password"
-              placeholderTextColor={COLORS.charcoal}
-              ref={passwordInputRef}
-              returnKeyType="go"
-              secureTextEntry
-              style={[styles.input, styles.passwordInput]}
-              value={password}
-            />
+            <View style={styles.passwordFieldWrapper}>
+              <TextInput
+                accessibilityLabel="Password"
+                autoCapitalize="none"
+                autoComplete="current-password"
+                editable={!isSubmitting}
+                onChangeText={setPassword}
+                onSubmitEditing={handleLogin}
+                placeholder="Enter your password"
+                placeholderTextColor={COLORS.charcoal}
+                ref={passwordInputRef}
+                returnKeyType="go"
+                secureTextEntry={!isPasswordVisible}
+                style={[styles.input, styles.passwordInput, styles.passwordInputField]}
+                value={password}
+              />
+              <Pressable
+                accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
+                accessibilityRole="button"
+                hitSlop={SPACING.sm}
+                onPress={() => setIsPasswordVisible((current) => !current)}
+                style={styles.passwordVisibilityToggle}
+              >
+                <AppIcon
+                  color={COLORS.charcoal}
+                  name={isPasswordVisible ? 'eye-slash' : 'eye'}
+                  size={20}
+                />
+              </Pressable>
+            </View>
 
             <View style={styles.messageRegion}>
               {errorMessage ? (
@@ -326,6 +350,20 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     marginBottom: 0,
+  },
+  passwordFieldWrapper: {
+    justifyContent: 'center',
+  },
+  passwordInputField: {
+    paddingRight: SPACING.xl + SPACING.md,
+  },
+  passwordVisibilityToggle: {
+    alignItems: 'center',
+    height: LAYOUT.minimumTouchTarget,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: SPACING.xs,
+    width: LAYOUT.minimumTouchTarget,
   },
   messageRegion: {
     justifyContent: 'flex-end',

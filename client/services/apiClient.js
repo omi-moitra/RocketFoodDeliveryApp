@@ -222,8 +222,8 @@ export function requireSuccessObject(responseData, message) {
  * Reads the current stored session and throws a shared `unauthorized` failure when none exists.
  * This is the role-neutral precondition shared by every request any authenticated user may make
  * (restaurant/product reads); role-specific requests keep their own dedicated precondition helper
- * (`requireCourierSession` in `orderService.js`, `requireAccountSession` in `accountService.js`),
- * since their role/ID checks are not identical to this one and to each other.
+ * (`requireCourierSession` in `orders/courierDeliveries.js`, `requireAccountSession` in
+ * `accountService.js`), since each must also prove that its active role and matching role ID agree.
  * @param {string} tokenMessage Domain-specific safe message for a missing/unusable session.
  * @returns {Promise<object>} The current stored session.
  * @throws {ApiRequestError} Code `unauthorized` when no usable session is stored.

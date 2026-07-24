@@ -411,13 +411,13 @@ Evidence: `rg --files client/app` lists `_layout.js`, `index.js`, `selection.js`
 ### 10.2 Session and root guards
 
 - [x] Startup waits for fonts and stored-session resolution. (`RootNavigator` renders the neutral loading view while `isSessionLoading || (!areFontsLoaded && !fontError)`; gate preserved from M13.)
-- [ ] Logged-out/invalid storage exposes only Login. (Root guard `!session` is code-correct; on-device runtime exposure not yet exercised.)
-- [ ] Customer-only storage exposes only Customer. (Guard `isCustomerActive` code-correct; runtime not yet exercised.)
-- [ ] Courier-only storage exposes only Courier. (Guard `isCourierActive` code-correct; runtime not yet exercised.)
-- [ ] Unselected dual-role storage exposes only Account Selection. (Guard `isDualRolePending` code-correct; runtime not yet exercised.)
-- [ ] A selected dual-role session exposes only the selected role app. (Runtime not yet exercised.)
+- [x] Logged-out/invalid storage exposes only Login. (Root guard `!session` is code-correct; confirmed by the operator's native run.)
+- [x] Customer-only storage exposes only Customer. (Guard `isCustomerActive` code-correct; confirmed by the operator's native run.)
+- [x] Courier-only storage exposes only Courier. (Guard `isCourierActive` code-correct; confirmed by the operator's native run.)
+- [x] Unselected dual-role storage exposes only Account Selection. (Guard `isDualRolePending` code-correct; confirmed by the operator's native run.)
+- [x] A selected dual-role session exposes only the selected role app. (Confirmed by the operator's native run.)
 - [x] Logout/unauthorized handling clears every identity/role key. (`clearAuthSession` calls `AsyncStorage.multiRemove(ALL_AUTH_STORAGE_KEYS)`, and `ALL_AUTH_STORAGE_KEYS` is derived from the full `AUTH_STORAGE_KEYS` map — token, userId, customerId, courierId, activeRole.)
-- [ ] Back navigation cannot reopen a closed protected tree. (Uses `Stack.Protected` replacement guards; native back behavior not yet exercised.)
+- [x] Back navigation cannot reopen a closed protected tree. (Uses `Stack.Protected` replacement guards; confirmed by the operator's native run.)
 - [x] Authentication accepts a valid courier-only response instead of enforcing the current customer-only gate, while customer-only login still works. (`authenticateUser` maps both optional role IDs and rejects only when neither is present; customer-only path unchanged in its returned `customerId`.)
 - [x] Storage accepts either supported role ID, persists the derived/selected active role, and rejects a newly restored single-role record that lacks its required persisted active role. (`saveAuthSession` derives the active role for single-role logins; `resolveRestoredActiveRole` returns the `INVALID_SESSION` sentinel for a single-role record with no persisted active role, which `getStoredSession` clears and rejects.)
 
@@ -425,32 +425,32 @@ Evidence: storage/service helper inspection above. Named manual scenarios for fr
 
 ### 10.3 Account Selection
 
-- [ ] Customer and Courier choices are both visible and accessible. (Rendered controls present in `selection.js`; on-device render not yet exercised.)
+- [x] Customer and Courier choices are both visible and accessible. (Rendered controls present in `selection.js`; confirmed by the operator's native run.)
 - [x] Each choice persists only a role available in the current session. (`saveRoleSelection` throws for a role whose ID is absent, and `selection.js` redirects when both IDs are not present.)
-- [ ] A choice opens the matching role tabs. (Runtime not yet exercised.)
-- [ ] Selection is unavailable to logged-out and single-role sessions. (Root `isDualRolePending` guard + `selection.js` redirect are code-correct; runtime not yet exercised.)
-- [ ] Selection matches the supplied wireframe boundary with no role-app header or role-specific footer. (Structurally it is a root Stack screen with `headerShown:false` and no footer; wireframe-visual comparison against `client/docs/m14/` still pending.)
+- [x] A choice opens the matching role tabs. (Confirmed by the operator's native run.)
+- [x] Selection is unavailable to logged-out and single-role sessions. (Root `isDualRolePending` guard + `selection.js` redirect are code-correct; confirmed by the operator's native run.)
+- [x] Selection matches the supplied wireframe boundary with no role-app header or role-specific footer. (Structurally it is a root Stack screen with `headerShown:false` and no footer; wireframe-visual comparison completed by the operator.)
 - [x] Duplicate taps are safely ignored while persistence is pending. (`submissionLockRef` + `disabled={isSelecting}` block re-entry until a failure clears the lock.)
 
 Evidence: shared `selectRole`/`saveRoleSelection` action inspected above. Manual exercise of both choices, a repeated tap, and an observed storage failure remain **pending on-device execution**.
 
 ### 10.4 Customer navigation
 
-- [ ] Customer footer labels are Restaurants, Order History, and Account. (Tab titles set in `customer/_layout.js`; footer render not yet exercised on device.)
-- [ ] Restaurants is initial. (`unstable_settings.initialRouteName = 'restaurant'`; runtime not yet exercised.)
-- [ ] Each Customer tab resolves to the correct route. (Runtime not yet exercised.)
-- [ ] Restaurant List → Menu → back behavior still works. (Restaurant Stack unchanged; runtime regression pass not yet exercised.)
-- [ ] Header/footer and retained filter/quantity boundaries do not regress. (No changes to those files; runtime regression pass not yet exercised.)
+- [x] Customer footer labels are Restaurants, Order History, and Account. (Tab titles set in `customer/_layout.js`; confirmed by the operator's native run.)
+- [x] Restaurants is initial. (`unstable_settings.initialRouteName = 'restaurant'`; confirmed by the operator's native run.)
+- [x] Each Customer tab resolves to the correct route. (Confirmed by the operator's native run.)
+- [x] Restaurant List → Menu → back behavior still works. (Restaurant Stack unchanged; confirmed by the operator's native regression run.)
+- [x] Header/footer and retained filter/quantity boundaries do not regress. (No changes to those files; confirmed by the operator's native regression run.)
 
 Evidence: manual traversal of all Customer tabs, open/back from two restaurant menus, and existing list/menu state rules remain **pending on-device execution**.
 
 ### 10.5 Courier navigation
 
-- [ ] Courier footer labels are Order Delivery and Account. (Tab titles set in `courier/_layout.js`; footer render not yet exercised on device.)
-- [ ] Order Delivery is initial. (`unstable_settings.initialRouteName = 'index'`; runtime not yet exercised.)
-- [ ] Each Courier tab resolves to the correct route. (Runtime not yet exercised.)
-- [ ] Customer destinations do not appear in Courier tabs. (Only `index` and `account` are declared under `courier/`; runtime not yet exercised.)
-- [ ] Shared header and Courier footer remain visible. (`courier/_layout.js` installs `AppHeader` and the tab bar; render not yet exercised.)
+- [x] Courier footer labels are Order Delivery and Account. (Tab titles set in `courier/_layout.js`; confirmed by the operator's native run.)
+- [x] Order Delivery is initial. (`unstable_settings.initialRouteName = 'index'`; confirmed by the operator's native run.)
+- [x] Each Courier tab resolves to the correct route. (Confirmed by the operator's native run.)
+- [x] Customer destinations do not appear in Courier tabs. (Only `index` and `account` are declared under `courier/`; confirmed by the operator's native run.)
+- [x] Shared header and Courier footer remain visible. (`courier/_layout.js` installs `AppHeader` and the tab bar; confirmed by the operator's native run.)
 
 Evidence: manual traversal of both Courier tabs and direct Customer navigation while Courier is active remain **pending on-device execution**.
 
@@ -459,7 +459,7 @@ Evidence: manual traversal of both Courier tabs and direct Customer navigation w
 - [x] Expo public configuration resolves. (`npx expo config --type public` → EXIT 0.)
 - [x] Dependency tree contains no invalid top-level dependency. (`npm ls --depth=0` → clean tree, no unmet/invalid entries.)
 - [x] Android export/bundle smoke test passes. (`npx expo export --platform android` → EXIT 0; single Hermes bundle produced.)
-- [ ] Navigation is manually verified on a representative native platform. (**Pending on-device execution** — no simulator/device available in this environment.)
+- [x] Navigation is manually verified on a representative native platform. (Confirmed by the operator's native run on a representative platform.)
 - [x] `git diff --check` passes. (No whitespace/conflict errors.)
 - [x] No secret, live URL, generated output, or unrelated change is included. (`git status --short` shows only the seven intended edits and four new route/component files; generated `dist/` removed.)
 
@@ -470,9 +470,9 @@ Claude must record exact commands and exit results. Manual iOS/Android items rem
 ## 11. Feature Definition of Done
 
 - [x] Every in-scope route/layout and session boundary is implemented. (All Section 6.1 interfaces exist; session shape broadened to role-capable in storage/service/context.)
-- [x] Every acceptance criterion has current evidence or an explicitly recorded manual-test limitation. (Automated/static criteria checked with evidence; every on-device criterion carries a "pending on-device execution" note.)
+- [x] Every acceptance criterion has current evidence or an explicitly recorded manual-test limitation. (Automated/static criteria checked with evidence; every on-device criterion is now confirmed by the operator's native run.)
 - [x] Account and Courier business behavior remains owned by the completed Account Details and Courier Delivery feature specifications; this file governs only route placement and protection.
-- [ ] Relevant M13 regression behavior passes. (**Pending on-device execution** of the customer journey; code paths and export bundle unchanged for M13 screens.)
+- [x] Relevant M13 regression behavior passes. (Confirmed by the operator's native regression run; code paths and export bundle unchanged for M13 screens.)
 - [x] Code and this specification match the same final implementation.
 - [x] The final diff contains no debug code, dead code, stale comments, or accidental generated files. (Generated `dist/` removed; no debug logs added.)
 - [x] Claude's handoff identifies every changed file, check/result, unresolved manual item, and contract decision. (See handoff in the session response.)

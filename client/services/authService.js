@@ -41,6 +41,8 @@ function isUsableIdentifier(value) {
  * LoginScreen calls it before AuthProvider persists the authenticated session.
  */
 export async function authenticateUser({ email, password, signal }) {
+  // Keep credential transport in the service boundary; the screen receives only a validated
+  // session shape or a user-safe classified error, never the raw authentication payload.
   const { data, response } = await requestJson('/api/auth', {
     body: JSON.stringify({ email, password }),
     headers: {
@@ -50,6 +52,8 @@ export async function authenticateUser({ email, password, signal }) {
     signal,
   });
 
+  // The backend can report rejected credentials through either HTTP 401 or a false success flag.
+  // Both are the same user-facing failure and neither payload may proceed to identity parsing.
   if (response.status === 401 || data?.success === false) {
     throw new ApiRequestError('credentials', LOGIN_ERROR_MESSAGES.credentials, response.status);
   }
@@ -66,6 +70,8 @@ export async function authenticateUser({ email, password, signal }) {
     throw new ApiRequestError('service', LOGIN_ERROR_MESSAGES.service, response.status);
   }
 
+  // Require both the transport status and the application envelope to confirm success. This keeps
+  // an unexpected 2xx body from being treated as an authenticated session.
   if (!response.ok || data?.success !== true) {
     throw new ApiRequestError('response', LOGIN_ERROR_MESSAGES.response, response.status);
   }
@@ -88,6 +94,8 @@ export async function authenticateUser({ email, password, signal }) {
     throw new ApiRequestError('account-access', LOGIN_ERROR_MESSAGES.accountAccess, response.status);
   }
 
+  // Return the smallest role-capable shape AuthStorage accepts; raw backend field names do not
+  // escape this boundary, and activeRole is deliberately derived only during persistence.
   return {
     accessToken: data.accessToken.trim(),
     courierId,

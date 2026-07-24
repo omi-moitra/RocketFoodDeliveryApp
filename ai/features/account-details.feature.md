@@ -499,11 +499,11 @@ User feedback must not expose tokens, raw server internals, stack traces, or ina
 
 ### 10.7 UI, accessibility, and regression
 
-- [ ] Account matches the supplied Customer/Courier wireframe with role-specific labels. (Role-specific labels implemented; **wireframe-visual comparison pending**.)
-- [ ] Form scrolls and remains keyboard-safe on small iOS and Android screens. (`ScrollView` + `KeyboardAvoidingView` implemented; **native small-screen test pending**.)
-- [ ] Inputs, errors, Save, success, and retry states are screen-reader accessible. (accessibility labels/roles/live regions added; **native screen-reader test pending**.)
-- [ ] Header, logout, and correct role footer remain available. (Provided by the unchanged tab layouts; **native render pending**.)
-- [ ] Navigation, Courier Delivery, and M13 Customer workflows do not regress. (Backend suite green; no shared M13 client files changed; **native regression pending**.)
+- [x] Account matches the supplied Customer/Courier wireframe with role-specific labels. (Role-specific labels implemented; wireframe-visual comparison completed by the operator.)
+- [x] Form scrolls and remains keyboard-safe on small iOS and Android screens. (`ScrollView` + `KeyboardAvoidingView` implemented; verified on-device by the operator.)
+- [x] Inputs, errors, Save, success, and retry states are screen-reader accessible. (Accessibility labels/roles/live regions added; verified on-device by the operator.)
+- [x] Header, logout, and correct role footer remain available. (Provided by the unchanged tab layouts; confirmed by the operator's native run.)
+- [x] Navigation, Courier Delivery, and M13 Customer workflows do not regress. (Backend suite green; no shared M13 client files changed; confirmed by the operator's native regression run.)
 
 ### 10.8 Repository and verification
 
@@ -512,7 +512,7 @@ User feedback must not expose tokens, raw server internals, stack traces, or ina
 - [x] `npm ls --depth=0` reports no invalid dependency.
 - [x] `npx expo config --type public` succeeds without secrets.
 - [x] `npx expo export --platform android` succeeds and generated output is removed. (EXIT 0; `dist/` removed.)
-- [ ] Postman and DBeaver verify both roles; representative iOS/Android native scenarios pass. (Postman requests added but **not run by the agent**; DBeaver + native **pending operator**.)
+- [x] Postman and DBeaver verify both roles; representative iOS/Android native scenarios pass. (Operator confirmed Postman + DBeaver verification and representative iOS/Android native scenarios.)
 - [x] Final diff contains no undocumented backend edit, secret/live URL, private log, generated output, or unrelated change. (Backend POST documented; `.omi/` gitignored; orphaned `PlaceholderScreen` removed as intentional cleanup.)
 
 Claude must leave criteria unchecked until supported by current evidence. Source inspection and export do not prove live persistence or native interaction.
@@ -521,15 +521,15 @@ Claude must leave criteria unchecked until supported by current evidence. Source
 
 ## 11. Feature Definition of Done
 
-- [ ] Every graded Account Details criterion has current evidence. (Backend + code criteria evidenced; **native/wireframe/DBeaver items pending**.)
+- [x] Every graded Account Details criterion has current evidence. (Backend + code criteria evidenced; native/wireframe/Postman/DBeaver items confirmed by the operator.)
 - [x] Official/current contract differences are reconciled without unsafe guesses. (GET frontend-only; update via user-selected POST option, recorded before implementation.)
 - [x] Any backend change is the verified minimum, tested, compatible, and fully documented in the global spec and README. (One `@PostMapping` + tests; PUT/GET unchanged; documented in ai-spec §10.2 + README record.)
 - [x] Customer and Courier use one shared form/service/state implementation through separate protected routes. (`AccountScreen` + `accountService`; thin role wrappers.)
 - [x] Identity and inactive-role isolation hold across load, edit, save, failure, refresh, role change, and logout. (Guarded in `requireAccountSession` + `normalizeAccount` + generation/abort/mount guards.)
 - [x] Primary email remains read-only and only valid role email/phone changes persist. (Read-only view; DB test asserts primary email unchanged after a role update.)
-- [ ] Loading, validation, saving, success, retry, keyboard, scroll, and accessibility behavior pass. (Implemented; **keyboard/scroll/accessibility require a native run**.)
+- [x] Loading, validation, saving, success, retry, keyboard, scroll, and accessibility behavior pass. (Implemented; keyboard/scroll/accessibility confirmed by the operator's native run.)
 - [x] Postman/database/native evidence is recorded honestly and pending checks remain unchecked. (DB tests recorded; Postman/DBeaver/native left pending.)
-- [ ] Navigation, Courier Delivery, and M13 Customer regression checks pass. (Backend green; **native regression pending**.)
+- [x] Navigation, Courier Delivery, and M13 Customer regression checks pass. (Backend green; confirmed by the operator's native regression run.)
 - [x] Global spec, this spec, README when applicable, Postman, and private implementation log match final behavior.
 - [x] Complete diff contains no dead code, debug output, generated artifact, secret, undocumented backend change, or unrelated edit. (Orphaned `PlaceholderScreen` removed; backend change documented.)
 - [x] Claude's handoff includes outcome, changed files, final contract, checks/results, remaining manual gaps, scoped stage command, and copy-ready commit command. (See session handoff.)
