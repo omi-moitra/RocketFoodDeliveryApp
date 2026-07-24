@@ -16,6 +16,7 @@ import { DELIVERY_STATUS } from './deliveryStatus';
 export const COLORS = Object.freeze({
   charcoal: '#222126',
   darkRed: '#851919',
+  lightGray: '#E8E8E8',
   mutedGreen: '#609475',
   orangeRed: '#DA583B',
   warmYellow: '#F0CB67',
