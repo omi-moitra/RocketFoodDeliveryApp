@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   readOnlyField: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.lightGray,
     borderColor: COLORS.charcoal,
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,

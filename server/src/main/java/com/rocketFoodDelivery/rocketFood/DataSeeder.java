@@ -14,12 +14,17 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Seeds the development database with the baseline delivery data and optional
- * append-only customer accounts used for mobile application testing.
+ * Seeds the development database with baseline delivery data, deterministic
+ * mobile role accounts, and optional append-only customer demo accounts.
  */
 @Component
 @RequiredArgsConstructor
 public class DataSeeder {
+
+   private static final String BOTH_USER_EMAIL = "both@gmail.com";
+   private static final String CUSTOMER_USER_EMAIL = "customer@gmail.com";
+   private static final String COURIER_USER_EMAIL = "courier@gmail.com";
+   private static final String DEMO_PASSWORD = "password";
 
    private static final List<AvatarCustomerSeed> AVATAR_CUSTOMER_SEEDS = List.of(
            new AvatarCustomerSeed("Aang", "aang@gmail.com", "+1-555-3100", 0),
@@ -76,26 +81,26 @@ public class DataSeeder {
        
        List<User> users = new ArrayList<>();
        
-       // User #1 (index 0) - customer@gmail.com
-        users.add(User.builder()
+       // Stable mobile demo accounts: dual-role, customer-only, and courier-only.
+       users.add(User.builder()
             .name(faker.name().fullName())
-            .email("both@gmail.com")
-            .password("password")
+            .email(BOTH_USER_EMAIL)
+            .password(DEMO_PASSWORD)
             .build());
 
-        users.add(User.builder()
+       users.add(User.builder()
             .name(faker.name().fullName())
-            .email("customer@gmail.com")
-            .password("password")
+            .email(CUSTOMER_USER_EMAIL)
+            .password(DEMO_PASSWORD)
             .build());
 
-        users.add(User.builder()
+       users.add(User.builder()
             .name(faker.name().fullName())
-            .email("courier@gmail.com")
-            .password("password")
+            .email(COURIER_USER_EMAIL)
+            .password(DEMO_PASSWORD)
             .build());
        
-       // Create remaining users (index 1-29)
+       // Create remaining users (indices 3-29).
        for (int i = 3; i < 30; i++) {
            users.add(User.builder()
                    .name(faker.name().fullName())
@@ -217,22 +222,24 @@ public class DataSeeder {
        List<Customer> customers = new ArrayList<>();
        List<User> users = userRepository.findAll();
        List<Address> addresses = addressRepository.findAll();
+       User bothUser = userRepository.findUserByEmail(BOTH_USER_EMAIL).orElseThrow();
+       User customerUser = userRepository.findUserByEmail(CUSTOMER_USER_EMAIL).orElseThrow();
        
-       // Customer #1 - user index 0 - customer@gmail.com
+       // Dual-role demo account (also assigned as a courier in seedCouriers).
        customers.add(Customer.builder()
-               .user(users.get(0))
+               .user(bothUser)
                .address(addresses.get(13))
                .phone("+1-555-3000")
-               .email(users.get(0).getEmail())
+               .email(BOTH_USER_EMAIL)
                .active(true)
                .build());
        
-       // Customer #2 - user index 1
+       // Customer-only demo account.
        customers.add(Customer.builder()
-               .user(users.get(1))
+               .user(customerUser)
                .address(addresses.get(14))
                .phone("+1-555-3001")
-               .email(users.get(1).getEmail())
+               .email(CUSTOMER_USER_EMAIL)
                .active(true)
                .build());
        
@@ -297,31 +304,75 @@ public class DataSeeder {
    }
 
    private void seedCouriers() {
-       if (courierRepository.count() > 0) {
-           System.out.println("⚠ Couriers already exist. Skipping courier seeding.");
-           return;
-       }
-       
        List<Courier> couriers = new ArrayList<>();
        List<User> users = userRepository.findAll();
        List<Address> addresses = addressRepository.findAll();
        List<CourierStatus> courierStatuses = courierStatusRepository.findAll();
        Random random = new Random();
-       
-       // Create 8 couriers using users[21-28] and addresses[21-28]
-       for (int i = 0; i < 8; i++) {
-           couriers.add(Courier.builder()
-                   .user(users.get(21 + i))
-                   .address(addresses.get(21 + i))
-                   .courierStatus(courierStatuses.get(random.nextInt(courierStatuses.size())))
-                   .phone("+1-555-" + String.format("%04d", 4000 + i))
-                   .email("courier" + i + "@" + faker.internet().domainName())
-                   .active(true)
-                   .build());
+
+       if (addresses.size() < 29 || courierStatuses.isEmpty()) {
+           System.out.println("⚠ Courier prerequisites are incomplete. Skipping courier seeding.");
+           return;
        }
-       
+
+       boolean seedFullBaseline = courierRepository.count() == 0;
+       CourierStatus demoStatus = courierStatuses.stream()
+               .filter(status -> "free".equalsIgnoreCase(status.getName()))
+               .findFirst()
+               .orElse(courierStatuses.get(0));
+
+       addDemoCourierIfMissing(
+               couriers, BOTH_USER_EMAIL, addresses.get(21), demoStatus, "+1-555-4000"
+       );
+       addDemoCourierIfMissing(
+               couriers, COURIER_USER_EMAIL, addresses.get(22), demoStatus, "+1-555-4001"
+       );
+
+       // A fresh database keeps the original eight-courier total: two stable demo accounts
+       // above plus six generated courier accounts.
+       if (seedFullBaseline) {
+           for (int i = 0; i < 6; i++) {
+               couriers.add(Courier.builder()
+                       .user(users.get(21 + i))
+                       .address(addresses.get(23 + i))
+                       .courierStatus(courierStatuses.get(random.nextInt(courierStatuses.size())))
+                       .phone("+1-555-" + String.format("%04d", 4002 + i))
+                       .email("courier" + (i + 2) + "@" + faker.internet().domainName())
+                       .active(true)
+                       .build());
+           }
+       }
+
+       if (couriers.isEmpty()) {
+           System.out.println("⚠ Stable courier accounts already exist. Skipping courier seeding.");
+           return;
+       }
+
        courierRepository.saveAll(couriers);
        System.out.println("✓ Seeded " + couriers.size() + " couriers");
+   }
+
+   private void addDemoCourierIfMissing(
+           List<Courier> couriers,
+           String userEmail,
+           Address address,
+           CourierStatus courierStatus,
+           String phone
+   ) {
+       User user = userRepository.findUserByEmail(userEmail).orElse(null);
+
+       if (user == null || courierRepository.findCourierByUserId(user.getId()).isPresent()) {
+           return;
+       }
+
+       couriers.add(Courier.builder()
+               .user(user)
+               .address(address)
+               .courierStatus(courierStatus)
+               .phone(phone)
+               .email(userEmail)
+               .active(true)
+               .build());
    }
 
    private void seedProducts() {

@@ -119,6 +119,8 @@ function resolveRestoredActiveRole(storedActiveRole, customerId, courierId) {
  * AuthProvider calls it during startup route resolution.
  */
 export async function getStoredSession() {
+  // Read all keys in one AsyncStorage operation so validation examines one storage snapshot rather
+  // than values that could come from different points in a login/logout transition.
   const storedEntries = await AsyncStorage.multiGet(ALL_AUTH_STORAGE_KEYS);
   const storedValues = Object.fromEntries(storedEntries);
   const accessToken = normalizeStoredValue(storedValues[AUTH_STORAGE_KEYS.accessToken]);
@@ -127,6 +129,7 @@ export async function getStoredSession() {
   const courierId = normalizeStoredIdentifier(storedValues[AUTH_STORAGE_KEYS.courierId]);
   const storedActiveRole = normalizeStoredRole(storedValues[AUTH_STORAGE_KEYS.activeRole]);
 
+  // Role restoration is validated against the available IDs before any route sees the session.
   const activeRole = resolveRestoredActiveRole(storedActiveRole, customerId, courierId);
 
   // A usable session requires a token, a user ID, and at least one coherent role selection state.
@@ -175,6 +178,8 @@ export async function saveAuthSession({
     throw new Error('At least one supported role ID is required.');
   }
 
+  // Single-role accounts persist their only valid destination immediately. Dual-role accounts
+  // intentionally persist no activeRole so the root guard exposes Account Selection instead.
   const activeRole = deriveInitialActiveRole(normalizedCustomerId, normalizedCourierId);
 
   const entries = [
@@ -195,6 +200,7 @@ export async function saveAuthSession({
   }
 
   // Clear every key first so a new login cannot inherit a previous user's role IDs or active role.
+  // If the following write fails, AuthContext performs the matching full cleanup before routing.
   await AsyncStorage.multiRemove(ALL_AUTH_STORAGE_KEYS);
   await AsyncStorage.multiSet(entries);
 
@@ -230,6 +236,8 @@ export async function saveRoleSelection(role) {
     throw new Error('This session has no courier role to select.');
   }
 
+  // Persist before returning the updated snapshot; AuthContext will not switch route trees until
+  // this awaited write succeeds, so a relaunch cannot restore a different role than the UI showed.
   await AsyncStorage.setItem(AUTH_STORAGE_KEYS.activeRole, role);
 
   return { ...session, activeRole: role };

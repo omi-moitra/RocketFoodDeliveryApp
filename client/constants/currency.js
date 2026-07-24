@@ -2,15 +2,14 @@
  * File: currency.js
  * Purpose: Formats backend product costs with one project-wide currency-unit rule.
  * Contents:
- * 1. Product cost-unit decision
- * 2. Currency validation and formatting
+ * 1. Currency formatter
+ * 2. Cost validation and formatting
  */
 
 // Module 13's DataSeeder stores product costs as whole-dollar integers from 5 through 24.
 // Confirmed against the live API on 2026-07-15: untouched seeded products return whole-dollar
-// integer costs, so this one named boundary stays and remains the single place to revise if
-// grading data ever proves that another environment uses minor units.
-export const PRODUCT_COST_UNIT = 'whole-dollars';
+// integer costs. This formatter is the single boundary to revise if another grading environment
+// proves that the API uses minor units instead.
 
 const USD_FORMATTER = new Intl.NumberFormat('en-US', {
   currency: 'USD',
@@ -20,7 +19,7 @@ const USD_FORMATTER = new Intl.NumberFormat('en-US', {
 
 /**
  * Formats one validated non-negative backend cost as US dollars with two decimal places.
- * Menu, confirmation, and later order-history features share this display boundary.
+ * Menu, confirmation, order-history, and courier-detail surfaces share this display boundary.
  * A value outside the whole-dollar contract returns a visible placeholder instead of
  * throwing, because this function runs inside render paths where an exception would
  * take down the whole screen rather than one price cell.

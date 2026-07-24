@@ -580,7 +580,7 @@ ready → confirmation-open → ready
 
 ### Menu Display and Asset
 
-- [ ] The screen closely matches the supplied Restaurant Menu wireframe.
+- [x] The screen closely matches the supplied Restaurant Menu wireframe. (Wireframe-visual comparison completed by the operator.)
 - [x] `RESTAURANT MENU`, restaurant name, price range, and rating display accurately.
 - [x] Every product displays name, safe description, correctly formatted price, image, and controls.
 - [x] `client/assets/RestaurantMenu.jpg` or the approved runtime equivalent exists and renders for every product row.

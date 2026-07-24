@@ -434,7 +434,7 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 ### Screen and Form
 
 - [x] `client/app/index.js` is a functional email/password Login page rather than a placeholder.
-- [ ] The Login page closely matches the supplied wireframe and exact centralized palette on iOS and Android.
+- [x] The Login page closely matches the supplied wireframe and exact centralized palette on iOS and Android. (Wireframe-visual comparison completed by the operator.)
 - [x] The Login screen contains no authenticated shared header, Log Out button, or footer tabs.
 - [x] Email input uses appropriate keyboard, capitalization, and autofill settings.
 - [x] Password input masks its value and uses appropriate autofill settings.
@@ -472,8 +472,8 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 - [x] The Login button is disabled/busy during authentication and duplicate submissions are prevented.
 - [x] Every failure returns the form to an enabled retry state.
 - [x] Late/unmounted request results do not update abandoned Login state.
-- [ ] Postman verifies successful login, incorrect credentials, and invalid request data against the existing Java API.
-- [ ] Automated client tests cover local validation, 200 success mapping, 401 handling, missing customer ID, network/server failure, storage failure, and duplicate-submit prevention where the project test setup supports them.
+- [x] Postman verifies successful login, incorrect credentials, and invalid request data against the existing Java API. (Run against a live server by the operator.)
+- [ ] Automated client tests cover local validation, 200 success mapping, 401 handling, missing customer ID, network/server failure, storage failure, and duplicate-submit prevention where the project test setup supports them. (`authService.test.js` covers 200 mapping, 401/other status classification, and missing-role rejection. **Local validation, storage failure, and duplicate-submit prevention live in the Login screen component and have no automated test — no render/component test harness exists in the client.**)
 - [x] `git diff --check` reports no whitespace errors.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>
@@ -482,15 +482,15 @@ Do not duplicate the HTTP request, API URL parsing, or raw storage key strings i
 
 This feature is done only when:
 
-- [ ] Every acceptance criterion above passes.
+- [ ] Every acceptance criterion above passes. (All items now pass except automated test coverage for local validation/storage-failure/duplicate-submit — see the note above.)
 - [x] The implementation follows `ai/ai-spec.md`, this feature specification, and the repository's applicable `AGENTS.md` instructions.
-- [ ] Login behavior and styling have been compared directly with the grading rows, Module 13 brief, wireframe, color scheme, and physical-device guidance.
+- [x] Login behavior and styling have been compared directly with the grading rows, Module 13 brief, wireframe, color scheme, and physical-device guidance. (Wireframe/color and physical-device comparison completed by the operator.)
 - [x] Authentication works from both an emulator/simulator setup and a physical phone through the configured Java-server tunnel.
 - [x] Valid customer credentials persist a complete session and open Restaurants.
 - [x] Invalid credentials always remain on Login with the required error above the Login button.
 - [x] Secrets, passwords, tokens, and personal tunnel URLs are absent from code, logs, screenshots, and committed configuration.
 - [x] No Java backend or database change was made for the mobile login feature.
-- [ ] Relevant client tests and manual verification pass, and any environment-only limitation is documented accurately.
+- [ ] Relevant client tests and manual verification pass, and any environment-only limitation is documented accurately. (Client suite passes 170/170 and manual/native verification is now confirmed by the operator; the remaining gap — no automated coverage for local validation/storage-failure/duplicate-submit — is a genuine missing-test-coverage item, not an environment-only limitation.)
 - [x] The feature file remains self-contained enough that an implementer does not need to infer decision-critical behavior from external assignment files.
 
 <p align="right"><a href="#top" aria-label="Return to top">↑</a></p>

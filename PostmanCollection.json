@@ -1,12 +1,12 @@
 {
   "info": {
-    "name": "Rocket Food Delivery — Module 13",
-    "description": "Preconfigured requests for every endpoint used by the Module 13 mobile client. Run 'POST /api/auth — valid credentials' first: its test script stores the bearer token and customer ID as collection variables so protected requests need no manual edits. The collection covers restaurant listing and filters, restaurant details, restaurant products, order creation, customer order history, and relevant failure cases. The default baseUrl targets the local backend on port 8080; replace it with the active ngrok HTTPS URL when testing through a tunnel.",
+    "name": "Rocket Food Delivery — Modules 13 and 14",
+    "description": "Preconfigured requests for the retained Module 13 customer flow and the Module 14 role-aware, courier, Account, and notification extensions. Run the customer-only and courier-only authentication requests first: their tests capture separate role-scoped tokens and IDs for the protected requests that follow; the dual-role request independently verifies both role IDs. The collection covers restaurant browsing, order creation with all notification combinations, customer history, courier retrieval/status/assignment, role-specific Account reads and updates, and relevant failure cases. The default baseUrl targets the local backend on port 8080; replace it with the active ngrok HTTPS URL when testing through a tunnel.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "POST /api/auth — valid credentials",
+      "name": "POST /api/auth — customer-only login (200)",
       "event": [
         {
           "listen": "test",
@@ -14,11 +14,14 @@
             "type": "text/javascript",
             "exec": [
               "const body = pm.response.json();",
-              "pm.test('login succeeds', function () {",
+              "pm.test('customer-only login returns only the customer role', function () {",
               "    pm.response.to.have.status(200);",
               "    pm.expect(body.success).to.eql(true);",
+              "    pm.expect(body.customer_id).to.be.ok;",
+              "    pm.expect(body.courier_id == null).to.eql(true);",
               "});",
               "pm.collectionVariables.set('accessToken', body.accessToken);",
+              "pm.collectionVariables.set('userId', String(body.user_id));",
               "pm.collectionVariables.set('customerId', String(body.customer_id));"
             ]
           }
@@ -36,7 +39,82 @@
           "host": ["{{baseUrl}}"],
           "path": ["api", "auth"]
         },
-        "description": "Authenticates the seeded customer and captures accessToken plus customer_id for the protected order requests."
+        "description": "Authenticates the seeded customer-only account and captures its token, user ID, and customer ID for protected customer requests."
+      }
+    },
+    {
+      "name": "POST /api/auth — courier-only login (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('courier-only login returns only the courier role', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.success).to.eql(true);",
+              "    pm.expect(body.courier_id).to.be.ok;",
+              "    pm.expect(body.customer_id == null).to.eql(true);",
+              "});",
+              "pm.collectionVariables.set('courierAccessToken', body.accessToken);",
+              "pm.collectionVariables.set('courierUserId', String(body.user_id));",
+              "pm.collectionVariables.set('courierId', String(body.courier_id));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"courier@gmail.com\",\n  \"password\": \"password\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth"]
+        },
+        "description": "Authenticates the seeded courier-only account and captures a courier-scoped token plus its user and courier IDs."
+      }
+    },
+    {
+      "name": "POST /api/auth — dual-role login (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "pm.test('dual-role login returns both role IDs', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(body.success).to.eql(true);",
+              "    pm.expect(body.customer_id).to.be.ok;",
+              "    pm.expect(body.courier_id).to.be.ok;",
+              "});",
+              "pm.collectionVariables.set('dualRoleAccessToken', body.accessToken);",
+              "pm.collectionVariables.set('dualRoleUserId', String(body.user_id));",
+              "pm.collectionVariables.set('dualRoleCustomerId', String(body.customer_id));",
+              "pm.collectionVariables.set('dualRoleCourierId', String(body.courier_id));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"both@gmail.com\",\n  \"password\": \"password\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth"]
+        },
+        "description": "Authenticates the seeded dual-role account and verifies that Account Selection has both role IDs available."
       }
     },
     {
@@ -480,7 +558,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "GET",
         "header": [],
@@ -513,7 +591,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "GET",
         "header": [],
@@ -550,7 +628,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "PUT",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -587,7 +665,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "PUT",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -624,7 +702,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "PUT",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -733,7 +811,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "GET",
         "header": [],
@@ -767,7 +845,7 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [{ "key": "token", "value": "{{courierAccessToken}}" }]
         },
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -787,6 +865,11 @@
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
     { "key": "accessToken", "value": "" },
+    { "key": "courierAccessToken", "value": "" },
+    { "key": "dualRoleAccessToken", "value": "" },
+    { "key": "dualRoleUserId", "value": "" },
+    { "key": "dualRoleCustomerId", "value": "" },
+    { "key": "dualRoleCourierId", "value": "" },
     { "key": "userId", "value": "2" },
     { "key": "courierUserId", "value": "22" },
     { "key": "customerId", "value": "2" },

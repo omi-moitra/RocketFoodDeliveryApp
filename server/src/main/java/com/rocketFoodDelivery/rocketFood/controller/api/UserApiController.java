@@ -60,6 +60,9 @@ public class UserApiController {
         return ResponseBuilder.buildOkResponse(null);
     }
 
+    // The official mobile URL also sends ?type=customer|courier. Spring safely ignores that
+    // unbound query for this retained endpoint; the client then verifies the requested nested
+    // role ID against its authenticated session before displaying role-specific contact data.
     @GetMapping("/api/account/{id}")
     public ResponseEntity<Object> getAccount(@PathVariable int id) {
         ApiAccountDTO dto = userService.getAccountDTO(id)
@@ -93,6 +96,8 @@ public class UserApiController {
         if (type == null || (!type.equals("customer") && !type.equals("courier") && !type.equals("employee"))) {
             throw new BadRequestException("account_type must be 'customer', 'courier', or 'employee'");
         }
+        // Convert the grading-shaped POST body at the controller boundary so both update routes
+        // reuse one service operation and cannot drift into different persistence behavior.
         ApiUpdateAccountDTO updateDTO =
                 new ApiUpdateAccountDTO(postDTO.getAccount_email(), postDTO.getAccount_phone());
         ApiAccountDTO dto = userService.updateAccount(id, type, updateDTO)

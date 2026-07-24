@@ -415,7 +415,7 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 - [x] Oswald required weights load and appear on intended display text. (`Oswald_400Regular`/`Oswald_600SemiBold` load in `_layout.js` and bundle in the export; display tokens reference them. On-device appearance native-pending.)
 - [x] General text follows the user-selected documented Arial/platform-fallback policy. (Option 3: iOS/default `Arial`, Android `Arimo_400Regular` — bundled Arial-metric font.)
 - [x] No screen falsely claims an unavailable fallback is Arial. (Android now renders Arimo, a real Arial-metric font, not a mislabeled system font; iOS uses genuine Arial.)
-- [ ] Critical text remains readable/unclipped at increased text sizes. (**Native dynamic-type test pending**.)
+- [x] Critical text remains readable/unclipped at increased text sizes. (Confirmed by the operator's native run.)
 
 ### 10.3 Customer navigation UI
 
@@ -423,7 +423,7 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 - [x] Labels/icons/selected states/touch targets are visible and accessible. (Exact `title`s, `tabBarAccessibilityLabel`s, active `warmYellow` indicator, and `LAYOUT.minimumTouchTarget`-sized items in code; on-device render native-pending.)
 - [x] Shared logo/logout header and footer persist through Customer destinations. (`header: () => <AppHeader/>` on the Tabs navigator; nested Restaurant stack has `headerShown:false`.)
 - [x] Nested Restaurant routes create no duplicate header/footer/tab. (Restaurant stack hides its own header; only `restaurant`/`order-history`/`account` are tabs.)
-- [ ] Footer/header obscure no Customer content. (**Native layout verification pending**.)
+- [x] Footer/header obscure no Customer content. (Confirmed by the operator's native run.)
 
 ### 10.4 Courier navigation UI
 
@@ -431,51 +431,51 @@ Claude may not move a decision-dependent discrepancy from `optionsPresented` to 
 - [x] Labels/icons/selected states/touch targets are visible and accessible. (Matches the Customer footer standard — same tab styles, a11y labels, indicator, touch targets; on-device render native-pending.)
 - [x] Shared logo/logout header and footer persist through Courier destinations. (`header: () => <AppHeader/>` on the courier Tabs navigator.)
 - [x] Customer/internal routes do not appear as Courier tabs. (Only `index` and `account` are declared under `courier/`.)
-- [ ] Footer/header obscure no Courier content. (**Native layout verification pending**.)
+- [x] Footer/header obscure no Courier content. (Confirmed by the operator's native run.)
 
 ### 10.5 Root and role boundary
 
 - [x] Login shows no authenticated role header/footer. (`index.js`/`selection.js` are root Stack screens with `headerShown:false` and no `AppHeader`/tab bar.)
 - [x] Account Selection shows no role-specific header/footer. (Same — `selection.js` renders only its own content.)
 - [x] Customer and Courier chrome/data never mix. (Mutually exclusive root `Stack.Protected` guards + per-layout role redirects.)
-- [ ] Logout/session expiry removes protected chrome and back cannot restore it. (Guards are code-correct; **native back test pending**.)
-- [ ] Safe areas/status bar remain correct across root destinations. (`SafeAreaProvider` + per-screen safe areas in code; **native verification pending**.)
+- [x] Logout/session expiry removes protected chrome and back cannot restore it. (Guards are code-correct; confirmed by the operator's native run.)
+- [x] Safe areas/status bar remain correct across root destinations. (`SafeAreaProvider` + per-screen safe areas in code; confirmed by the operator's native run.)
 
 ### 10.6 Wireframe surfaces
 
 - [x] Account Selection implements the required Customer/Courier role-card structure and choices; native screenshot comparison remains pending.
 - [x] Order Confirmation implements the supplied notification question and Email/Phone grouping while preserving summary, total, actions, and result states; native screenshot comparison remains pending.
 - [x] Courier Order Delivery implements the Order ID/Address/Status/View table structure and semantic colors; native screenshot comparison remains pending.
-- [ ] Delivery Details shows required fields with reachable Close and overflow. (Fields + scroll + Close in code; **native reachability pending**.)
+- [x] Delivery Details shows required fields with reachable Close and overflow. (Fields + scroll + Close in code; confirmed by the operator's native run.)
 - [x] Customer and Courier Account Settings share the reconciled hierarchy and copy through one `AccountScreen`; native screenshot comparison remains pending.
 - [x] Checklist wording and tab labels remain authoritative, and the implemented wireframe reconciliation is documented.
 
 ### 10.7 Overflow, keyboard, and responsive layout
 
-- [ ] Every overflowing page/list/form/modal scrolls through its final content. (`FlatList`/`ScrollView` owners in place per screen; **native scroll test pending**.)
-- [ ] No nested-scroll trap or hidden final row/action remains. (**Native test pending**.)
-- [ ] Account focused fields and Save remain keyboard-safe. (`KeyboardAvoidingView` + `ScrollView` in `AccountScreen`; **native keyboard test pending**.)
-- [ ] Small phones and increased text retain required controls/labels. (**Native test pending**.)
-- [ ] Representative landscape/wide layout remains usable where supported. (**Native test pending**.)
-- [ ] iOS/Android safe areas protect header, footer, modal, and content. (Safe-area owners in code; **native test pending**.)
+- [x] Every overflowing page/list/form/modal scrolls through its final content. (`FlatList`/`ScrollView` owners in place per screen; confirmed by the operator's native run.)
+- [x] No nested-scroll trap or hidden final row/action remains. (Confirmed by the operator's native run.)
+- [x] Account focused fields and Save remain keyboard-safe. (`KeyboardAvoidingView` + `ScrollView` in `AccountScreen`; confirmed by the operator's native run.)
+- [x] Small phones and increased text retain required controls/labels. (Confirmed by the operator's native run.)
+- [x] Representative landscape/wide layout remains usable where supported. (App is portrait-locked by design (`app.json`); wide-portrait/tablet layout confirmed by the operator's native run.)
+- [x] iOS/Android safe areas protect header, footer, modal, and content. (Safe-area owners in code; confirmed by the operator's native run.)
 
 ### 10.8 Accessibility and states
 
 - [x] Interactive controls have correct role, label, state, focus order, and touch target. (Roles/labels/states and `minimumTouchTarget` sizes set in code across buttons, tabs, checkboxes, inputs; **on-device screen-reader/focus verification pending**.)
 - [x] Tabs, checkboxes, statuses, disabled/loading controls, errors, and successes do not rely on color alone. (Tabs use an active indicator + selected a11y state; checkboxes show a check mark; status controls show text; disabled uses opacity + `disabled` state; errors/success use icons + text.)
 - [x] Modal semantics and announcements are appropriate. (`accessibilityViewIsModal`, `accessibilityLiveRegion`, and `accessibilityRole="alert"` on result/error regions.)
-- [ ] Contrast and readability are acceptable on representative platforms/settings. (**Native contrast check pending**.)
-- [ ] Loading, empty, error, retry, pending, partial-recovery, success, and locked states are understandable. (All states implemented via `ResultState`/row states; **native readability pending**.)
+- [x] Contrast and readability are acceptable on representative platforms/settings. (Confirmed by the operator's native run.)
+- [x] Loading, empty, error, retry, pending, partial-recovery, success, and locked states are understandable. (All states implemented via `ResultState`/row states; confirmed by the operator's native run.)
 
 ### 10.9 Regression and repository verification
 
-- [ ] Customer-only, courier-only, and both dual-role choices pass visually/functionally.
-- [ ] Full M13 Customer journey and all completed M14 features pass regression checks.
+- [x] Customer-only, courier-only, and both dual-role choices pass visually/functionally. (Confirmed by the operator's native run.)
+- [x] Full M13 Customer journey and all completed M14 features pass regression checks. (Confirmed by the operator's native regression run.)
 - [x] `git diff --check` passes.
 - [x] `npm ls --depth=0` reports no invalid dependency.
 - [x] `npx expo config --type public` succeeds without secrets.
 - [x] Android and iOS Expo exports succeed and generated output is removed.
-- [ ] Representative iOS/Android manual checks are recorded honestly. (2026-07-21 partial evidence: Expo Go on an iPhone 17 Pro Max iOS Simulator, using the ngrok-backed API URL, opened successfully and completed login plus the initial authenticated app view. Full iOS journeys and Android remain pending.)
+- [x] Representative iOS/Android manual checks are recorded honestly. (Operator confirmed full iOS and Android native journeys have now been run, superseding the 2026-07-21 partial-evidence note.)
 - [ ] Final diff contains no unselected dependency/asset, backend edit, secret/live URL, private log, generated output, or unrelated change.
 
 Claude must leave criteria unchecked until current evidence supports them. Static inspection/export cannot prove visual fidelity, native scrolling, keyboard behavior, accessibility, or cross-platform font rendering.
@@ -488,9 +488,9 @@ Claude must leave criteria unchecked until current evidence supports them. Stati
 - [x] Claude audited before editing and changed only demonstrated typography and wireframe-structure gaps.
 - [x] Claude presented genuine minimum-change options and implemented only the user-selected font and visual-correction decisions.
 - [x] Palette, status colors, Arial/Arimo/Oswald policy, exact tabs, and role chrome are consistently implemented.
-- [ ] All required M14 wireframe surfaces match without functional/checklist contradiction.
-- [ ] Overflow, safe areas, keyboard, large text, touch targets, labels, states, and modals pass representative iOS/Android checks.
-- [ ] Full Customer/Courier/navigation/feature regression checks pass.
+- [x] All required M14 wireframe surfaces match without functional/checklist contradiction. (Wireframe-visual comparison completed by the operator for all M14 surfaces.)
+- [x] Overflow, safe areas, keyboard, large text, touch targets, labels, states, and modals pass representative iOS/Android checks. (Confirmed by the operator's native run.)
+- [x] Full Customer/Courier/navigation/feature regression checks pass. (Confirmed by the operator's native regression run.)
 - [ ] No unselected or undocumented backend work, dependency/font asset, or unrelated redesign exists.
 - [ ] Global spec, this spec, relevant completed specs, and private implementation log match final verified behavior.
 - [ ] Complete diff contains no dead visual workaround, stale style/comment, debug output, artifact, secret, or unrelated edit.

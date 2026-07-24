@@ -15,12 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 // Project models
 import com.rocketFoodDelivery.rocketFood.models.Employee;
 
-// Repository interface that provides CRUD operations for database access
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
-    // Spring Data JPA automatically implements CRUD operations inherited from JpaRepository.
-    // save(), findAll(), findById(), deleteById()
-
     // ==================== Native SQL CRUD Queries ====================
 
     // CREATE - Insert a new employee

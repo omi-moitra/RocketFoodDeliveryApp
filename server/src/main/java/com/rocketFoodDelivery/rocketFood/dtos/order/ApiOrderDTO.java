@@ -7,9 +7,13 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Order response shared by customer history and courier delivery endpoints. Fields intentionally
+ * retain the established snake_case HTTP names; the mobile service boundary maps them to camelCase
+ * before any screen consumes the response.
+ */
 @Getter
 @Setter
-//this is a class created to process the order details for the order api from postman.
 public class ApiOrderDTO {
     int id ;
     int customer_id;
