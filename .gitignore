@@ -186,3 +186,26 @@ GoogleService-Info.plist
 server/src/main/resources/application.properties
 server/src/main/resources/application-local.properties
 server/src/main/resources/application-secrets.properties
+
+# Private submissions and publication-review material
+submission-summary.txt
+LeetCode-Challenges/
+client/docs/m14/Wireframe.pdf
+
+# Private keys and service-account exports
+*.pem
+*.key
+*.pfx
+id_rsa
+id_ed25519
+id_ecdsa
+service-account*.json
+serviceAccount*.json
+
+# Local Spring configuration in any profile / format
+**/application*.properties
+**/application*.yml
+**/application*.yaml
+!**/application*.example.properties
+!**/application*.example.yml
+!**/application*.example.yaml

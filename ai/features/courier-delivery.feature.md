@@ -113,7 +113,7 @@ Claude must inspect but should not modify unless a demonstrated feature defect r
 - `client/app/courier/_layout.js` unless a demonstrated feature defect requires a narrowly scoped correction
 - `client/storage/authStorage.js`, `client/contexts/AuthContext.js`, and `client/services/apiClient.js` unless a demonstrated shared-boundary defect blocks this feature
 - `client/app/customer/order-history.js` and its components as retained M13 regression references
-- `client/docs/m14/Wireframe.pdf` as the visual source for Courier Deliveries and Delivery Details
+- `client/docs/m14/Wireframe.md` as the visual source for Courier Deliveries and Delivery Details
 
 ### 3.2 Out of scope
 

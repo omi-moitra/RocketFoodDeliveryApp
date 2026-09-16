@@ -30,7 +30,7 @@
 - **Specification file:** `ai/features/ui.feature.md`
 - **Implementation branch:** `feature/m14-ui`
 - **Grading requirements:** Arial and Oswald fonts, scrolling for overflowing pages, exact Customer tabs, and exact Courier tabs
-- **Visual references:** `client/docs/m14/Wireframe.pdf` plus retained M13 visual contracts
+- **Visual references:** `client/docs/m14/Wireframe.md` plus retained M13 visual contracts
 - **Dependencies:** Navigation, Role-Based Navigation, Courier Delivery, Account Details, and Order Confirmation must already be functionally implemented before final UI verification.
 - **Claude deliverable:** A minimal evidence-driven visual/accessibility correction pass across the completed application, not a redesign.
 - **Completion evidence:** Screen-by-screen audit matrix, wireframe comparison, representative iOS/Android checks, text/keyboard/overflow checks, exact tabs/fonts/palette evidence, and final diff.
@@ -53,7 +53,7 @@ Claude must first identify what already passes. It may correct demonstrated gaps
 - Verify Oswald display typography loads through the installed font package.
 - Verify general UI uses Arial where available and one documented platform-safe fallback where it is not.
 - Resolve font-availability decisions only after the user selects from Claude's options.
-- Compare every supplied M14 surface with `client/docs/m14/Wireframe.pdf`.
+- Compare every supplied M14 surface with `client/docs/m14/Wireframe.md`.
 - Preserve checklist terminology where a wireframe label differs.
 - Verify the authenticated logo/logout header across Customer and Courier destinations.
 - Verify no role-app header/footer appears on Login or Account Selection.

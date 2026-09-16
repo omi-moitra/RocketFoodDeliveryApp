@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Covers the account endpoints used by the mobile Account Settings feature:
  * GET /api/account/{id} (with the ignored official type query) and the added
- * POST /api/account/{id} official-body update. User 1 (both@gmail.com) is a seeded customer;
+ * POST /api/account/{id} official-body update. User 1 (both@example.com) is a seeded customer;
  * user 22 is a seeded courier (couriers are seeded from users 21..28).
  */
 @SpringBootTest
@@ -56,7 +56,7 @@ public class AccountApiControllerTest {
                 .andExpect(jsonPath("$.data.customer.email").value("customer.acct.test@example.com"))
                 .andExpect(jsonPath("$.data.customer.phone").value("+1-555-9100"))
                 // ...but the primary user email is never changed by an account update.
-                .andExpect(jsonPath("$.data.email").value("both@gmail.com"));
+                .andExpect(jsonPath("$.data.email").value("both@example.com"));
     }
 
     @Test

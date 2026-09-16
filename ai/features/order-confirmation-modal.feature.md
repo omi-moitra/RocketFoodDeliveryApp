@@ -90,7 +90,7 @@ Claude must inspect before implementation:
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/dtos/order/ApiCreateOrderDTO.java`
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/service/OrderService.java`
 - Order model notification fields and focused order API tests
-- `client/docs/m14/Wireframe.pdf`
+- `client/docs/m14/Wireframe.md`
 
 No server file is authorized during initial contract analysis. Claude must first present the viable minimum-change options and wait for the user's selection. After selection, amend this spec with the chosen request contract and any smallest permitted server file/test set before implementation.
 

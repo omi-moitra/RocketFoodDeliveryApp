@@ -6,6 +6,9 @@ import com.rocketFoodDelivery.rocketFood.repository.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,20 +21,23 @@ import java.util.concurrent.ThreadLocalRandom;
  * mobile role accounts, and optional append-only customer demo accounts.
  */
 @Component
+@Profile("demo")
+@ConditionalOnProperty(name = "app.demo.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class DataSeeder {
 
-   private static final String BOTH_USER_EMAIL = "both@gmail.com";
-   private static final String CUSTOMER_USER_EMAIL = "customer@gmail.com";
-   private static final String COURIER_USER_EMAIL = "courier@gmail.com";
-   private static final String DEMO_PASSWORD = "password";
+   private static final String BOTH_USER_EMAIL = "both@example.com";
+   private static final String CUSTOMER_USER_EMAIL = "customer@example.com";
+   private static final String COURIER_USER_EMAIL = "courier@example.com";
+   @Value("${app.demo.password}")
+   private String demoPassword;
 
    private static final List<AvatarCustomerSeed> AVATAR_CUSTOMER_SEEDS = List.of(
-           new AvatarCustomerSeed("Aang", "aang@gmail.com", "+1-555-3100", 0),
-           new AvatarCustomerSeed("Katara", "katara@gmail.com", "+1-555-3101", 1),
-           new AvatarCustomerSeed("Sokka", "sokka@gmail.com", "+1-555-3102", 2),
-           new AvatarCustomerSeed("Toph Beifong", "toph@gmail.com", "+1-555-3103", 3),
-           new AvatarCustomerSeed("Zuko", "zuko@gmail.com", "+1-555-3104", 4)
+           new AvatarCustomerSeed("Aang", "aang@example.com", "+1-555-3100", 0),
+           new AvatarCustomerSeed("Katara", "katara@example.com", "+1-555-3101", 1),
+           new AvatarCustomerSeed("Sokka", "sokka@example.com", "+1-555-3102", 2),
+           new AvatarCustomerSeed("Toph Beifong", "toph@example.com", "+1-555-3103", 3),
+           new AvatarCustomerSeed("Zuko", "zuko@example.com", "+1-555-3104", 4)
    );
 
    private record AvatarCustomerSeed(
@@ -56,6 +62,9 @@ public class DataSeeder {
 
    @PostConstruct
    public void seedData() {
+       if (demoPassword == null || demoPassword.length() < 16 || demoPassword.isBlank()) {
+           throw new IllegalStateException("Set app.demo.password to a unique password of at least 16 characters.");
+       }
        System.out.println("Starting database seeding...");
        
        seedUsers();
@@ -85,27 +94,27 @@ public class DataSeeder {
        users.add(User.builder()
             .name(faker.name().fullName())
             .email(BOTH_USER_EMAIL)
-            .password(DEMO_PASSWORD)
+            .password(demoPassword)
             .build());
 
        users.add(User.builder()
             .name(faker.name().fullName())
             .email(CUSTOMER_USER_EMAIL)
-            .password(DEMO_PASSWORD)
+            .password(demoPassword)
             .build());
 
        users.add(User.builder()
             .name(faker.name().fullName())
             .email(COURIER_USER_EMAIL)
-            .password(DEMO_PASSWORD)
+            .password(demoPassword)
             .build());
        
        // Create remaining users (indices 3-29).
        for (int i = 3; i < 30; i++) {
            users.add(User.builder()
                    .name(faker.name().fullName())
-                   .email("user" + i + "@" + faker.internet().domainName())
-                   .password("password" + i)
+                   .email("user" + i + "@example.com")
+                   .password(demoPassword)
                    .build());
        }
        
@@ -179,7 +188,7 @@ public class DataSeeder {
                    .address(addresses.get(i))
                    .name(faker.company().name() + " Restaurant")
                    .phone("+1-555-" + String.format("%04d", 1000 + i))
-                   .email("restaurant" + i + "@" + faker.internet().domainName())
+                   .email("restaurant" + i + "@example.com")
                    .priceRange(ThreadLocalRandom.current().nextInt(1, 4))
                    .active(true)
                    .build());
@@ -205,7 +214,7 @@ public class DataSeeder {
                    .user(users.get(8 + i))
                    .address(addresses.get(8 + i))
                    .phone("+1-555-" + String.format("%04d", 2000 + i))
-                   .email("employee" + i + "@" + faker.internet().domainName())
+                   .email("employee" + i + "@example.com")
                    .build());
        }
        
@@ -249,7 +258,7 @@ public class DataSeeder {
                    .user(users.get(13 + i))
                    .address(addresses.get(13 + i))
                    .phone("+1-555-" + String.format("%04d", 3000 + i))
-                   .email("customer" + i + "@" + faker.internet().domainName())
+                   .email("customer" + i + "@example.com")
                    .active(true)
                    .build());
        }
@@ -277,7 +286,7 @@ public class DataSeeder {
                user = userRepository.save(User.builder()
                        .name(seed.name())
                        .email(seed.email())
-                       .password("password")
+                       .password(demoPassword)
                        .build());
                seededUsers++;
            }
@@ -337,7 +346,7 @@ public class DataSeeder {
                        .address(addresses.get(23 + i))
                        .courierStatus(courierStatuses.get(random.nextInt(courierStatuses.size())))
                        .phone("+1-555-" + String.format("%04d", 4002 + i))
-                       .email("courier" + (i + 2) + "@" + faker.internet().domainName())
+                       .email("courier" + (i + 2) + "@example.com")
                        .active(true)
                        .build());
            }

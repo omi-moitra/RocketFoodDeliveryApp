@@ -16,6 +16,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 public class AuthApiControllerTest {
+    @org.springframework.beans.factory.annotation.Value("${app.demo.password}")
+    private String demoPassword;
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -29,8 +32,8 @@ public class AuthApiControllerTest {
     public void testAuthenticate_Success() throws Exception {
         // Uses a seeded user from the test database
         AuthRequestDTO request = new AuthRequestDTO();
-        request.setEmail("both@gmail.com");
-        request.setPassword("password");
+        request.setEmail("both@example.com");
+        request.setPassword(demoPassword);
 
         mockMvc.perform(post("/api/auth")
                         .contentType(MediaType.APPLICATION_JSON)

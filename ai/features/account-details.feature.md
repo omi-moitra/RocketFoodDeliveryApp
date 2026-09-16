@@ -102,7 +102,7 @@ Claude must inspect before implementation:
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/dtos/user/ApiAccountDTO.java`
 - `server/src/main/java/com/rocketFoodDelivery/rocketFood/dtos/user/ApiUpdateAccountDTO.java`
 - Customer/Courier models and focused account API tests
-- `client/docs/m14/Wireframe.pdf`
+- `client/docs/m14/Wireframe.md`
 
 No server file is authorized for editing during the initial contract analysis. If the update-method gate exposes a discrepancy, Claude must present the viable minimum-change options and wait for the user's choice. After selection, amend this spec with the chosen contract and smallest permitted server file set before implementation.
 

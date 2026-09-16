@@ -92,9 +92,6 @@ Expo SDK 54 is intentional. A coach confirmed that the repository's current `exp
 │   ├── M13/                         # Module 13 concepts and code references
 │   └── M14/                         # Module 14 concepts and code references
 ├── docVault/                        # Research, audit findings, and refactoring records
-├── LeetCode-Challenges/
-│   ├── M13/                         # Module 13 SQL challenge screenshots
-│   └── M14/                         # Module 14 challenge screenshots
 ├── PostmanCollection.json           # Importable mobile API request collection
 └── README.md                        # Setup, API, verification, and project overview
 ```
@@ -135,11 +132,11 @@ Root Stack
 ### 1. Clone the repository
 
 ```bash
-git clone git@github.com:omoitra-droid/M13-rocketFoodDelivery.git
+git clone git@github.com:omi-moitra/RocketFoodDeliveryApp.git M13-rocketFoodDelivery
 cd M13-rocketFoodDelivery
 ```
 
-The repository is private, so the cloning account must have collaborator access. An HTTPS clone URL may be used instead if the account is authenticated for this repository.
+Use the SSH clone URL above or the HTTPS URL for this repository.
 
 ### 2. Create and configure the backend database
 
@@ -159,7 +156,7 @@ spring.jpa.hibernate.ddl-auto=update
 app.jwt.secret=REPLACE_WITH_A_LONG_LOCAL_DEVELOPMENT_SECRET
 ```
 
-The backend seeds development data when it starts. Do not commit `application.properties` or real database/JWT credentials.
+Demo seeding is disabled by default. To create disposable demo data, explicitly enable the `demo` profile and set `app.demo.enabled=true` and a unique `app.demo.password` (at least 16 characters) in ignored local configuration. Never enable demo seeding against a production database. Do not commit `application.properties` or real database/JWT credentials.
 
 Start the API from the repository root:
 
@@ -324,11 +321,11 @@ The mobile demo includes three deterministic development accounts:
 
 | Account | Email | Password | Login result |
 |---|---|---|---|
-| Customer | `customer@gmail.com` | `password` | Opens the Customer application directly |
-| Courier | `courier@gmail.com` | `password` | Opens the Courier application directly |
-| Customer and Courier | `both@gmail.com` | `password` | Opens Account Selection to choose a role |
+| Customer | `customer@example.com` | Locally configured `app.demo.password` | Opens the Customer application directly |
+| Courier | `courier@example.com` | Locally configured `app.demo.password` | Opens the Courier application directly |
+| Customer and Courier | `both@example.com` | Locally configured `app.demo.password` | Opens Account Selection to choose a role |
 
-The Login screen sends the selected credentials to `POST /api/auth`. A successful response supplies the available role identifier or identifiers and the bearer token used by protected routes. These are local seed credentials, not production credentials.
+The Login screen sends the selected credentials to `POST /api/auth`. A successful response supplies the available role identifier or identifiers and the bearer token used by protected routes. Set the empty Postman `demoPassword` variable locally to match `app.demo.password`. Existing databases retain their previous passwords; reset or disable previously exposed demo accounts before exposing the server. Never export populated Postman credentials.
 
 ### Browse and filter restaurants
 
@@ -373,11 +370,11 @@ The actual IDs come from the authenticated customer and loaded restaurant/menu d
 
 ## Seeded Development Data
 
-`server/src/main/java/com/rocketFoodDelivery/rocketFood/DataSeeder.java` runs when the Spring application starts. On a fresh database it creates the following development data:
+`server/src/main/java/com/rocketFoodDelivery/rocketFood/DataSeeder.java` runs only with the `demo` profile and `app.demo.enabled=true`. On a fresh database it creates the following development data:
 
 | Data | Fresh-database seed |
 |---|---|
-| Users | 30 baseline users, including `both@gmail.com`, `customer@gmail.com`, and `courier@gmail.com` |
+| Users | 30 baseline users, including `both@example.com`, `customer@example.com`, and `courier@example.com` |
 | Addresses | 30 generated addresses |
 | Order statuses | `pending`, `in progress`, and `delivered` |
 | Courier statuses | `free`, `busy`, `full`, and `offline` |
@@ -392,11 +389,11 @@ The five stable Avatar customer accounts are:
 
 | Name | Email | Password |
 |---|---|---|
-| Aang | `aang@gmail.com` | `password` |
-| Katara | `katara@gmail.com` | `password` |
-| Sokka | `sokka@gmail.com` | `password` |
-| Toph Beifong | `toph@gmail.com` | `password` |
-| Zuko | `zuko@gmail.com` | `password` |
+| Aang | `aang@example.com` | Locally configured `app.demo.password` |
+| Katara | `katara@example.com` | Locally configured `app.demo.password` |
+| Sokka | `sokka@example.com` | Locally configured `app.demo.password` |
+| Toph Beifong | `toph@example.com` | Locally configured `app.demo.password` |
+| Zuko | `zuko@example.com` | Locally configured `app.demo.password` |
 
 Most seed methods skip a table when it already contains data. The stable Courier and dual-role courier assignments are append-safe, so either missing assignment is added without rewriting existing couriers. The Avatar accounts behave similarly: any missing Avatar user/customer is appended without rewriting an existing account. Restaurant names, addresses, product details, prices, assignments, statuses, and ratings use Faker or random values, so they can differ between fresh databases. Existing or partially seeded databases can also have totals different from the fresh-database table above.
 
